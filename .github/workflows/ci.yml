@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  host-sim:
+    name: Host simulator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configure
+        run: cmake -S tools/sim -B tools/sim/build -G Ninja -DWLED_FX_SANITIZE=ON
+
+      - name: Build
+        run: cmake --build tools/sim/build
+
+      - name: List registered effects and their parsed defaults
+        run: tools/sim/build/wled_fx_sim --list
+
+      - name: Run every effect at 16x16, 64x64 and 60x1
+        run: |
+          mkdir -p tools/sim/out
+          tools/sim/build/wled_fx_sim --out tools/sim/out
+
+      - name: Upload contact sheets
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: contact-sheets
+          path: tools/sim/out/*.png
+
+  compile:
+    name: esphome compile ${{ matrix.config }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - strip-esp32.yaml
+          - strip-esp32-arduino.yaml
+          - m1-hub75.yaml
+          - host.yaml
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install ESPHome
+        run: pip install esphome
+
+      - name: Create the fake secrets the examples reference
+        run: cp examples/secrets.yaml.example examples/secrets.yaml
+
+      - name: Cache the build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.espressif
+            examples/.esphome
+          key: esphome-${{ matrix.config }}-${{ hashFiles('examples/*.yaml') }}
+          restore-keys: esphome-${{ matrix.config }}-
+
+      - name: Compile
+        run: esphome compile examples/${{ matrix.config }}

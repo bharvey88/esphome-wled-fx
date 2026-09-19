@@ -34,10 +34,16 @@ jobs:
           mkdir -p tools/sim/out
           tools/sim/build/wled_fx_sim --out tools/sim/out
 
+      # --single-pass, so this is five runs of every effect rather than ten. The
+      # mapping sweep is looking for out-of-bounds writes under a mapping the
+      # metadata never selects, and the checks pass in the step above already
+      # covers the checkmark code at every geometry. Running both here multiplied
+      # this job's time by about five under the sanitizers for very little extra
+      # reach. Run it without --single-pass before a release.
       - name: Run every effect through every 1D to 2D mapping mode
         run: |
           for map in 0 1 2 3 4; do
-            tools/sim/build/wled_fx_sim --map "$map" --no-images --out tools/sim/out
+            tools/sim/build/wled_fx_sim --map "$map" --single-pass --no-images --out tools/sim/out
           done
 
       - name: Audio pipeline test

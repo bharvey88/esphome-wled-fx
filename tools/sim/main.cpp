@@ -9,14 +9,15 @@
 //   wled_fx_sim [--effect NAME] [--group NAME] [--frames N] [--no-images]
 //               [--out DIR] [--list] [--palette N] [--map N] [--size WxH]
 //               [--check1 0|1] [--check2 0|1] [--check3 0|1] [--checks-on]
-//               [--custom1 N] [--custom2 N] [--custom3 N]
+//               [--custom1 N] [--custom2 N] [--custom3 N] [--single-pass]
 //
 // With none of the control options, every effect is run twice per geometry: once
 // on its own metadata defaults and once with all three checkmarks on. The second
 // pass is the only thing that reaches the alternative modes a lot of effects hide
 // behind a checkbox (PS Pinball's rolling and collide, PS Springy's AR mode, the
 // Cylinder and Collide options on most of the particle effects). Naming any
-// control on the command line replaces both passes with that one configuration.
+// control on the command line replaces both passes with that one configuration,
+// and --single-pass drops the checks pass while leaving the defaults alone.
 
 #include <algorithm>
 #include <cstdio>
@@ -292,6 +293,7 @@ int main(int argc, char **argv) {
   std::string size_label;
   std::vector<Geometry> geometries(GEOMETRIES, GEOMETRIES + sizeof(GEOMETRIES) / sizeof(GEOMETRIES[0]));
   Controls cli;
+  bool single_pass = false;
 
   // --check<n> / --custom<n>, handled together because they differ only in range.
   const auto control_arg = [&](const std::string &arg, const char *prefix, int *slots, int hi, int *next) -> int {
@@ -333,6 +335,10 @@ int main(int argc, char **argv) {
     }
     if (arg == "--checks-on") {
       cli.check[0] = cli.check[1] = cli.check[2] = 1;
+      continue;
+    }
+    if (arg == "--single-pass") {
+      single_pass = true;
       continue;
     }
     if (arg == "--effect" && i + 1 < argc)
@@ -412,7 +418,8 @@ int main(int argc, char **argv) {
     passes.push_back(cli);
   } else {
     passes.push_back(Controls{});
-    passes.push_back(Controls{"checks", {1, 1, 1}, {-1, -1, -1}});
+    if (!single_pass)
+      passes.push_back(Controls{"checks", {1, 1, 1}, {-1, -1, -1}});
   }
 
   std::vector<Result> results;

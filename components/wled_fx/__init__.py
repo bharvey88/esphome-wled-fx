@@ -98,9 +98,24 @@ CHECKS = {
 }
 
 
+# Punctuation that carries meaning in an effect name and so has to survive into
+# the derived identifier. Collapsing it to "_" made "Sparkle" and "Sparkle+" the
+# same macro, so naming one in YAML silently pulled in both. Keep this table in
+# step with effect_macro_token() in tools/sim/main.cpp.
+_NAME_TOKENS = {
+    "+": "_PLUS",
+    "&": "_AND",
+    "/": "_SLASH",
+    "#": "_HASH",
+    "%": "_PCT",
+    "*": "_STAR",
+}
+
+
 def effect_macro(name: str) -> str:
     """Turns an effect name from YAML into the macro the C++ guard tests."""
-    return "WLED_FX_FX_" + re.sub(r"[^A-Z0-9]+", "_", name.upper()).strip("_")
+    expanded = "".join(_NAME_TOKENS.get(c, c) for c in name.upper())
+    return "WLED_FX_FX_" + re.sub(r"[^A-Z0-9]+", "_", expanded).strip("_")
 
 
 CONTROL_SCHEMA = {

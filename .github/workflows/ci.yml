@@ -29,10 +29,19 @@ jobs:
       - name: List registered effects and their parsed defaults
         run: tools/sim/build/wled_fx_sim --list
 
-      - name: Run every effect at 16x16, 64x64 and 60x1
+      - name: Run every effect at every default geometry
         run: |
           mkdir -p tools/sim/out
           tools/sim/build/wled_fx_sim --out tools/sim/out
+
+      - name: Run every effect through every 1D to 2D mapping mode
+        run: |
+          for map in 0 1 2 3 4; do
+            tools/sim/build/wled_fx_sim --map "$map" --no-images --out tools/sim/out
+          done
+
+      - name: Audio pipeline test
+        run: tools/sim/build/wled_fx_audio_test
 
       - name: Upload contact sheets
         uses: actions/upload-artifact@v4
@@ -51,6 +60,7 @@ jobs:
           - strip-esp32.yaml
           - strip-esp32-arduino.yaml
           - m1-hub75.yaml
+          - m1-hub75-audio.yaml
           - host.yaml
     steps:
       - uses: actions/checkout@v4

@@ -24,7 +24,8 @@
    WLED_FX_FX_RUNNING || WLED_FX_FX_SAW || WLED_FX_FX_RUNNING_DUAL || WLED_FX_FX_CHASE_FLASH ||        \
    WLED_FX_FX_CHASE_FLASH_RND || WLED_FX_FX_RANDOM_COLORS || WLED_FX_FX_PACIFICA || WLED_FX_FX_NOISE_2 || \
    WLED_FX_FX_NOISE_3 || WLED_FX_FX_NOISE_4 || WLED_FX_FX_FILL_NOISE || WLED_FX_FX_NOISE_PAL ||        \
-   WLED_FX_FX_SPARKLE || WLED_FX_FX_SPARKLE_DARK || WLED_FX_FX_DANCING_SHADOWS || WLED_FX_FX_SHIMMER || \
+   WLED_FX_FX_SPARKLE || WLED_FX_FX_SPARKLE_PLUS || WLED_FX_FX_SPARKLE_DARK ||                        \
+   WLED_FX_FX_DANCING_SHADOWS || WLED_FX_FX_SHIMMER ||                                                \
    WLED_FX_FX_POPCORN || WLED_FX_FX_COLORFUL || WLED_FX_FX_AURORA || WLED_FX_FX_TRI_WIPE ||            \
    WLED_FX_FX_FLOW || WLED_FX_FX_RAILWAY || WLED_FX_FX_STROBE_MEGA || WLED_FX_FX_BLENDS ||             \
    WLED_FX_FX_BREATHE || WLED_FX_FX_FLOW_STRIPE)
@@ -257,7 +258,7 @@ void mode_flash_sparkle(Segment &seg) {
 }
 #endif
 
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_SPARKLE
+#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_SPARKLE_PLUS
 /*
  * Like flash sparkle. With more flash.
  * Inspired by www.tweaking4all.com/hardware/arduino/adruino-led-strip-effects/
@@ -1320,7 +1321,7 @@ const EffectInfo ENTRIES[] = {
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_SPARKLE_DARK
     {"Sparkle Dark@!,!,,,,,Overlay;Bg,Fx;!;;m12=0", mode_flash_sparkle},
 #endif
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_SPARKLE
+#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_SPARKLE_PLUS
     {"Sparkle+@!,!,,,,,Overlay;Bg,Fx;!;;m12=0", mode_hyper_sparkle},
 #endif
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_DANCING_SHADOWS

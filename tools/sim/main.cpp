@@ -33,12 +33,48 @@ const Geometry GEOMETRIES[] = {
     {"16x16", 16, 16},
     {"64x64", 64, 64},
     {"60x1", 60, 1},
+    // Non-square matrices. Width and height are swapped between the first two so
+    // that an effect that mixes up its axes fails on one of them, and 31x17 is odd
+    // in both dimensions so nothing can quietly rely on a power of two.
+    {"64x32", 64, 32},
+    {"32x64", 32, 64},
+    {"31x17", 31, 17},
 };
 
 // Frames captured into the contact sheet.
 const int CAPTURE_FRAMES[] = {1, 30, 90, 150, 210, 299};
 constexpr int CAPTURE_COUNT = sizeof(CAPTURE_FRAMES) / sizeof(CAPTURE_FRAMES[0]);
 constexpr int TILE_GAP = 4;
+
+// The default run, in frames and in milliseconds of effect time per frame.
+constexpr int DEFAULT_FRAMES = 300;
+constexpr uint32_t DEFAULT_STEP_MS = 23;  // WLED's nominal frame period
+
+/* A few effects are paced against wall-clock time so slowly that 300 frames at
+ * 23 ms, about seven seconds, never reaches anything visible. Rather than let
+ * them fail the non-black check, or run them for the hundreds of thousands of
+ * frames real time would need, the simulator hands those effects a longer frame
+ * period. Nothing in the effect changes: it still only reads `seg.now`, so this
+ * is time acceleration, not a special case that lets an effect off. */
+struct Pacing {
+  const char *effect;
+  int frames;
+  uint32_t step_ms;
+};
+
+const Pacing PACING[] = {
+    // Sunrise's default speed is a 60 minute sunrise, and its palette lookup stays
+    // black for the first quarter of it. 300 frames at 12 s covers an hour.
+    {"Sunrise", DEFAULT_FRAMES, 12000},
+};
+
+Pacing pacing_for(const char *name) {
+  for (const Pacing &p : PACING) {
+    if (strcmp(p.effect, name) == 0)
+      return p;
+  }
+  return Pacing{name, DEFAULT_FRAMES, DEFAULT_STEP_MS};
+}
 
 struct Result {
   std::string effect;
@@ -49,17 +85,89 @@ struct Result {
   std::string image;
 };
 
-std::string sanitize(const std::string &name) {
-  std::string out;
+/* Punctuation that carries meaning in an effect name and so has to survive into
+ * a derived identifier. Collapsing it all to "_" made "Sparkle" and "Sparkle+"
+ * the same macro and the same PNG file name. Keep this table in step with
+ * _NAME_TOKENS in components/wled_fx/__init__.py. */
+const char *effect_name_token(char c) {
+  switch (c) {
+    case '+':
+      return "_PLUS";
+    case '&':
+      return "_AND";
+    case '/':
+      return "_SLASH";
+    case '#':
+      return "_HASH";
+    case '%':
+      return "_PCT";
+    case '*':
+      return "_STAR";
+    default:
+      return nullptr;
+  }
+}
+
+// The identifier a YAML allow-list entry turns into, matching effect_macro() in
+// components/wled_fx/__init__.py.
+std::string effect_macro(const std::string &name) {
+  std::string expanded;
   for (char c : name) {
-    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
-      out += static_cast<char>(c >= 'A' && c <= 'Z' ? c + 32 : c);
+    const char *token = effect_name_token(c);
+    if (token != nullptr)
+      expanded += token;
+    else
+      expanded += static_cast<char>(c >= 'a' && c <= 'z' ? c - 32 : c);
+  }
+  std::string out;
+  for (char c : expanded) {
+    if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+      out += c;
     else if (!out.empty() && out.back() != '_')
       out += '_';
   }
   while (!out.empty() && out.back() == '_')
     out.pop_back();
+  return "WLED_FX_FX_" + out;
+}
+
+// The stem of this effect's PNG file names. Same rule as effect_macro(), lower
+// cased, so two effects collide in one place or in neither.
+std::string sanitize(const std::string &name) {
+  std::string out = effect_macro(name).substr(strlen("WLED_FX_FX_"));
+  for (char &c : out) {
+    if (c >= 'A' && c <= 'Z')
+      c = static_cast<char>(c + 32);
+  }
   return out.empty() ? "effect" : out;
+}
+
+/* Two effects whose names derive to the same macro would share a YAML
+ * allow-list entry, and two that derive to the same file stem would overwrite
+ * each other's contact sheets. Both were real: "Sparkle" and "Sparkle+". This
+ * runs on every simulator invocation, so CI cannot miss a new one. */
+bool check_derived_names(const std::vector<std::pair<std::string, const EffectInfo *>> &selected) {
+  std::vector<std::pair<std::string, std::string>> macros;  // derived, effect
+  std::vector<std::pair<std::string, std::string>> stems;
+  int clashes = 0;
+
+  for (const auto &entry : selected) {
+    char name[64];
+    effect_name(*entry.second, name, sizeof(name));
+    for (auto *table : {&macros, &stems}) {
+      const bool is_macro = (table == &macros);
+      const std::string derived = is_macro ? effect_macro(name) : sanitize(name);
+      for (const auto &seen : *table) {
+        if (seen.first == derived) {
+          fprintf(stderr, "FAIL name collision: \"%s\" and \"%s\" both derive %s \"%s\"\n", seen.second.c_str(), name,
+                  is_macro ? "the macro" : "the output file name", derived.c_str());
+          clashes++;
+        }
+      }
+      table->emplace_back(derived, name);
+    }
+  }
+  return clashes == 0;
 }
 
 void blit_tile(std::vector<uint8_t> &sheet, int sheet_w, int ox, int oy, const Canvas &canvas, int scale_x,
@@ -88,7 +196,7 @@ int main(int argc, char **argv) {
   std::string only_effect;
   std::string only_group;
   std::string out_dir = "out";
-  int frames = 300;
+  int frames = 0;  // 0 keeps the per-effect default; --frames pins every effect
   int palette = -1;  // -1 keeps the effect's own metadata default
   int map1d2d = -1;  // -1 keeps the effect's own m12 default
   bool images = true;
@@ -165,9 +273,22 @@ int main(int argc, char **argv) {
   std::vector<Result> results;
   int failures = 0;
 
+  // Checked against every registered effect, not just the selection, so that
+  // --effect or --group cannot hide a clash.
+  std::vector<std::pair<std::string, const EffectInfo *>> everything;
+  for (size_t gi = 0; gi < EffectRegistry::group_count(); gi++) {
+    const EffectGroup &group = EffectRegistry::group(gi);
+    for (size_t i = 0; i < group.count; i++)
+      everything.emplace_back(group.group_name, &group.entries[i]);
+  }
+  if (!check_derived_names(everything))
+    failures++;
+
   for (const auto &entry : selected) {
     char name[64];
     effect_name(*entry.second, name, sizeof(name));
+    const Pacing pacing = pacing_for(name);
+    const int effect_frames = frames > 0 ? frames : pacing.frames;
 
     for (const Geometry &geo : geometries) {
       Result res;
@@ -190,7 +311,13 @@ int main(int argc, char **argv) {
       engine.set_text("WLED FX");
       if (palette >= 0)
         engine.set_palette(static_cast<uint8_t>(palette));
-      if (map1d2d >= 0)
+      /* m12 is the *1D to 2D* mapping, so it only means anything for an effect
+       * that can run in 1D. WLED only offers the "Expand 1D FX" selector on those
+       * effects, and forcing a mapping onto a 2D-native effect breaks the same
+       * assumption upstream makes: Game Of Life sizes its allocation from
+       * seg.length(), which under M12_P_BAR is the matrix height rather than
+       * width * height. Leave a 2D-only effect on its own default. */
+      if (map1d2d >= 0 && (effect_defaults(*entry.second).flags & EFFECT_FLAG_1D) != 0)
         engine.segment().map1d2d = static_cast<uint8_t>(map1d2d);
 
       const int scale_x = std::max(1, std::min(8, 128 / std::max<int>(1, geo.width)));
@@ -203,9 +330,9 @@ int main(int argc, char **argv) {
       int captured = 0;
 
       uint32_t now = 1000;
-      for (int f = 0; f < frames; f++) {
+      for (int f = 0; f < effect_frames; f++) {
         engine.render(now);
-        now += 23;  // WLED's nominal frame period
+        now += pacing.step_ms;
 
         if (!engine.canvas().guards_intact()) {
           res.guards_ok = false;

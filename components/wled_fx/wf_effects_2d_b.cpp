@@ -37,18 +37,8 @@ namespace esphome {
 namespace wled_fx {
 namespace {
 
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_COLORED_BURSTS || WLED_FX_FX_DNA_SPIRAL
-// WLED spells this one as a macro in FX.h; the engine only carries the colours it
-// needs, so the two effects that want it bring their own copy.
-constexpr uint32_t DARKSLATEGRAY = 0x2F4F4F;
-#endif
-
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_CRAZY_BEES
-// WLED keeps one file-static pseudo random generator in FX.cpp that the effects
-// share; translation units never share here, so this file carries its own.
-Prng prng(hw_random());
-#endif
-
+// DARKSLATEGRAY and the shared PRNG are engine code now, in wf_color.h and
+// wf_fx_shared.h.
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_BLACK_HOLE
 // Black hole
 void mode_2DBlackHole(Segment &seg) {  // By: Stepko https://editor.soulmatelights.com/gallery/1012 , Modified by:
@@ -1009,6 +999,7 @@ void mode_2Dcrazybees(Segment &seg) {
 
   const int cols = seg.width();
   const int rows = seg.height();
+  Prng &prng = fx_prng();
 
   uint8_t n = std::min(MAX_BEES, (rows * cols) / 256 + 1);
 
@@ -1017,6 +1008,7 @@ void mode_2Dcrazybees(Segment &seg) {
     int8_t deltaX, deltaY, signX, signY, error;
     void aimed(uint16_t w, uint16_t h) {
       // prng.setSeed(millis());
+      Prng &prng = fx_prng();  // a local class cannot reach the enclosing scope's reference
       aimX = prng.random8(0, w);
       aimY = prng.random8(0, h);
       hue = prng.random8();

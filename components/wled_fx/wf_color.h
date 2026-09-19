@@ -45,6 +45,11 @@ inline constexpr uint32_t CYAN = 0x00FFFF;
 inline constexpr uint32_t MAGENTA = 0xFF00FF;
 inline constexpr uint32_t PURPLE = 0x400080;
 inline constexpr uint32_t ORANGE = 0xFF3000;
+// WLED FX.h: #define ULTRAWHITE (uint32_t)0xFFFFFFFF, white with the white channel
+// driven as well.
+inline constexpr uint32_t ULTRAWHITE = 0xFFFFFFFF;
+// WLED FX.h: #define DARKSLATEGRAY (uint32_t)0x2F4F4F
+inline constexpr uint32_t DARKSLATEGRAY = 0x2F4F4F;
 
 struct CRGB;
 struct CHSV;

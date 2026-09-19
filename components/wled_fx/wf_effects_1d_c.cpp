@@ -34,31 +34,8 @@ namespace esphome {
 namespace wled_fx {
 namespace {
 
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_WASHING_MACHINE
-/*
- * Generates a tristate square wave w/ attac & decay
- * @param x input value 0-255
- * @param pulsewidth 0-127
- * @param attdec attack & decay, max. pulsewidth / 2
- * @returns signed waveform value
- */
-int8_t tristate_square8(uint8_t x, uint8_t pulsewidth, uint8_t attdec) {
-  int8_t a = 127;
-  if (x > 127) {
-    a = -127;
-    x -= 127;
-  }
-
-  if (x < attdec) {  // inc to max
-    return (int16_t) x * a / attdec;
-  } else if (x < pulsewidth - attdec) {  // max
-    return a;
-  } else if (x < pulsewidth) {  // dec to 0
-    return (int16_t) (pulsewidth - x) * a / attdec;
-  }
-  return 0;
-}
-#endif
+// tristate_square8() and the Spark and Flasher structs are engine code now, in
+// wf_fx_shared.h.
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_FADE
 /*
@@ -386,13 +363,6 @@ void mode_two_dots(Segment &seg) {
 /*
  * Fairy, inspired by https://www.youtube.com/watch?v=zeOw5MZWq24
  */
-// 4 bytes
-typedef struct Flasher {
-  uint16_t stateStart;
-  uint8_t stateDur;
-  bool stateOn;
-} flasher;
-
 constexpr unsigned FLASHERS_PER_ZONE = 6;
 constexpr unsigned MAX_SHIMMER = 92;
 
@@ -916,15 +886,6 @@ void mode_sinelon_rainbow(Segment &seg) { sinelon_base(seg, false, true); }
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_DRIP
-// each needs 20 bytes
-// Spark type is used for popcorn, 1D fireworks, and drip
-typedef struct Spark {
-  float pos, posX;
-  float vel, velX;
-  uint16_t col;
-  uint8_t colIndex;
-} spark;
-
 /*
  * Drip Effect
  * ported of: https://www.youtube.com/watch?v=sru2fXh4r7k

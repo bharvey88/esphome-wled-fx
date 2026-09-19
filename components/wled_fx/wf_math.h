@@ -32,10 +32,21 @@
  * EUPL Article 5 compatibility clause.
  */
 
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 
 #include "wf_platform.h"
+
+// Neither is standard C++: M_PI is a POSIX extension that some standard libraries
+// hide behind a feature macro, and M_TWOPI is WLED's own. Effect bodies use both,
+// so define whichever the toolchain did not.
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+#ifndef M_TWOPI
+#define M_TWOPI (M_PI * 2.0)
+#endif
 
 namespace esphome {
 namespace wled_fx {

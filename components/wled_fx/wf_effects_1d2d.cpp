@@ -26,19 +26,12 @@
 
 #if WLED_FX_GROUP_1D2D
 
-// Arduino's math.h hands WLED these two. Neither is guaranteed by <cmath>, so the
-// file defines them when the toolchain has not, and Palette keeps its upstream
-// expressions unchanged.
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-#ifndef M_TWOPI
-#define M_TWOPI (M_PI * 2.0)
-#endif
-
 namespace esphome {
 namespace wled_fx {
 namespace {
+
+/* M_PI, M_TWOPI, speed_formula_l(), IBN and the Ripple and Spark structs are
+ * engine code now, in wf_math.h, wf_segment.h and wf_fx_shared.h. */
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_FIREWORKS || WLED_FX_FX_RAIN
 /*
@@ -100,10 +93,6 @@ void mode_fireworks(Segment &seg) {
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_RAIN
-// WLED FX.h:113 spells this as a macro over SEGMENT and SEGLEN. Here it reads the
-// `seg` and `seg_len` of the effect that uses it, so the call site stays verbatim.
-#define SPEED_FORMULA_L (5U + (50U * (255U - seg.speed)) / seg_len)
-
 // Twinkling LEDs running. Inspired by https://github.com/kitesurfer1404/WS2812FX/blob/master/src/custom/Rain.h
 void mode_rain(Segment &seg) {
   const unsigned seg_len = seg.length();
@@ -112,7 +101,7 @@ void mode_rain(Segment &seg) {
   const unsigned width = seg.width();
   const unsigned height = seg.height();
   seg.step += FRAMETIME;
-  if (seg.call && seg.step > SPEED_FORMULA_L) {
+  if (seg.call && seg.step > speed_formula_l(seg, seg_len)) {
     seg.step = 1;
     if (seg.is_2d()) {
       // uint32_t ctemp[width];
@@ -142,7 +131,6 @@ void mode_rain(Segment &seg) {
   }
   mode_fireworks(seg);
 }
-#undef SPEED_FORMULA_L
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_RIPPLE || WLED_FX_FX_RIPPLE_RAINBOW
@@ -151,15 +139,6 @@ void mode_rain(Segment &seg) {
 // drop rate from intensity
 
 // 4 bytes
-typedef struct Ripple {
-  uint8_t state;
-  uint8_t color;
-  uint16_t pos;
-} ripple;
-
-// WLED FX.cpp:69, the base chance denominator the drop rate is drawn against.
-constexpr int IBN = 5100;
-
 constexpr int MAX_RIPPLES = 100;
 void ripple_base(Segment &seg, uint8_t blurAmount = 0) {
   const unsigned seg_len = seg.length();
@@ -522,22 +501,6 @@ void mode_halloween_eyes(Segment &seg) {
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_FIREWORKS_1D
-// each needs 20 bytes
-// Spark type is used for popcorn, 1D fireworks, and drip
-typedef struct Spark {
-  float pos, posX;
-  float vel, velX;
-  uint16_t col;
-  uint8_t colIndex;
-} spark;
-
-/* WLED FX.h:101, FAIR_DATA_PER_SEG = MAX_SEGMENT_DATA / MAX_NUM_SEGMENTS, the
- * share of the effect data budget one segment of many may claim. There is only
- * ever one segment here, so the two doublings upstream applies to a strip running
- * few segments are folded in: 64k / 32 * 4 is what WLED hands a lone segment on an
- * ESP32, and it keeps the spark count matching upstream on a large matrix. */
-constexpr unsigned FAIR_DATA_PER_SEG = 8192;
-
 /*
  * Exploding fireworks effect
  * adapted from: http://www.anirama.com/1000leds/1d-fireworks/

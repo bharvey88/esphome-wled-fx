@@ -36,83 +36,9 @@ namespace esphome {
 namespace wled_fx {
 namespace {
 
-/* Engine gaps this file fills locally. None of these exist in the engine headers
- * yet; see the report in the batch hand-off. */
-
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_GLITTER || WLED_FX_FX_SOLID_GLITTER
-// WLED FX.h: #define ULTRAWHITE (uint32_t)0xFFFFFFFF
-constexpr uint32_t ULTRAWHITE = 0xFFFFFFFF;
-#endif
-
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_COLORTWINKLES
-// WLED FX.h: the fixed frame period at WLED_FPS, used by Colortwinkles to rate
-// limit itself independently of the actual frame time.
-constexpr uint32_t FRAMETIME_FIXED = 1000 / 42;
-#endif
-
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_ROLLING_BALLS
-// WLED const.h: the number of colour slots a segment carries.
-constexpr unsigned NUM_COLORS = 3;
-#endif
-
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_WIPE || WLED_FX_FX_SWEEP || WLED_FX_FX_WIPE_RANDOM || \
-    WLED_FX_FX_SWEEP_RANDOM
-// WLED util.cpp: returns a new, random color wheel index with a minimum distance
-// of 42 from pos.
-uint8_t get_random_wheel_index(uint8_t pos) {
-  uint8_t r = 0, x = 0, y = 0, d = 0;
-  while (d < 42) {
-    r = hw_random8();
-    x = abs(pos - r);
-    y = 255 - x;
-    d = x < y ? x : y;
-  }
-  return r;
-}
-#endif
-
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_TWINKLEUP
-// WLED FX.cpp file-static generator, used by Twinkleup so the per-pixel starting
-// brightness is stable from frame to frame.
-Prng prng(hw_random());  // pseudo-random number generator class, seed = hardware random number
-#endif
-
-// WLED FX.h: #define SPEED_FORMULA_L (5U + (50U*(255U - SEGMENT.speed))/SEGLEN)
-#define SPEED_FORMULA_L (5U + (50U * (255U - seg.speed)) / seg_len)
-
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_STROBE || WLED_FX_FX_STROBE_RAINBOW || WLED_FX_FX_BLINK_RAINBOW
-/*
- * Blink/strobe function
- * Alternate between color1 and color2
- * if(strobe == true) then create a strobe effect
- */
-void blink(Segment &seg, uint32_t color1, uint32_t color2, bool strobe, bool do_palette) {
-  const unsigned seg_len = seg.length();
-  uint32_t cycleTime = (255 - seg.speed) * 20;
-  uint32_t onTime = FRAMETIME;
-  if (!strobe)
-    onTime += ((cycleTime * seg.intensity) >> 8);
-  cycleTime += FRAMETIME * 2;
-  uint32_t it = seg.now / cycleTime;
-  uint32_t rem = seg.now % cycleTime;
-
-  bool on = false;
-  if (it != seg.step  // new iteration, force on state for one frame, even if set time is too brief
-      || rem <= onTime) {
-    on = true;
-  }
-
-  seg.step = it;  // save previous iteration
-
-  uint32_t color = on ? color1 : color2;
-  if (color == color1 && do_palette) {
-    for (unsigned i = 0; i < seg_len; i++) {
-      seg.set_pixel_color(i, seg.color_from_palette(i, true, seg.palette_solid_wrap(), 0));
-    }
-  } else
-    seg.fill(color);
-}
-#endif
+/* ULTRAWHITE, FRAMETIME_FIXED, NUM_COLORS, get_random_wheel_index(), the shared
+ * PRNG, speed_formula_l(), blink() and the Flasher struct all live in the engine
+ * now, in wf_color.h, wf_segment.h and wf_fx_shared.h. */
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_BLINK_RAINBOW
 /*
@@ -395,13 +321,6 @@ void mode_loading(Segment &seg) { gradient_base(seg, true); }
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_FAIRYTWINKLE
-// 4 bytes
-typedef struct Flasher {
-  uint16_t stateStart;
-  uint8_t stateDur;
-  bool stateOn;
-} flasher;
-
 /*
  * Fairytwinkle. Like Colortwinkle, but starting from all lit and not relying on strip.getPixelColor
  * Warning: Uses 4 bytes of segment data per pixel
@@ -514,7 +433,7 @@ void mode_icu(Segment &seg) {
         break;
       default:  // move (state 3)
         seg.aux1 = dest;  // update destination to moved position
-        nextUpdate = uint16_t(now + SPEED_FORMULA_L);
+        nextUpdate = uint16_t(now + speed_formula_l(seg, seg_len));
         if (seg.aux0 == dest) {
           // reached destination
           nextUpdate = uint16_t(now + 500 + hw_random16(1000));
@@ -1116,6 +1035,7 @@ void mode_sunrise(Segment &seg) {
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_TWINKLEUP
 void mode_twinkleup(Segment &seg) {  // A very short twinkle routine with fade-in and dual controls. By Andrew Tuline.
   const unsigned seg_len = seg.length();
+  Prng &prng = fx_prng();
   unsigned prevSeed = prng.get_seed();  // save seed so we can restore it at the end of the function
   prng.set_seed(535);  // The randomizer needs to be re-set each time through the loop in order for the same 'random'
                        // numbers to be the same each time through.
@@ -1227,7 +1147,6 @@ void mode_wavesins(Segment &seg) {
 }  // mode_waveins()
 #endif
 
-#undef SPEED_FORMULA_L
 
 const EffectInfo ENTRIES[] = {
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_WIPE

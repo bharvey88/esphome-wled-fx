@@ -40,30 +40,8 @@ namespace {
 // so another batch carries its own copy of the same code (PORTING.md section 8).
 // ---------------------------------------------------------------------------
 
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_RUNNING_DUAL
-// FX.cpp:90. Also owned by fx_1d_e for the Phased effects.
-uint8_t sin_gap(uint16_t in) {
-  if (in & 0x100)
-    return 0;
-  return sin8_t(in + 192);  // correct phase shift of sine so that it starts and stops at 0
-}
-#endif
-
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_CHASE_FLASH || WLED_FX_FX_CHASE_FLASH_RND || WLED_FX_FX_RANDOM_COLORS
-/*
- * Returns a new, random color wheel index with a minimum distance of 42 from pos.
- */
-uint8_t get_random_wheel_index(uint8_t pos) {
-  uint8_t r = 0, x = 0, y = 0, d = 0;
-  while (d < 42) {
-    r = hw_random8();
-    x = abs(pos - r);
-    y = 255 - x;
-    d = x < y ? x : y;
-  }
-  return r;
-}
-#endif
+// sin_gap(), get_random_wheel_index(), the Spark struct, NUM_COLORS and
+// FAIR_DATA_PER_SEG are engine code now, in wf_fx_shared.h and wf_segment.h.
 
 // ---------------------------------------------------------------------------
 // Effects
@@ -602,21 +580,6 @@ void mode_railway(Segment &seg) {
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_POPCORN
-// each needs 20 bytes
-// Spark type is used for popcorn, 1D fireworks, and drip
-typedef struct Spark {
-  float pos, posX;
-  float vel, velX;
-  uint16_t col;
-  uint8_t colIndex;
-} spark;
-
-// WLED's FX.h budget for one segment out of MAX_NUM_SEGMENTS, so the data size
-// keeps its upstream behaviour. One canvas, one segment here, but the popcorn
-// count still wants an upper bound on a large matrix in bar mapping.
-constexpr unsigned FAIR_DATA_PER_SEG = (64 * 1024) / 32;
-constexpr uint8_t NUM_COLORS = 3; /* number of colors per segment */
-
 #define maxNumPopcorn 21  // max 21 on 16 segment ESP8266
 /*
  *  POPCORN

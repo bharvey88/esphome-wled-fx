@@ -40,36 +40,9 @@ namespace esphome {
 namespace wled_fx {
 namespace {
 
-#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_STREAM_2
-/* Upstream keeps one file-static PRNG seeded from the hardware RNG
- * (`static PRNG prng(hw_random())` at FX.cpp:87). Here it lives behind an
- * accessor so the hardware RNG is not read during static initialisation, before
- * the platform is up. `Prng` is the engine's port of WLED's prng.h, with the
- * method names in snake case. */
-Prng &prng_instance() {
-  static Prng prng(hw_random());
-  return prng;
-}
-#endif
-
-#if WLED_FX_1D_E_CHASE_BASE
-/*
- * Returns a new, random color wheel index with a minimum distance of 42 from pos.
- * From WLED 16.0.1 wled00/util.cpp:727, copied here because a translation unit
- * never shares a helper with another one.
- */
-uint8_t get_random_wheel_index(uint8_t pos) {
-  uint8_t r = 0, x = 0, y = 0, d = 0;
-  while (d < 42) {
-    r = hw_random8();
-    x = abs(pos - r);
-    y = 255 - x;
-    d = x < y ? x : y;  // MIN(x, y)
-  }
-  return r;
-}
-#endif
-
+/* The shared PRNG, get_random_wheel_index(), NUM_COLORS, FRAMETIME_FIXED,
+ * FAIR_DATA_PER_SEG and mode_colorwaves_pride_base() are engine code now, in
+ * wf_fx_shared.h and wf_segment.h. */
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_ANDROID
 /*
  * Android loading circle, refactored by @dedehai
@@ -343,7 +316,7 @@ void mode_multi_comet(Segment &seg) {
  */
 void mode_random_chase(Segment &seg) {
   const unsigned seg_len = seg.length();
-  Prng &prng = prng_instance();
+  Prng &prng = fx_prng();
   if (seg.call == 0) {
     seg.step = RGBW32(prng.random8(), prng.random8(), prng.random8(), 0);
     seg.aux0 = prng.random16();
@@ -418,56 +391,6 @@ void mode_lightning(Segment &seg) {
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_COLORWAVES
-// combined function from original pride and colorwaves
-void mode_colorwaves_pride_base(Segment &seg, bool isPride2015) {
-  const unsigned seg_len = seg.length();
-  unsigned duration = 10 + seg.speed;
-  unsigned sPseudotime = seg.step;
-  unsigned sHue16 = seg.aux0;
-
-  uint8_t sat8 = isPride2015 ? beatsin88_t(87, 220, 250, seg.now) : 255;
-  unsigned brightdepth = beatsin88_t(341, 96, 224, seg.now);
-  unsigned brightnessthetainc16 = beatsin88_t(203, (25 * 256), (40 * 256), seg.now);
-  unsigned msmultiplier = beatsin88_t(147, 23, 60, seg.now);
-
-  unsigned hue16 = sHue16;
-  unsigned hueinc16 =
-      isPride2015 ? beatsin88_t(113, 1, 3000, seg.now) : beatsin88_t(113, 60, 300, seg.now) * seg.intensity * 10 / 255;
-
-  sPseudotime += duration * msmultiplier;
-  sHue16 += duration * beatsin88_t(400, 5, 9, seg.now);
-  unsigned brightnesstheta16 = sPseudotime;
-
-  for (unsigned i = 0; i < seg_len; i++) {
-    hue16 += hueinc16;
-    uint8_t hue8;
-
-    if (isPride2015) {
-      hue8 = hue16 >> 8;
-    } else {
-      unsigned h16_128 = hue16 >> 7;
-      hue8 = (h16_128 & 0x100) ? (255 - (h16_128 >> 1)) : (h16_128 >> 1);
-    }
-
-    brightnesstheta16 += brightnessthetainc16;
-    unsigned b16 = sin16_t(brightnesstheta16) + 32768;
-    unsigned bri16 = (uint32_t) ((uint32_t) b16 * (uint32_t) b16) / 65536;
-    uint8_t bri8 = (uint32_t) (((uint32_t) bri16) * brightdepth) / 65536;
-    bri8 += (255 - brightdepth);
-
-    if (isPride2015) {
-      CRGBW newcolor = CRGB(CHSV(hue8, sat8, bri8));
-      newcolor.color32 = gamma32inv(newcolor.color32);
-      seg.blend_pixel_color(i, newcolor, 64);
-    } else {
-      seg.blend_pixel_color(i, seg.color_from_palette(hue8, false, seg.palette_solid_wrap(), 0, bri8), 128);
-    }
-  }
-
-  seg.step = sPseudotime;
-  seg.aux0 = sHue16;
-}
-
 // ColorWavesWithPalettes by Mark Kriegsman: https://gist.github.com/kriegsman/8281905786e8b2632aeb
 // This function draws color waves with an ever-changing,
 // widely-varying set of parameters, using a color palette.
@@ -525,9 +448,6 @@ void mode_static_pattern(Segment &seg) {
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_BOUNCING_BALLS
-// number of colors per segment, WLED's NUM_COLORS
-constexpr unsigned NUM_COLORS = 3;
-
 // each needs 12 bytes
 typedef struct Ball {
   unsigned long lastBounceTime;
@@ -609,10 +529,6 @@ void mode_bouncing_balls(Segment &seg) {
 #endif
 
 #if WLED_FX_1D_E_CANDLE_BASE
-// WLED's FRAMETIME_FIXED, the nominal frame period at the 42 fps target. Same
-// value as the engine's FRAMETIME.
-constexpr uint32_t FRAMETIME_FIXED = FRAMETIME;
-
 // values close to 100 produce 5Hz flicker, which looks very candle-y
 // Inspired by https://github.com/avanhanegem/ArduinoCandleEffectNeoPixel
 // and https://cpldcpu.wordpress.com/2016/01/05/reverse-engineering-a-real-candle/
@@ -727,9 +643,6 @@ void mode_candle_multi(Segment &seg) { candle(seg, true); }
 / Fireworks Starburst
 / Speed sets frequency of new starbursts, intensity is the intensity of the burst
 */
-// WLED's FAIR_DATA_PER_SEG, MAX_SEGMENT_DATA / MAX_NUM_SEGMENTS. 64k / 32 on the
-// ESP32 targets this component builds for.
-constexpr unsigned FAIR_DATA_PER_SEG = (64 * 1024) / 32;
 #ifdef ESP8266
 #define STARBURST_MAX_FRAG 8  // 52 bytes / star
 #else

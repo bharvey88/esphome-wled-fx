@@ -31,108 +31,10 @@ namespace esphome {
 namespace wled_fx {
 namespace {
 
+/* The Gravity struct and mode_gravcenter_base() are engine code now, in
+ * wf_fx_shared.h. */
+
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_GRAVFREQ
-// Gravity struct requited for GRAV* effects
-typedef struct Gravity {
-  int    topLED;
-  int    gravityCounter;
-} gravity;
-
-///////////////////////
-//   * GRAVCENTER    //
-///////////////////////
-// Gravcenter effects By Andrew Tuline.
-// Gravcenter base function for Gravcenter (0), Gravcentric (1), Gravimeter (2), Gravfreq (3) (merged by @dedehai)
-//
-// Only mode 3 is reachable from this translation unit; the other three live in
-// wf_effects_audio_vol.cpp with their own copy of this base, because translation
-// units never share helpers here. The dead branches are kept so the body can be
-// diffed against upstream.
-
-void mode_gravcenter_base(Segment &seg, unsigned mode) {
-  const unsigned seg_len = seg.length();
-  if (seg_len == 1) FX_FALLBACK_STATIC;
-
-  const unsigned dataSize = sizeof(gravity);
-  if (!seg.allocate_data(dataSize)) FX_FALLBACK_STATIC; //allocation failed
-  Gravity* gravcen = reinterpret_cast<Gravity*>(seg.data);
-
-  AudioData &audio = seg.audio();
-  float   volumeSmth  = audio.volume_smth;
-
-  if(mode == 1) seg.fade_out(253);  // //Gravcentric
-  else if(mode == 2) seg.fade_out(249);  // Gravimeter
-  else if(mode == 3) seg.fade_out(250);  // Gravfreq
-  else seg.fade_out(251);  // Gravcenter
-
-  float mySampleAvg;
-  int tempsamp;
-  float segmentSampleAvg = volumeSmth * (float)seg.intensity / 255.0f;
-
-  if(mode == 2) { //Gravimeter
-    segmentSampleAvg *= 0.25; // divide by 4, to compensate for later "sensitivity" upscaling
-    mySampleAvg = mapf(segmentSampleAvg*2.0, 0, 64, 0, (seg_len-1)); // map to pixels availeable in current segment
-    tempsamp = constrain(mySampleAvg,0,seg_len-1);       // Keep the sample from overflowing.
-  }
-  else { // Gravcenter or Gravcentric or Gravfreq
-    segmentSampleAvg *= 0.125f; // divide by 8, to compensate for later "sensitivity" upscaling
-    mySampleAvg = mapf(segmentSampleAvg*2.0, 0.0f, 32.0f, 0.0f, (float)seg_len/2.0f); // map to pixels availeable in current segment
-    tempsamp = constrain(mySampleAvg, 0, seg_len/2);     // Keep the sample from overflowing.
-  }
-
-  uint8_t gravity = 8 - seg.speed/32;
-  int offset = 1;
-  if(mode == 2) offset = 0;  // Gravimeter
-  if (tempsamp >= gravcen->topLED + offset) gravcen->topLED = tempsamp-offset;
-  else if (gravcen->gravityCounter % gravity == 0) gravcen->topLED--;
-
-  if(mode == 1) {  //Gravcentric
-    for (int i=0; i<tempsamp; i++) {
-      uint8_t index = segmentSampleAvg*24+seg.now/200;
-      seg.set_pixel_color(i+seg_len/2, seg.color_from_palette(index, false, seg.palette_solid_wrap(), 0));
-      seg.set_pixel_color(seg_len/2-1-i, seg.color_from_palette(index, false, seg.palette_solid_wrap(), 0));
-    }
-    if (gravcen->topLED >= 0) {
-      seg.set_pixel_color(gravcen->topLED+seg_len/2, CRGB::Gray);
-      seg.set_pixel_color(seg_len/2-1-gravcen->topLED, CRGB::Gray);
-    }
-  }
-  else if(mode == 2) { //Gravimeter
-    for (int i=0; i<tempsamp; i++) {
-      uint8_t index = perlin8(i*segmentSampleAvg+seg.now, 5000+i*segmentSampleAvg);
-      seg.set_pixel_color(i, color_blend(seg.color(1), seg.color_from_palette(index, false, seg.palette_solid_wrap(), 0), uint8_t(segmentSampleAvg*8)));
-    }
-    if (gravcen->topLED > 0) {
-      seg.set_pixel_color(gravcen->topLED, seg.color_from_palette(seg.now, false, seg.palette_solid_wrap(), 0));
-    }
-  }
-  else if(mode == 3) { //Gravfreq
-    for (int i=0; i<tempsamp; i++) {
-      float   FFT_MajorPeak = audio.fft_major_peak; // used in mode 3: Gravfreq
-      if (FFT_MajorPeak < 1) FFT_MajorPeak = 1;
-      uint8_t index = (log10f(FFT_MajorPeak) - (MAX_FREQ_LOG10 - 1.78f)) * 255;
-      seg.set_pixel_color(i+seg_len/2, seg.color_from_palette(index, false, seg.palette_solid_wrap(), 0));
-      seg.set_pixel_color(seg_len/2-i-1, seg.color_from_palette(index, false, seg.palette_solid_wrap(), 0));
-    }
-    if (gravcen->topLED >= 0) {
-      seg.set_pixel_color(gravcen->topLED+seg_len/2, CRGB::Gray);
-      seg.set_pixel_color(seg_len/2-1-gravcen->topLED, CRGB::Gray);
-    }
-  }
-  else { //Gravcenter
-    for (int i=0; i<tempsamp; i++) {
-      uint8_t index = perlin8(i*segmentSampleAvg+seg.now, 5000+i*segmentSampleAvg);
-      seg.set_pixel_color(i+seg_len/2, color_blend(seg.color(1), seg.color_from_palette(index, false, seg.palette_solid_wrap(), 0), uint8_t(segmentSampleAvg*8)));
-      seg.set_pixel_color(seg_len/2-i-1, color_blend(seg.color(1), seg.color_from_palette(index, false, seg.palette_solid_wrap(), 0), uint8_t(segmentSampleAvg*8)));
-    }
-    if (gravcen->topLED >= 0) {
-      seg.set_pixel_color(gravcen->topLED+seg_len/2, seg.color_from_palette(seg.now, false, seg.palette_solid_wrap(), 0));
-      seg.set_pixel_color(seg_len/2-1-gravcen->topLED, seg.color_from_palette(seg.now, false, seg.palette_solid_wrap(), 0));
-    }
-  }
-  gravcen->gravityCounter = (gravcen->gravityCounter + 1) % gravity;
-}
-
 ///////////////////////
 //    ** Gravfreq    //
 ///////////////////////
@@ -542,7 +444,6 @@ void mode_2DFunkyPlank(Segment &seg) {      // Written by ??? Adapted by Will Ta
 
 // WLED's FX.h macro, which reads SEGMENT.speed and SEGLEN. Those are seg.speed and
 // the local seg_len here, so it stays a macro and the body stays verbatim.
-#define SPEED_FORMULA_L  (5U + (50U*(255U - seg.speed))/seg_len)
 
 void mode_blurz(Segment &seg) {            // Blurz. By Andrew Tuline.
   const unsigned seg_len = seg.length();
@@ -561,7 +462,7 @@ void mode_blurz(Segment &seg) {            // Blurz. By Andrew Tuline.
   if ((fadeoutDelay <= 1 ) || ((seg.call % fadeoutDelay) == 0)) seg.fade_out(seg.speed);
 
   seg.step += FRAMETIME;
-  if (seg.step > SPEED_FORMULA_L) {
+  if (seg.step > speed_formula_l(seg, seg_len)) {
     unsigned segLoc = hw_random16(seg_len);
     seg.set_pixel_color(segLoc, color_blend(seg.color(1), seg.color_from_palette(2*fftResult[seg.aux0%16]*240/std::max(1, (int)seg_len-1), false, seg.palette_solid_wrap(), 0), uint8_t(2*fftResult[seg.aux0%16])));
     ++(seg.aux0) %= 16; // make sure it doesn't cross 16
@@ -571,7 +472,6 @@ void mode_blurz(Segment &seg) {            // Blurz. By Andrew Tuline.
   }
 }
 
-#undef SPEED_FORMULA_L
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_ROCKTAVES

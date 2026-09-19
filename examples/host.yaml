@@ -1,0 +1,21 @@
+# Builds the engine on ESPHome's host platform. This is a portability check: it
+# catches anything that has accidentally picked up an ESP32 or Arduino dependency.
+# The host platform has no addressable LED driver, so no front end is wired up here.
+
+esphome:
+  name: wled-fx-host
+
+host:
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+wled_fx:

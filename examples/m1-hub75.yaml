@@ -1,0 +1,89 @@
+# Apollo Automation M-1 (ESP32-S3, 64x64 HUB75 panel) running the display front end.
+#
+# The engine owns the frame clock, so the display is configured with
+# `update_interval: never` and `auto_clear_enabled: false`. wled_fx calls the
+# display itself once per frame, which is also what performs the hub75 buffer flip.
+
+esphome:
+  name: wled-fx-m1
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+display:
+  - platform: hub75
+    id: matrix
+    board: apollo-automation-m1-rev6
+    panel_width: 64
+    panel_height: 64
+    update_interval: never
+    auto_clear_enabled: false
+    double_buffer: true
+
+wled_fx:
+  id: fx
+  display_id: matrix
+  update_interval: 33ms
+  effect: Fire 2012
+  text: "WLED FX"
+
+select:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: effect
+    name: Effect
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: palette
+    name: Palette
+
+number:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: speed
+    name: Speed
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: intensity
+    name: Intensity
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: custom1
+    name: Custom 1
+
+switch:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: check1
+    name: Check 1
+
+button:
+  - platform: template
+    name: Next effect
+    on_press:
+      - wled_fx.next_effect: fx

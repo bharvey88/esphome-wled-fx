@@ -1,0 +1,59 @@
+# Plain addressable strip on an ESP32, using the light effect front end.
+#
+# Swap the framework block for `type: arduino` to build the same config on the
+# Arduino framework; the engine has no Arduino or FastLED dependency either way.
+
+esphome:
+  name: wled-fx-strip
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+# A bare wled_fx block is what puts the light effect into the effect registry.
+wled_fx:
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: strip
+    name: Strip
+    pin: GPIO16
+    num_leds: 60
+    rgb_order: GRB
+    chipset: WS2812
+    effects:
+      - wled_fx:
+          id: strip_fx
+          name: WLED FX
+          effect: Pride 2015
+          update_interval: 33ms
+      - wled_fx:
+          name: WLED Fire
+          effect: Fire 2012
+          speed: 90
+
+select:
+  - platform: wled_fx
+    wled_fx_id: strip_fx
+    type: effect
+    name: Strip effect

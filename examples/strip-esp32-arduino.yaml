@@ -1,0 +1,44 @@
+# Same strip as strip-esp32.yaml, built on the Arduino framework. The engine has no
+# Arduino or FastLED dependency, so both framework legs have to stay green.
+
+esphome:
+  name: wled-fx-strip-ard
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+wled_fx:
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: strip
+    name: Strip
+    pin: GPIO16
+    num_leds: 60
+    rgb_order: GRB
+    chipset: WS2812
+    effects:
+      - wled_fx:
+          name: WLED FX
+          effect: Plasma

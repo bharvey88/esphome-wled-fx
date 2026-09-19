@@ -35,6 +35,9 @@ static const UBaseType_t FFT_TASK_PRIORITY = 2;
  * this the flag would be visible for two or three frames. */
 static const uint32_t PEAK_DELAY_MS = 50;
 
+// About three seconds of audio, by which point the smoothed cost has settled.
+static const uint32_t COST_REPORT_AFTER_BLOCKS = 128;
+
 namespace {
 
 /* Copies the analysis results only. max_vol and bin_num belong to whichever
@@ -143,6 +146,16 @@ void WledFxAudioSource::loop() {
 
   if (this->have_data_ && (millis() - peak_time > PEAK_DELAY_MS))
     this->front_.sample_peak = 0;
+
+  /* dump_config() runs before a single block has been analysed, so the cost is
+   * reported here instead, once, after a few seconds of real audio. */
+  if (!this->cost_logged_ && this->block_count_ >= COST_REPORT_AFTER_BLOCKS) {
+    this->cost_logged_ = true;
+    const float block_us = 1e6f * AudioProcessor::SAMPLES_FFT / static_cast<float>(this->sample_rate_);
+    ESP_LOGD(TAG, "Analysis costs %" PRIu32 " us per %u sample block, %.1f%% of one core",
+             this->fft_duration_us_, AudioProcessor::SAMPLES_FFT,
+             100.0f * static_cast<float>(this->fft_duration_us_) / block_us);
+  }
 }
 
 bool WledFxAudioSource::collect_block_() {
@@ -205,13 +218,11 @@ void WledFxAudioSource::dump_config() {
                 "  Gain: %u, squelch: %u, input level: %u\n"
                 "  AGC: %s, scaling: %s\n"
                 "  Limiter: %s (attack %u ms, decay %u ms)\n"
-                "  Microphone filter: %s, band pass mapping: %s\n"
-                "  FFT time: %" PRIu32 " us over %" PRIu32 " blocks, %" PRIu32 " overflows",
+                "  Microphone filter: %s, band pass mapping: %s",
                 this->sample_rate_, AudioProcessor::SAMPLES_FFT, this->processor_.bin_width(), fft_backend_name(),
                 this->config_.gain, this->config_.squelch, this->config_.input_level, AGC_NAMES[this->config_.agc],
                 SCALING_NAMES[this->config_.scaling], YESNO(this->config_.limiter), this->config_.attack_ms,
-                this->config_.decay_ms, YESNO(this->config_.mic_filter), YESNO(this->config_.bandpass),
-                this->fft_duration_us_, this->block_count_, this->overflow_count_);
+                this->config_.decay_ms, YESNO(this->config_.mic_filter), YESNO(this->config_.bandpass));
 }
 
 }  // namespace wled_fx

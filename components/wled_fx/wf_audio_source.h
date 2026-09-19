@@ -102,6 +102,7 @@ class WledFxAudioSource : public Component, public AudioSource {
   bool have_shared_{false};
   bool have_data_{false};
   bool running_{false};
+  bool cost_logged_{false};
 };
 
 }  // namespace wled_fx

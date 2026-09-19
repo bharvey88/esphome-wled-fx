@@ -283,6 +283,14 @@ esphome compile examples/strip-esp32.yaml
   configuration.
 * **`wf_map` is not Arduino's `map`.** It returns `long` and it returns `out_min`
   when the input range is empty, instead of dividing by zero.
+* **Arduino turns half the helper names into macros.** `constrain`, `radians`,
+  `degrees`, `min`, `max`, `abs` and the `pgm_read_*` family are all `#define`s
+  under the Arduino framework, and a macro eats a function of the same name before
+  the compiler sees it. The definitions in `wf_math.h` are guarded with `#ifndef`
+  for exactly that reason, and Arduino's versions are arithmetically identical, so
+  a call site behaves the same either way. If you ever add a helper of your own,
+  check the name is not an Arduino macro, and compile
+  `examples/strip-esp32-arduino.yaml` as well: the esp-idf build will not catch it.
 * **Effect functions must be in the anonymous namespace.** Two files porting the
   same shared base function (`chase`, `ripple_base`, `twinklefox_base` …) would
   otherwise collide at link time. Duplicating a shared base into two files is fine
@@ -379,6 +387,11 @@ esphome compile examples/strip-esp32.yaml
 strings examples/.esphome/build/wled-fx-strip/build/firmware.factory.bin | grep "Your Effect"
 ```
 
+There is no `firmware.bin`; the image to grep is `firmware.factory.bin` under the
+build directory named after the config. Compile `examples/strip-esp32-arduino.yaml`
+too, because the Arduino framework trips over things esp-idf does not (see the
+macro pitfall in section 6).
+
 Grep for the display name of every effect you added. A missing one means the group
 object or the guard is spelled wrong, not that the effect is broken.
 
@@ -400,7 +413,7 @@ when you are done.
 - [ ] `wled_fx_sim --group <yours>` green at all three geometries
 - [ ] 1D effects also run clean under `--map 4` at 64x64
 - [ ] Contact sheet PNGs actually look like the effect
-- [ ] `esphome compile examples/strip-esp32.yaml` green, and `strings` finds every effect name in the image
+- [ ] `esphome compile examples/strip-esp32.yaml` and `examples/strip-esp32-arduino.yaml` green, and `strings` finds every effect name in the image
 - [ ] Every helper you had to write yourself is listed in your final report
 
 ---

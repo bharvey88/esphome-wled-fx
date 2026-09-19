@@ -100,11 +100,17 @@ Conventions the build depends on, so get them exactly right:
 | File name | `wf_effects_<group>.cpp` in `components/wled_fx/` |
 | Group guard | one `#define WLED_FX_GROUP_<ID>` listing every `WLED_FX_FX_*` the file provides |
 | Group object | `EFFECT_GROUP_<ID>`, same `<ID>`, with a preceding `extern` declaration |
-| Per-effect macro | `WLED_FX_FX_` + the display name uppercased with every run of non-alphanumeric characters turned into one `_` |
+| Per-effect macro | `WLED_FX_FX_` + the display name uppercased, with `+` `&` `/` `#` `%` `*` expanded to `_PLUS` `_AND` `_SLASH` `_HASH` `_PCT` `_STAR` and every remaining run of non-alphanumeric characters turned into one `_` |
 
 The effect macro is what a user's `effects:` allow-list turns into, so "Fire 2012"
 becomes `WLED_FX_FX_FIRE_2012` and "Colorwaves Pride" becomes
-`WLED_FX_FX_COLORWAVES_PRIDE`.
+`WLED_FX_FX_COLORWAVES_PRIDE`. The punctuation expansion exists because the plain
+rule made "Sparkle" and "Sparkle+" the same macro, so naming one in YAML pulled in
+both. `Sparkle+` is `WLED_FX_FX_SPARKLE_PLUS`. The rule lives in three places that
+have to agree, `effect_macro()` in `components/wled_fx/__init__.py` and
+`effect_macro()` and `sanitize()` in `tools/sim/main.cpp`, and the simulator fails
+on startup if any two registered effects derive the same macro or the same output
+file name, so you find out immediately.
 
 Both ESPHome codegen and the simulator's CMake read those two lines to build the
 table of groups that got compiled in. They do it by scanning the source, which is
@@ -232,15 +238,28 @@ Other options: `--frames N` (default 300), `--palette N` to override the palette
 `--no-images` for a text-only run, `--list` to dump the parsed defaults of every
 effect so you can check your metadata string was read the way you expected.
 
-Every effect is run at 16x16, 64x64 and 60x1. The run fails if the canvas guard
-bands were overwritten, if every frame came out black, or if the PNG could not be
-written. **Look at the PNGs.** "Not black" is a very low bar and it will not catch
-an effect that is subtly wrong.
+Every effect is run at 16x16, 64x64, 60x1, 64x32, 32x64 and 31x17. The two
+transposed matrices catch an effect that mixes up its axes, and 31x17 is odd in
+both dimensions so nothing can quietly rely on a power of two. The run fails if
+the canvas guard bands were overwritten, if every frame came out black, or if the
+PNG could not be written. **Look at the PNGs.** "Not black" is a very low bar and
+it will not catch an effect that is subtly wrong.
+
+An effect paced against wall-clock time can need more than the seven seconds that
+300 frames at 23 ms covers. Rather than run it for hundreds of thousands of
+frames, add it to the `PACING` table at the top of `tools/sim/main.cpp` with a
+longer frame period. Sunrise is the worked example: its default speed is a 60
+minute sunrise, so it gets 12 s per frame. Nothing in the effect changes, because
+an effect only ever reads `seg.now`.
 
 `--map N` overrides the 1D-to-2D mapping mode (`m12`), 0 to 4, which is the only way
 to see an effect through a mapping its metadata does not select. Use it on any 1D
 effect you port, at 64x64, to check nothing writes out of bounds in a mapping the
-default never exercises.
+default never exercises. It is ignored for effects that are 2D only, because `m12`
+is the *1D to 2D* mapping and WLED only offers it on 1D effects. Forcing it onto a
+2D-native effect breaks an assumption upstream shares: Game Of Life sizes its
+allocation from `seg.length()`, which under `M12_P_BAR` is the matrix height and
+not width times height.
 
 Add `-DWLED_FX_SANITIZE=ON` at configure time for an ASan and UBSan build. That
 works with GCC or Clang on Linux; MinGW on Windows does not ship those runtimes, so
@@ -370,7 +389,16 @@ ESPHome codegen and the simulator's CMake discover groups by scanning the effect
 sources for the two lines in section 2, so there is no shared list to update and
 therefore nothing for two agents to collide on.
 
-**A helper the engine does not have goes in your own file**, as a `static` function
+**Check `wf_fx_shared.h` before you write a helper.** The helpers the first wave
+of batches turned out to share were absorbed into the engine after that wave
+merged, and they are declared there: `get_random_wheel_index()`,
+`tristate_square8()`, `sin_gap()`, `speed_formula_l()`, `blink()`,
+`mode_gravcenter_base()`, `mode_colorwaves_pride_base()`, `fx_prng()`, `IBN` and
+the `Ripple`, `Spark`, `Flasher` and `Gravity` structs. `ULTRAWHITE` and
+`DARKSLATEGRAY` are in `wf_color.h`, `M_PI` and `M_TWOPI` in `wf_math.h`, and
+`FRAMETIME_FIXED`, `NUM_COLORS` and `FAIR_DATA_PER_SEG` in `wf_segment.h`.
+
+**A helper the engine still does not have goes in your own file**, as a function
 inside the anonymous namespace, even when another batch needs the same one. Two
 files carrying their own copy of `chase()` is expected and correct; the anonymous
 namespace is what stops them colliding at link time. Never edit an engine file to

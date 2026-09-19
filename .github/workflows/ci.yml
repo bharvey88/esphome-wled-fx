@@ -43,6 +43,9 @@ jobs:
       - name: Audio pipeline test
         run: tools/sim/build/wled_fx_audio_test
 
+      - name: README effect list is generated from the registry, not hand typed
+        run: python3 tools/gen_readme_effects.py --check
+
       - name: Upload contact sheets
         uses: actions/upload-artifact@v4
         if: always()

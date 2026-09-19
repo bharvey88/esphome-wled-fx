@@ -46,3 +46,38 @@ Component name `wled_fx`, namespace `esphome::wled_fx`, at `components/wled_fx/`
 
 ## Status log
 (orchestrator appends here)
+
+### 2026-09-19, integration of the first parallel wave
+
+Merged ten branches into `main` with ordinary merge commits: the six non-particle
+effect batches (`fx_1d_b`, `fx_1d_c`, `fx_1d_d`, `fx_1d_e`, `fx_2d`, `fx_1d2d`),
+the two non-particle audio batches (`fx_audio_vol`, `fx_audio_fft`), the particle
+system engine (`particle_engine`) and the audio source (`audio_source`). Every
+worktree was clean at merge time. The only conflict in the whole set was the
+deviations list in `PORTING.md`, where the particle and audio branches both
+numbered their entries 14 to 16; both sets are kept and the audio ones are now 17
+to 19. All ten worktrees and branches are removed.
+
+186 effects registered, which is the expected 10 + 30 + 24 + 30 + 24 + 29 + 7 +
+16 + 13 + 3 particle smoke tests.
+
+Helpers the porters had to duplicate, because they were forbidden from editing
+engine files, are now in the engine once each, in the new
+`components/wled_fx/wf_fx_shared.h` and `.cpp` plus `wf_color.h`, `wf_math.h` and
+`wf_segment.h`. `SPEED_FORMULA_L` became an inline function. The batches
+disagreed about `FAIR_DATA_PER_SEG`; it is 2048 everywhere now, which is what
+upstream's `MAX_SEGMENT_DATA / MAX_NUM_SEGMENTS` computes on a plain ESP32.
+
+Two engine-side bugs fixed. Derived identifiers are now unique, so "Sparkle" and
+"Sparkle+" no longer share a macro and a PNG name, and the simulator fails if any
+two registered effects ever collide again. The simulator also gained three
+non-square geometries, a per-effect pacing table (Sunrise only), and a `--map`
+that applies only to effects that can run in 1D, which was corrupting the heap on
+Game Of Life.
+
+Verified on merged `main`: 1116 simulator runs with zero failures at every
+geometry and in every one of the five mapping modes, guards intact; 83 audio
+checks with zero failures; `esphome compile` green for all four example configs.
+
+Still to do in P3 to P5: 10 of the 12 particle 2D effects, 10 of the 11 particle
+1D effects, the 8 audio-particle effects and the 9 WLED-MM exclusives.

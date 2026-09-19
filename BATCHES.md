@@ -10,21 +10,41 @@ translation unit, and edits nothing else.
 
 ## Batches at a glance
 
-| Batch | Branch and worktree | Translation unit | Group id | Effects | Effect lines | Helper lines |
-|---|---|---|---|---:|---:|---:|
-| `fx_1d_b` | `fx_1d_b` | `components/wled_fx/wf_effects_1d_b.cpp` | `1d_b` | 30 | 637 | 210 |
-| `fx_1d_c` | `fx_1d_c` | `components/wled_fx/wf_effects_1d_c.cpp` | `1d_c` | 24 | 696 | 150 |
-| `fx_1d_d` | `fx_1d_d` | `components/wled_fx/wf_effects_1d_d.cpp` | `1d_d` | 30 | 767 | 72 |
-| `fx_1d_e` | `fx_1d_e` | `components/wled_fx/wf_effects_1d_e.cpp` | `1d_e` | 24 | 614 | 231 |
-| `fx_2d` | `fx_2d` | `components/wled_fx/wf_effects_2d_b.cpp` | `2d_b` | 29 | 1178 | 51 |
-| `fx_1d2d` | `fx_1d2d` | `components/wled_fx/wf_effects_1d2d.cpp` | `1d2d` | 7 | 468 | 50 |
-| `fx_particle_2d` | `fx_particle_2d` | `components/wled_fx/wf_effects_particle_2d.cpp` | `particle_2d` | 12 | 999 | 18 |
-| `fx_particle_1d` | `fx_particle_1d` | `components/wled_fx/wf_effects_particle_1d.cpp` | `particle_1d` | 11 | 921 | 0 |
-| `fx_audio_vol` | `fx_audio_vol` | `components/wled_fx/wf_effects_audio_vol.cpp` | `audio_vol` | 16 | 312 | 115 |
-| `fx_audio_fft` | `fx_audio_fft` | `components/wled_fx/wf_effects_audio_fft.cpp` | `audio_fft` | 13 | 433 | 82 |
-| `fx_audio_particle` | `fx_audio_particle` | `components/wled_fx/wf_effects_audio_particle.cpp` | `audio_particle` | 8 | 663 | 0 |
-| `fx_mm` | `fx_mm` | `components/wled_fx/wf_effects_mm.cpp` | `mm` | 9 | 408 | 374 |
-| **Total** | | | | **213** | | **9449** |
+| Batch | Status | Branch and worktree | Translation unit | Group id | Effects | Effect lines | Helper lines |
+|---|---|---|---|---|---:|---:|---:|
+| `fx_1d_b` | merged | `fx_1d_b` | `components/wled_fx/wf_effects_1d_b.cpp` | `1d_b` | 30 | 637 | 210 |
+| `fx_1d_c` | merged | `fx_1d_c` | `components/wled_fx/wf_effects_1d_c.cpp` | `1d_c` | 24 | 696 | 150 |
+| `fx_1d_d` | merged | `fx_1d_d` | `components/wled_fx/wf_effects_1d_d.cpp` | `1d_d` | 30 | 767 | 72 |
+| `fx_1d_e` | merged | `fx_1d_e` | `components/wled_fx/wf_effects_1d_e.cpp` | `1d_e` | 24 | 614 | 231 |
+| `fx_2d` | merged | `fx_2d` | `components/wled_fx/wf_effects_2d_b.cpp` | `2d_b` | 29 | 1178 | 51 |
+| `fx_1d2d` | merged | `fx_1d2d` | `components/wled_fx/wf_effects_1d2d.cpp` | `1d2d` | 7 | 468 | 50 |
+| `fx_particle_2d` | 2 of 12 done, unblocked | `fx_particle_2d` | `components/wled_fx/wf_effects_particle_2d.cpp` | `particle_2d` | 12 | 999 | 18 |
+| `fx_particle_1d` | 1 of 11 done, unblocked | `fx_particle_1d` | `components/wled_fx/wf_effects_particle_1d.cpp` | `particle_1d` | 11 | 921 | 0 |
+| `fx_audio_vol` | merged | `fx_audio_vol` | `components/wled_fx/wf_effects_audio_vol.cpp` | `audio_vol` | 16 | 312 | 115 |
+| `fx_audio_fft` | merged | `fx_audio_fft` | `components/wled_fx/wf_effects_audio_fft.cpp` | `audio_fft` | 13 | 433 | 82 |
+| `fx_audio_particle` | not started, unblocked | `fx_audio_particle` | `components/wled_fx/wf_effects_audio_particle.cpp` | `audio_particle` | 8 | 663 | 0 |
+| `fx_mm` | not started | `fx_mm` | `components/wled_fx/wf_effects_mm.cpp` | `mm` | 9 | 408 | 374 |
+| **Total** | **186 of 213 registered** | | | | **213** | | **9449** |
+
+Status as of 2026-09-19. The six effect batches plus the particle system engine
+and the audio source are merged to `main`. The particle engine landed with three
+effects as smoke tests, PS Fire and PS Fireworks in `particle_2d` and PS DripDrop
+in `particle_1d`, so those three are already registered and the two particle
+batches are no longer blocked. 186 effects are registered: 10 from phase 1, 154
+from the six merged batches, 3 particle smoke tests, and the rest to come.
+
+**Read this before starting a batch.** The rule that a translation unit never
+shares a helper has been relaxed for helpers that turned out to be shared. The
+ones the first wave duplicated now live in the engine, in
+`components/wled_fx/wf_fx_shared.h`: `get_random_wheel_index()`,
+`tristate_square8()`, `sin_gap()`, `speed_formula_l()` (the old
+`SPEED_FORMULA_L` macro), `blink()`, `mode_gravcenter_base()`,
+`mode_colorwaves_pride_base()`, `fx_prng()` and the `Ripple`, `Spark`, `Flasher`
+and `Gravity` structs, plus `IBN`. `ULTRAWHITE` and `DARKSLATEGRAY` are in
+`wf_color.h`, and `FRAMETIME_FIXED`, `NUM_COLORS` and `FAIR_DATA_PER_SEG` are in
+`wf_segment.h`. Check there before copying a helper into your own file, and
+still list anything new you had to write in your hand-off so the next
+integration can absorb it.
 
 Batch names carry an `fx_` prefix; the group id inside the source does not, because
 `1d_a` and `2d_a` were already taken by the ten effects ported in phase 1. That is

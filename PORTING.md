@@ -247,6 +247,10 @@ the second pass is the only thing that reaches the alternative mode most effects
 hide behind a checkbox, and its contact sheets get a `_checks` suffix. Naming any
 control collapses that to the single configuration you asked for, written with a
 `_cli` suffix so an experiment cannot overwrite the default run's sheets.
+`--single-pass` drops the checks pass and leaves the defaults alone; CI uses it
+for the five `--map` runs, because doubling those as well multiplied the
+sanitizer job's time by about five for very little extra reach. Run the mapping
+sweep without it before a release.
 
 Two tables at the top of `tools/sim/main.cpp` hold the per-effect exceptions, and
 both want a comment saying why:

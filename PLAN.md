@@ -139,7 +139,9 @@ toolchain in `PATH` links fine, so nothing had to be deferred to CI:
 
 * 2676 simulator runs at all six geometries across both control passes, zero
   failures.
-* 13380 runs across `--map` 0 to 4, zero failures.
+* 13380 runs across `--map` 0 to 4, both control passes, zero failures. CI runs
+  that sweep with `--single-pass`, 6690 runs, because doubling it as well took
+  the sanitizer job past an hour; run it in full before a release.
 * 83 audio checks, zero failures.
 * All 223 metadata strings present in `firmware.factory.bin`.
 * `esphome compile` green for all four example configs.

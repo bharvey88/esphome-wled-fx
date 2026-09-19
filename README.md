@@ -554,3 +554,39 @@ come from [cpt-city](http://seaviewsensing.com/pub/cpt-city).
 
 The Python side of the component is independent work and contains no WLED-derived
 data, which keeps it compatible with ESPHome's MIT-licensed Python tree.
+
+### WLED-MM derived effects and their licences
+
+Nine effects come from [WLED-MM](https://github.com/MoonModules/WLED-MM), the
+MoonModules fork, rather than from WLED itself: Meteor Smooth, Party jerk,
+Popcorn audio, Multi Comet audio, Fw Starburst audio, Fireworks audio, GEQ 3D,
+Paintbrush and Snow Fall. They all live in
+`components/wled_fx/wf_effects_mm.cpp`.
+
+WLED-MM as a whole is EUPL-1.2-or-later, the same licence as upstream WLED, so
+the same Article 5 compatibility route to GPL-3.0-or-later applies. Two of the
+nine carry their own notice on top of that, and both are reproduced verbatim in
+the source above the effect they belong to:
+
+* **Paintbrush** carries an explicit GPLv3 grant block, `@license GNU GENERAL
+  PUBLIC LICENSE Version 3, 29 June 2007`, and the standard "free software ... 
+  either version 3 of the License, or (at your option) any later version"
+  paragraphs. Author `@TroyHacks`, copyright "(c) 2024 Github MoonModules Commit
+  Authors".
+* **GEQ 3D** is labelled two different ways four lines apart upstream. Its file
+  block says `@license Licensed under the EUPL-1.2 or later`; the first comment
+  inside `mode_GEQLASER` says `@license GNU GENERAL PUBLIC LICENSE Version 3, 29
+  June 2007`. Both statements are quoted in full in the source rather than one
+  being chosen. Author `@TroyHacks`, copyright "(c) 2024 Github MoonModules
+  Commit Authors". The contradiction is unresolved upstream and only the authors
+  can settle it; it does not block this port, because EUPL-1.2-or-later and
+  GPLv3 are each compatible with GPL-3.0-or-later.
+
+Snow Fall is credited upstream to Brandon Butler, Multi Comet audio to
+`@softhack007`, Party jerk to `@tonyxforce` and the merged Meteor core to
+`@dedehai`; all four are plain EUPL-1.2-or-later.
+
+The 51 ANIMartRIX effects WLED-MM also ships are **not** ported and must not be:
+they are CC BY-NC 3.0, which is not compatible with GPL-3.0-or-later. The
+ARTI-FX scripting interpreter and the three IMU games are out of scope for a
+different reason, that they are not effects.

@@ -7,7 +7,7 @@
 //
 // Usage:
 //   wled_fx_sim [--effect NAME] [--group NAME] [--frames N] [--no-images]
-//               [--out DIR] [--list] [--palette N] [--map N]
+//               [--out DIR] [--list] [--palette N] [--map N] [--size WxH]
 
 #include <algorithm>
 #include <cstdio>
@@ -93,6 +93,10 @@ int main(int argc, char **argv) {
   int map1d2d = -1;  // -1 keeps the effect's own m12 default
   bool images = true;
   bool list_only = false;
+  // --size WxH replaces the three default geometries with one of your own, for
+  // checking a geometry the defaults do not cover (128x64, 300x1, ...).
+  std::string size_label;
+  std::vector<Geometry> geometries(GEOMETRIES, GEOMETRIES + sizeof(GEOMETRIES) / sizeof(GEOMETRIES[0]));
 
   for (int i = 1; i < argc; i++) {
     const std::string arg = argv[i];
@@ -108,7 +112,15 @@ int main(int argc, char **argv) {
       palette = atoi(argv[++i]);
     else if (arg == "--map" && i + 1 < argc)
       map1d2d = atoi(argv[++i]);
-    else if (arg == "--no-images")
+    else if (arg == "--size" && i + 1 < argc) {
+      size_label = argv[++i];
+      int w = 0, h = 0;
+      if (sscanf(size_label.c_str(), "%dx%d", &w, &h) != 2 || w < 1 || h < 1) {
+        fprintf(stderr, "--size wants WxH, for example 128x64\n");
+        return 2;
+      }
+      geometries.assign(1, Geometry{size_label.c_str(), static_cast<uint16_t>(w), static_cast<uint16_t>(h)});
+    } else if (arg == "--no-images")
       images = false;
     else if (arg == "--list")
       list_only = true;
@@ -157,7 +169,7 @@ int main(int argc, char **argv) {
     char name[64];
     effect_name(*entry.second, name, sizeof(name));
 
-    for (const Geometry &geo : GEOMETRIES) {
+    for (const Geometry &geo : geometries) {
       Result res;
       res.effect = name;
       res.geometry = geo.label;

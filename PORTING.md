@@ -416,6 +416,113 @@ when you are done.
 - [ ] `esphome compile examples/strip-esp32.yaml` and `examples/strip-esp32-arduino.yaml` green, and `strings` finds every effect name in the image
 - [ ] Every helper you had to write yourself is listed in your final report
 
+## 10. Particle effects
+
+The 31 `PS *` effects run on a port of WLED 16.0.1's `FXparticleSystem`, which
+lives in `components/wled_fx/wf_particle.h` and `wf_particle.cpp`. Upstream's
+struct, field and method names are kept exactly (`ParticleSystem2D`, `sprayEmit`,
+`setWallHardness`, `PartSys->particles[i].ttl`, ...), so a particle effect body is
+copied the same way any other effect body is. Only the four points below differ
+from `FX.cpp`.
+
+**Include the particle header.** Particle translation units are the one exception
+to "include `wf_effects.h` and nothing else":
+
+```cpp
+#include "wf_effects.h"
+#include "wf_particle.h"
+```
+
+**The init functions take the segment first.** Upstream reaches the segment
+through the global `SEGMENT`; here it is passed in once and the system keeps it.
+That is the only change to the init line, and `updateSystem()` and everything else
+stay exactly as upstream writes them:
+
+| WLED 16.0.1 | wled_fx |
+|---|---|
+| `initParticleSystem2D(PartSys, sources, extra, adv, sizectl)` | `initParticleSystem2D(seg, PartSys, sources, extra, adv, sizectl)` |
+| `initParticleSystem1D(PartSys, sources, fraction, extra, adv)` | `initParticleSystem1D(seg, PartSys, sources, fraction, extra, adv)` |
+| `SEGENV.data` (recovering the pointer) | `seg.data` |
+| `PS_P_RADIUS`, `PS_P_RADIUS_1D`, `PS_P_MAXSPEED`, … | unchanged, `constexpr` rather than `#define` |
+
+**The init pattern**, unchanged from upstream apart from the above. Every particle
+effect starts like this, and the shape matters: the system is allocated on the
+first call only and recovered from `seg.data` on every later call.
+
+```cpp
+void mode_particlexyz(Segment &seg) {
+  ParticleSystem2D *PartSys = nullptr;
+
+  if (seg.call == 0) {  // initialization
+    if (!initParticleSystem2D(seg, PartSys, NUMBEROFSOURCES))
+      FX_FALLBACK_STATIC;  // allocation failed or not 2D
+    // one-time source setup goes here
+  } else {
+    PartSys = reinterpret_cast<ParticleSystem2D *>(seg.data);
+  }
+
+  if (PartSys == nullptr)
+    FX_FALLBACK_STATIC;  // something went wrong, no data!
+
+  PartSys->updateSystem();  // always first: refreshes dimensions and data pointers
+  // per-frame settings calls, then emitting, then
+  PartSys->update();  // moves, collides and renders
+}
+```
+
+`#define NUMBEROFSOURCES n` becomes a `constexpr uint32_t NUMBEROFSOURCES = n;`
+**inside the effect function**, not at file scope: several effects in the same
+translation unit use the same name with different values, exactly as upstream does
+with `#undef`.
+
+**Settings are per-frame, not per-init.** Upstream calls `setWrapX`,
+`setGravity`, `setMotionBlur`, `setUsedParticles` and friends on every frame after
+`updateSystem()`, because they read the sliders. Keep them where upstream has
+them. The only calls that belong inside the `seg.call == 0` branch are the ones
+upstream puts there.
+
+### Pitfalls
+
+* **`updateSystem()` must be the first thing you call** on the system each frame.
+  It re-points every internal pointer at `seg.data` and re-reads the canvas size.
+  Touching `PartSys->particles` before it is undefined behaviour after a resize.
+* **The PS object lives in `seg.data`.** It is placement-new'd into the segment
+  data blob, so it is destroyed the moment the effect changes (`Segment::reset()`
+  frees the blob). Never cache the pointer across frames in a file static.
+* **`initParticleSystem2D()` fails on a 1D canvas**, on purpose, and
+  `initParticleSystem1D()` fails on a single pixel. Both deallocate the segment
+  data before returning false, which is why the `PartSys == nullptr` check after
+  the if/else is not redundant. Both paths must end in `FX_FALLBACK_STATIC`.
+* **Extra scratch goes through `additionalbytes`.** Ask for it in the init call and
+  read it back from `PartSys->PSdataEnd`, as PS Fire does for its frame timer. Do
+  not call `seg.allocate_data()` yourself in a particle effect: that is what the
+  particle system's own allocation already did, and a second call frees it.
+* **Rendering writes the canvas directly.** The 2D system and the unmapped 1D
+  system use `seg.canvas()->pixels()` as their framebuffer and blend additively
+  into it, so a particle effect must not also call `seg.fill()` or
+  `seg.fade_to_black_by()`: use `setMotionBlur()` and `setSmearBlur()`, which is
+  what upstream does.
+* **The particle system's y axis points up.** `(0,0)` is bottom left in particle
+  coordinates and top left in the canvas; the render functions flip it. Effect code
+  works in particle coordinates and never sees the flip.
+* **Coordinates are subpixels, not pixels.** `PS_P_RADIUS` (64) subpixels per pixel
+  in 2D and `PS_P_RADIUS_1D` (32) in 1D. `PartSys->maxX` is the subpixel bound,
+  `PartSys->maxXpixel` the pixel bound. Mixing them up is the easiest way to get a
+  particle stuck against a wall.
+* **Do not size anything from `MAXPARTICLES_2D`.** Read `PartSys->usedParticles`,
+  which is what `setUsedParticles()` and the allocation retry actually settled on.
+* **Gamma is off**, so upstream's `gammaCorrectCol` branches inside the renderer are
+  dead here, exactly as `gamma8()` is an identity everywhere else in the engine.
+* **1D on a matrix.** With a 1D-to-2D mapping (`m12` other than 0) the 1D system
+  renders into a local buffer carved out of `seg.data` and transfers it through
+  `seg.set_pixel_color()`, so the mapping is applied for free. Check your 1D
+  particle effect at 64x64 under `--map 1` through `--map 4`.
+* **RAM.** A 2D system is about 24 KB on any matrix of 2048 pixels or more, because
+  the particle count saturates at `MAXPARTICLES_2D`. It comes out of the same
+  `platform_alloc()` (PSRAM preferred) as everything else, and `initParticleSystem2D()`
+  halves the particle count and retries when the allocation fails, down to 5
+  particles, before giving up and leaving you on the static fallback.
+
 ---
 
 ## Deviations from PLAN.md
@@ -506,3 +613,39 @@ specified.
     `degrees`, `sin_t`, `cos_t`, `tan_t` and the `pgm_read_*` family, all as
     ordinary functions inside `esphome::wled_fx`. They exist so effect bodies stay
     verbatim; they do not pull in Arduino.
+
+14. **The particle system is `wf_particle.h` / `wf_particle.cpp`, not a `particle/`
+    subfolder.** PLAN.md asks for `particle/`. Both source scanners are flat: the
+    simulator's CMake globs `components/wled_fx/wf_*.cpp` and ESPHome's codegen
+    globs `wf_effects_*.cpp` in the same directory. A subfolder would have meant
+    editing both, for no gain, so the particle system follows the `wf_` convention
+    every other engine file uses.
+
+15. **The particle system reaches the segment through a stored pointer, and its
+    collision bin array is heap allocated.** Two consequences of not having WLED's
+    global `SEGMENT`, and of the no-VLA rule:
+    * `initParticleSystem2D()` and `initParticleSystem1D()` take `Segment &seg` as
+      their first argument; the system stores it and `updateSystem()` keeps its
+      upstream signature. That is the only change to a particle effect body.
+    * `handleCollisions()` puts its `binIndices` array on the stack as a variable
+      length array sized from `usedParticles`, up to 2 KB. Here the array is part of
+      the particle system's own allocation (`calculateBinArrayEntries2D()`, half the
+      particle count in 2D and a quarter in 1D, rounded to an even count), so the
+      binning behaviour is identical and nothing is on the stack. It costs about
+      1 byte per allocated particle, 2 KB on a 2048 particle system.
+
+    Upstream's `Segment::maxMappingLength()` is also not on `Segment` here; it is
+    `particleMaxMappingLength(seg)` in `wf_particle.h`, so no engine file changed.
+
+16. **The particle system keeps one arithmetic path, not two.** Upstream carries a
+    `#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(ESP8266)` alternative in
+    `applyFriction()`, `collideParticles()` and the collision friction, replacing a
+    division by 255 with a shift by 8 plus a sign correction. It is a speed
+    optimisation whose rounding differs slightly from the division, so keeping both
+    would make the host simulator unrepresentative of a C3 build. This port keeps
+    only the division, which is the branch every ESP32 except the C3 already takes.
+    Two small loose ends from upstream are also tidied: `ParticleSystem1D::bounce()`
+    is declared upstream and never defined, so it is dropped here (the 1D wall
+    bounce is inlined in `particleMoveUpdate()`), and `ParticleSystem2D::setSaturation()`
+    is declared upstream and never defined, so it is implemented here rather than
+    left as a link error waiting for the first effect that calls it.

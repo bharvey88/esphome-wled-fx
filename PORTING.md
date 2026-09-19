@@ -331,12 +331,22 @@ AudioData &audio = seg.audio();
 `seg.audio()` returns a **non-const** reference, because a few effects write
 `max_vol` and `bin_num` back from their own sliders, exactly as upstream does.
 
-There is no microphone yet. Until the real source lands, `seg.audio()` returns a
-port of WLED's `simulateSound()`, driven by `seg.now` and picked by the metadata
-key `si`, so every audio effect animates and renders in the simulator today. The
-simulated frame is generated once per timestamp, so all the effects in a frame see
-one coherent set of numbers. Nothing in an effect body changes when the real source
-arrives.
+With no microphone configured, `seg.audio()` returns a port of WLED's
+`simulateSound()`, driven by `seg.now` and picked by the metadata key `si`, so
+every audio effect animates and renders in the simulator. The simulated frame is
+generated once per timestamp, so all the effects in a frame see one coherent set
+of numbers.
+
+A real microphone is configured with an `audio:` block on the `wled_fx`
+component, documented in the README. Nothing in an effect body changes either
+way: `seg.audio()` returns the live analysis when a source is attached and has
+data, and the simulation otherwise.
+
+Two fields are yours to write, not the source's. `audio.max_vol` and
+`audio.bin_num` are inputs to the beat detector that effects such as Waterfall,
+Ripple Peak and Puddlepeak set from their own sliders, exactly as WLED's
+`u_data[6]` and `u_data[7]` work. The real source deliberately never overwrites
+them, so whatever an effect wrote reaches the next analysis block.
 
 ## 8. Parallel batch workflow
 
@@ -649,3 +659,27 @@ specified.
     bounce is inlined in `particleMoveUpdate()`), and `ParticleSystem2D::setSaturation()`
     is declared upstream and never defined, so it is implemented here rather than
     left as a link error waiting for the first effect that calls it.
+
+17. **The audio pipeline runs entirely on one task.** WLED splits it: the FFT
+    task does the sampling, the transform and the GEQ mapping, while the main
+    loop runs `getSample()`, `agcAvg()` and `limitSampleDynamics()` hundreds of
+    times a second against whatever the task last published, with no
+    synchronisation at all. Here `AudioProcessor::process_block()` runs the whole
+    chain on the analysis task, and reproduces the loop cadence with upstream's
+    own hiccup-compensation loop: the volume filters and the AGC controller are
+    stepped in 2 ms increments to catch up with the block. Same numbers, without
+    the data race, and the result is a pure function of the samples and the clock
+    so the host test is reproducible. The hand-off to the render loop is a
+    field-wise copy under a spinlock, which is also what keeps `max_vol` and
+    `bin_num` effect-owned.
+
+18. **`autoResetPeak()` uses a fixed 50 ms.** Upstream takes
+    `max(50, strip.getFrameTime())`. There is no strip here, and both front ends
+    default to 33 ms, so the lower bound is always the one that applies.
+
+19. **`FFT_PREFER_EXACT_PEAKS` is not optional.** Upstream can be built with a
+    flat top window instead of Blackman-Harris. This port always uses
+    Blackman-Harris and its `FFT_DOWNSCALE` of 0.40, builds the window itself
+    rather than calling `dsps_wind_*`, so both FFT backends see identical input,
+    and has no integer FFT path: esp-dsp's float transform is used on every ESP32
+    variant.

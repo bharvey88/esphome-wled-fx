@@ -7,7 +7,7 @@
 //
 // Usage:
 //   wled_fx_sim [--effect NAME] [--group NAME] [--frames N] [--no-images]
-//               [--out DIR] [--list] [--palette N]
+//               [--out DIR] [--list] [--palette N] [--map N]
 
 #include <algorithm>
 #include <cstdio>
@@ -90,6 +90,7 @@ int main(int argc, char **argv) {
   std::string out_dir = "out";
   int frames = 300;
   int palette = -1;  // -1 keeps the effect's own metadata default
+  int map1d2d = -1;  // -1 keeps the effect's own m12 default
   bool images = true;
   bool list_only = false;
 
@@ -105,6 +106,8 @@ int main(int argc, char **argv) {
       frames = atoi(argv[++i]);
     else if (arg == "--palette" && i + 1 < argc)
       palette = atoi(argv[++i]);
+    else if (arg == "--map" && i + 1 < argc)
+      map1d2d = atoi(argv[++i]);
     else if (arg == "--no-images")
       images = false;
     else if (arg == "--list")
@@ -175,6 +178,8 @@ int main(int argc, char **argv) {
       engine.set_text("WLED FX");
       if (palette >= 0)
         engine.set_palette(static_cast<uint8_t>(palette));
+      if (map1d2d >= 0)
+        engine.segment().map1d2d = static_cast<uint8_t>(map1d2d);
 
       const int scale_x = std::max(1, std::min(8, 128 / std::max<int>(1, geo.width)));
       const int scale_y = geo.height == 1 ? 16 : scale_x;

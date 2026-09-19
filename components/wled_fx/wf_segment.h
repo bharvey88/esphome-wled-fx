@@ -14,6 +14,7 @@
 
 #include <cstdint>
 
+#include "wf_audio.h"
 #include "wf_canvas.h"
 #include "wf_color.h"
 #include "wf_font.h"
@@ -63,6 +64,10 @@ class Segment {
 
   // Frame timestamp in milliseconds. Every effect in a frame sees the same value.
   uint32_t now{0};
+  // The same instant in microseconds, for the handful of upstream effects that
+  // call micros() for sub-millisecond pacing. Derived from `now`, so it steps in
+  // 1000 microsecond jumps and the host simulator stays reproducible.
+  uint32_t now_us{0};
 
   // Text for the text effects. Never null; empty string when unset.
   const char *text{""};
@@ -95,6 +100,9 @@ class Segment {
   unsigned nr_of_v_strips() const { return (this->is_2d() && this->map1d2d == M12_P_BAR) ? this->width() : 1; }
   static int index_to_v_strip(int i, int n) { return i | (static_cast<int>(n + 1) << 16); }
 
+  // WLED's getPinwheelLength(). A multiple of 8, which stops the rays overdrawing.
+  static int pinwheel_length(int vw, int vh) { return ((vw > vh ? vw : vh) + 15) & ~7; }
+
   // --- colour and palette --------------------------------------------------------
   uint32_t color(unsigned i) const { return this->colors[i < 3 ? i : 0]; }
   const CRGBPalette16 &palette_ref() const { return this->current_palette_; }
@@ -104,6 +112,13 @@ class Segment {
   }
   uint32_t color_from_palette(uint16_t i, bool mapping, bool moving, uint8_t mcol, uint8_t pbri = 255) const;
   uint32_t color_wheel(uint8_t pos) const;
+
+  // --- audio ----------------------------------------------------------------------
+  // WLED's getAudioData(). Returns the attached source's latest analysis, or the
+  // simulated sound when nothing is attached, so audio effects always animate.
+  // Non-const because a few effects write max_vol and bin_num back from their own
+  // sliders, exactly as upstream does through the um_data pointers.
+  AudioData &audio() const { return audio_data(this->sound_sim, this->now); }
 
   // --- effect scratch data -------------------------------------------------------
   // Allocated on effect start only, never per frame. Zero filled. A repeat call
@@ -214,10 +229,23 @@ class Segment {
                       int8_t rotate = 0) const;
 
  protected:
+  // WLED's setPinwheelParameters(). Fills the start point and the sine and cosine
+  // steps for two consecutive rays, all in 14 bit fixed point.
+  void pinwheel_parameters_(int i, int vw, int vh, int &startx, int &starty, int *cos_val, int *sin_val,
+                            bool get_pixel = false) const;
+
   Canvas *canvas_{nullptr};
   CRGBPalette16 current_palette_{};
   size_t data_len_{0};
   uint32_t *scratch_{nullptr};  // one row or column, for move_x / move_y
+  // Bresenham coordinates for the two rays of the pinwheel mapping. Upstream puts
+  // these on the stack as variable length arrays, which this port does not allow,
+  // so they are allocated once with the canvas: 2 lines x (max(w, h) + 2) points
+  // x 2 coordinates.
+  uint16_t *pinwheel_coords_{nullptr};
+  unsigned pinwheel_max_line_{0};
+  // The two previously drawn ray numbers, so adjacent rays do not double draw.
+  mutable int prev_rays_[2]{0x7FFFFFFF, 0x7FFFFFFF};
 };
 
 }  // namespace wled_fx

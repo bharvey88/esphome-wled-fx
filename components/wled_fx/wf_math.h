@@ -161,5 +161,42 @@ inline long wf_map(long x, long in_min, long in_max, long out_min, long out_max)
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+// --- Arduino compatibility ------------------------------------------------------
+// WLED effect bodies use a handful of Arduino macros. They are ordinary functions
+// here, inside the namespace, so effect bodies stay verbatim and nothing leaks
+// into the global namespace.
+
+// Arduino constrain(). The parameter types are separate so the usual mixed-type
+// call sites such as constrain(someFloat, 0, 255) still compile.
+template<typename T, typename L, typename H> inline T constrain(T x, L low, H high) {
+  const T lo = static_cast<T>(low);
+  const T hi = static_cast<T>(high);
+  return x < lo ? lo : (x > hi ? hi : x);
+}
+
+inline constexpr float radians(float degrees) { return degrees * 0.017453292519943295f; }
+inline constexpr float degrees(float radians_in) { return radians_in * 57.29577951308232f; }
+
+// PROGMEM readers. There is no separate program address space on the targets this
+// component builds for, so these are plain loads.
+inline uint8_t pgm_read_byte_near(const void *addr) { return *static_cast<const uint8_t *>(addr); }
+inline uint8_t pgm_read_byte(const void *addr) { return *static_cast<const uint8_t *>(addr); }
+inline uint16_t pgm_read_word_near(const void *addr) {
+  uint16_t v;
+  memcpy(&v, addr, sizeof(v));
+  return v;
+}
+inline uint32_t pgm_read_dword_near(const void *addr) {
+  uint32_t v;
+  memcpy(&v, addr, sizeof(v));
+  return v;
+}
+
+// WLED spells the float trigonometry sin_t / cos_t / tan_t, which are macros over
+// the approximations above. Effect bodies keep those names.
+inline float sin_t(float theta) { return sin_approx(theta); }
+inline float cos_t(float theta) { return cos_approx(theta); }
+inline float tan_t(float x) { return tan_approx(x); }
+
 }  // namespace wled_fx
 }  // namespace esphome

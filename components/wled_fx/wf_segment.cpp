@@ -9,10 +9,19 @@
 namespace esphome {
 namespace wled_fx {
 
+namespace {
+
+// Fixed point scaling factor used by the pinwheel mapping, 14 bits of fraction.
+constexpr int PINWHEEL_FIXED_SCALE = 16384;
+
+}  // namespace
+
 Segment::~Segment() {
   this->deallocate_data();
   if (this->scratch_ != nullptr)
     platform_free(this->scratch_);
+  if (this->pinwheel_coords_ != nullptr)
+    platform_free(this->pinwheel_coords_);
 }
 
 bool Segment::set_canvas(Canvas *canvas) {
@@ -21,11 +30,41 @@ bool Segment::set_canvas(Canvas *canvas) {
     platform_free(this->scratch_);
     this->scratch_ = nullptr;
   }
+  if (this->pinwheel_coords_ != nullptr) {
+    platform_free(this->pinwheel_coords_);
+    this->pinwheel_coords_ = nullptr;
+  }
+  this->pinwheel_max_line_ = 0;
   if (canvas == nullptr || !canvas->is_allocated())
     return false;
   const size_t words = canvas->width() > canvas->height() ? canvas->width() : canvas->height();
   this->scratch_ = static_cast<uint32_t *>(platform_alloc(words * sizeof(uint32_t)));
-  return this->scratch_ != nullptr;
+  if (this->scratch_ == nullptr)
+    return false;
+  // Pixels drawn along a ray is always fewer than dx or dy, plus one pair for
+  // rounding. Two rays, x and y interleaved.
+  this->pinwheel_max_line_ = words + 2;
+  this->pinwheel_coords_ =
+      static_cast<uint16_t *>(platform_alloc(4 * this->pinwheel_max_line_ * sizeof(uint16_t)));
+  return this->pinwheel_coords_ != nullptr;
+}
+
+void Segment::pinwheel_parameters_(int i, int vw, int vh, int &startx, int &starty, int *cos_val, int *sin_val,
+                                   bool get_pixel) const {
+  const int steps = pinwheel_length(vw, vh);
+  const int base_angle = ((0xFFFF + steps / 2) / steps);  // 360 degrees / steps, 16 bit, rounded
+  int rotate = 0;
+  if (get_pixel)
+    rotate = base_angle / 2;  // rotate by half a ray width when reading pixel colour
+  for (int k = 0; k < 2; k++) {
+    const int angle = (i + k) * base_angle + rotate;
+    // Explicit shifts: dividing negative numbers is not equivalent, and the
+    // rounding error is acceptable. cos16_t output is -0x7FFF to +0x7FFF.
+    cos_val[k] = (cos16_t(angle) * PINWHEEL_FIXED_SCALE) >> 15;
+    sin_val[k] = (sin16_t(angle) * PINWHEEL_FIXED_SCALE) >> 15;
+  }
+  startx = (vw * PINWHEEL_FIXED_SCALE) / 2;
+  starty = (vh * PINWHEEL_FIXED_SCALE) / 2;
 }
 
 void Segment::begin_draw(const CRGBPalette16 &random_palette) {
@@ -37,6 +76,8 @@ void Segment::reset() {
   this->call = 0;
   this->aux0 = 0;
   this->aux1 = 0;
+  this->prev_rays_[0] = 0x7FFFFFFF;
+  this->prev_rays_[1] = 0x7FFFFFFF;
   this->deallocate_data();
   if (this->canvas_ != nullptr)
     this->canvas_->clear();
@@ -78,6 +119,8 @@ unsigned Segment::length() const {
         return w > h ? w : h;
       case M12_P_ARC:
         return sqrt32_bw(w * w + h * h);
+      case M12_S_PINWHEEL:
+        return pinwheel_length(w, h);
       default:
         return w * h;
     }
@@ -129,6 +172,118 @@ void Segment::set_pixel_color(int n, uint32_t c) const {
         for (int y = 0; y < n; y++)
           this->set_pixel_color_xy(n, y, c);
         break;
+      case M12_S_PINWHEEL: {
+        // Bresenham's algorithm places the coordinates of two rays in arrays, then
+        // the block between them is filled.
+        if (this->pinwheel_coords_ == nullptr)
+          break;
+        int start_x, start_y, cos_val[2], sin_val[2];  // fixed point
+        this->pinwheel_parameters_(n, vw, vh, start_x, start_y, cos_val, sin_val);
+
+        const unsigned max_line_length = this->pinwheel_max_line_;
+        uint16_t *const line_coords[2] = {this->pinwheel_coords_, this->pinwheel_coords_ + 2 * max_line_length};
+        int line_length[2] = {0, 0};
+        int closest_edge_idx = 0x7FFFFFFF;  // index of the closest edge pixel
+
+        for (int line_nr = 0; line_nr < 2; line_nr++) {
+          int x0 = start_x;
+          int y0 = start_y;
+          const int x1 = (start_x + (cos_val[line_nr] << 9));  // outside the grid
+          const int y1 = (start_y + (sin_val[line_nr] << 9));  // outside the grid
+          const int dx = x1 > x0 ? x1 - x0 : x0 - x1;
+          const int sx = x0 < x1 ? 1 : -1;
+          const int dy = -(y1 > y0 ? y1 - y0 : y0 - y1);
+          const int sy = y0 < y1 ? 1 : -1;
+          uint16_t *coordinates = line_coords[line_nr];
+          int *length = &line_length[line_nr];
+          x0 /= PINWHEEL_FIXED_SCALE;  // convert to pixel coordinates
+          y0 /= PINWHEEL_FIXED_SCALE;
+
+          int idx = 0;
+          int err = dx + dy;
+          while (true) {
+            // Exploits unsigned wraparound to catch negatives in one test.
+            if (static_cast<unsigned>(x0) >= static_cast<unsigned>(vw) ||
+                static_cast<unsigned>(y0) >= static_cast<unsigned>(vh)) {
+              closest_edge_idx = closest_edge_idx < idx - 2 ? closest_edge_idx : idx - 2;
+              break;
+            }
+            if (static_cast<unsigned>(idx) + 2 > 2 * max_line_length)
+              break;  // the allocation is sized for the longest possible ray
+            coordinates[idx++] = x0;
+            coordinates[idx++] = y0;
+            (*length)++;
+            // The endpoint is off the grid, so there is no endpoint test.
+            const int e2 = 2 * err;
+            if (e2 >= dy) {
+              err += dy;
+              x0 += sx;
+            }
+            if (e2 <= dx) {
+              err += dx;
+              y0 += sy;
+            }
+          }
+        }
+
+        // Pad the shorter ray with the missing coordinates so the block filling
+        // below stays correct and efficient.
+        const int diff = line_length[0] - line_length[1];
+        const int long_line_idx = (diff > 0) ? 0 : 1;
+        const int short_line_idx = long_line_idx ? 0 : 1;
+        if (diff != 0 && line_length[short_line_idx] > 0) {
+          int idx = (line_length[short_line_idx] - 1) * 2;  // last valid coordinate
+          const int last_x = line_coords[short_line_idx][idx++];
+          const int last_y = line_coords[short_line_idx][idx++];
+          const bool keep_x = last_x == 0 || last_x == vw - 1;
+          const int pad = diff > 0 ? diff : -diff;
+          for (int d = 0; d < pad; d++) {
+            if (static_cast<unsigned>(idx) + 2 > 2 * max_line_length)
+              break;
+            line_coords[short_line_idx][idx] = keep_x ? last_x : line_coords[long_line_idx][idx];
+            idx++;
+            line_coords[short_line_idx][idx] = keep_x ? line_coords[long_line_idx][idx] : last_y;
+            idx++;
+          }
+        }
+
+        // Draw and block fill. Block filling is only efficient while the angle
+        // between the two rays is small, which it is.
+        closest_edge_idx += 2;
+        const int max_i = pinwheel_length(vw, vh) - 1;
+        // Draw the first ray unless the previous ray was adjacent, wrap included.
+        const bool draw_first = !(this->prev_rays_[0] == n - 1 || (n == 0 && this->prev_rays_[0] == max_i));
+        const bool draw_last = !(this->prev_rays_[0] == n + 1 || (n == max_i && this->prev_rays_[0] == 0));
+        for (int idx = 0; idx < line_length[long_line_idx] * 2;) {
+          const int x1 = line_coords[0][idx];
+          const int x2 = line_coords[1][idx];
+          idx++;
+          const int y1 = line_coords[0][idx];
+          const int y2 = line_coords[1][idx];
+          idx++;
+          const int min_x = x1 < x2 ? x1 : x2;
+          const int max_x = x1 < x2 ? x2 : x1;
+          const int min_y = y1 < y2 ? y1 : y2;
+          const int max_y = y1 < y2 ? y2 : y1;
+
+          const bool always_draw = (draw_first && draw_last) ||  // no adjacent rays, draw everything
+                                   (idx > closest_edge_idx) ||   // edge pixels on uneven rays always draw
+                                   (n == 0 && idx == 2) ||       // centre pixel special case
+                                   (n == this->prev_rays_[1]);   // effect drawing twice in one frame
+          for (int x = min_x; x <= max_x; x++) {
+            for (int y = min_y; y <= max_y; y++) {
+              const bool on_line1 = x == x1 && y == y1;
+              const bool on_line2 = x == x2 && y == y2;
+              if (always_draw || (!on_line1 && (!on_line2 || draw_last)) ||
+                  (!on_line2 && (!on_line1 || draw_first)))
+                this->set_pixel_color_xy(x, y, c);
+            }
+          }
+        }
+        this->prev_rays_[1] = this->prev_rays_[0];
+        this->prev_rays_[0] = n;
+        break;
+      }
       case M12_PIXELS:
       default:
         this->set_pixel_color_xy_raw(n % vw, n / vw, c);
@@ -159,8 +314,24 @@ uint32_t Segment::get_pixel_color(int i) const {
       case M12_P_BAR:
         return this->get_pixel_color_xy_raw(v_strip > 0 ? v_strip - 1 : 0, vh - i - 1);
       case M12_P_ARC:
-      case M12_P_CORNER:
         return this->get_pixel_color_xy(i, 0);
+      case M12_P_CORNER:
+        // Upstream uses the longest dimension.
+        return vw > vh ? this->get_pixel_color_xy(i, 0) : this->get_pixel_color_xy(0, i);
+      case M12_S_PINWHEEL: {
+        // Not exact: returns the pixel at the outer edge of the ray.
+        int x, y, cos_val[2], sin_val[2];
+        this->pinwheel_parameters_(i, vw, vh, x, y, cos_val, sin_val, true);
+        const int max_x = (vw - 1) * PINWHEEL_FIXED_SCALE;
+        const int max_y = (vh - 1) * PINWHEEL_FIXED_SCALE;
+        // Trace the ray from the centre until it hits an edge. Fixed point keeps
+        // the rounding out of the loop condition.
+        while ((x < max_x) && (y < max_y) && (x > PINWHEEL_FIXED_SCALE) && (y > PINWHEEL_FIXED_SCALE)) {
+          x += cos_val[0];
+          y += sin_val[0];
+        }
+        return this->get_pixel_color_xy(x / PINWHEEL_FIXED_SCALE, y / PINWHEEL_FIXED_SCALE);
+      }
       case M12_PIXELS:
       default:
         return this->get_pixel_color_xy_raw(i % vw, i / vw);

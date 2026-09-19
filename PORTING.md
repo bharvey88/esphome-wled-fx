@@ -12,9 +12,10 @@ upstream as you can, so a future WLED release can be diffed against them.
 
 ## 1. The rules that matter most
 
-1. **One translation unit per porter.** You create `components/wled_fx/wf_effects_<group>.cpp`
-   and nobody else touches it. You never edit an engine file, an existing effect
-   file, `__init__.py`, or the simulator.
+1. **One translation unit per porter.** Your batch's `components/wled_fx/wf_effects_<group>.cpp`
+   already exists, empty, and nobody else touches it. You never edit an engine
+   file, another effect file, `__init__.py`, or the simulator. `BATCHES.md` says
+   which file is yours and which effects go in it.
 2. **Copy the body, do not rewrite it.** Keep upstream's variable names, comment
    text, brace style and even its odd casing. The transform in section 3 is
    mechanical and nothing else should change.
@@ -66,19 +67,31 @@ const EffectInfo ENTRIES[] = {
     {"Twinkle@!,!;!,!;!;;m12=0", mode_twinkle},
 #endif
 };
+constexpr size_t ENTRY_COUNT = sizeof(ENTRIES) / sizeof(ENTRIES[0]);
 
 }  // namespace
 
 // extern first: a bare `const` at namespace scope has internal linkage and the
 // generated group table would not be able to see it.
 extern const EffectGroup EFFECT_GROUP_1D_B;
-const EffectGroup EFFECT_GROUP_1D_B{"1d_b", ENTRIES, sizeof(ENTRIES) / sizeof(ENTRIES[0])};
+const EffectGroup EFFECT_GROUP_1D_B{"1d_b", ENTRIES, ENTRY_COUNT};
 
 }  // namespace wled_fx
 }  // namespace esphome
 
 #endif  // WLED_FX_GROUP_1D_B
 ```
+
+Your file currently holds the empty form of that, because a zero length array is
+not valid C++:
+
+```cpp
+const EffectInfo *const ENTRIES = nullptr;
+constexpr size_t ENTRY_COUNT = 0;
+```
+
+Replace those two lines with the array form above as soon as you add your first
+effect, and add each `WLED_FX_FX_*` macro to the group guard at the top as you go.
 
 Conventions the build depends on, so get them exactly right:
 
@@ -110,7 +123,8 @@ why the spelling is fixed: there is no shared list anywhere for you to update.
 | `PALETTE_SOLID_WRAP` | `seg.palette_solid_wrap()` | |
 | `PALETTE_MOVING_WRAP` | `seg.palette_moving_wrap()` | |
 | `strip.now` | `seg.now` | same timestamp for every effect in a frame |
-| `millis()` / `micros()` | `seg.now` | never read the clock yourself |
+| `millis()` | `seg.now` | never read the clock yourself |
+| `micros()` | `seg.now_us` | the same instant in microseconds, so it steps 1000 at a time |
 | `strip.isMatrix` | `seg.is_2d()` | see the pitfall in section 6 |
 | `SEGMENT.is2D()` | `seg.is_2d()` | |
 | `FRAMETIME` | `FRAMETIME` | a `constexpr`, not a macro |
@@ -133,8 +147,20 @@ why the spelling is fixed: there is no shared list anywhere for you to update.
 | `beatsin8_t(bpm, lo, hi)` | `beatsin8_t(bpm, lo, hi, seg.now)` | **the clock is an argument now**, see below |
 | `beat8(bpm)` / `beat16` / `beat88` | `beat8(bpm, seg.now)` … | same |
 | `map(...)` | `wf_map(...)` | Arduino's `map` does not exist here |
-| `MIN(a,b)` / `MAX(a,b)` | a ternary, or `std::min` / `std::max` | the macros are gone |
+| `MIN(a,b)` / `MAX(a,b)` / `min` / `max` | a ternary, or `std::min` / `std::max` | the macros are gone |
+| `constrain(x, lo, hi)` | `constrain(x, lo, hi)` | a function template in `wf_math.h`, mixed argument types are fine |
+| `radians(d)` / `degrees(r)` | unchanged | `constexpr` in `wf_math.h` |
+| `sin_t` / `cos_t` / `tan_t` | unchanged | in `wf_math.h`, over `sin_approx` and friends |
+| `inoise8` / `inoise16` | `perlin8` / `perlin16` | upstream's own guidance is not to use the legacy aliases |
 | `bitRead/bitSet/bitClear(v, n)` | `v & (1 << n)` / `v \|= (1 << n)` / `v &= ~(1 << n)` | Arduino macros, gone |
+| `bitWrite(v, n, b)` | `b ? (v \|= 1 << n) : (v &= ~(1 << n))` | same |
+| `pgm_read_byte_near(p)` / `pgm_read_byte` | unchanged | plain loads in `wf_math.h`; there is no separate program address space |
+| `PSTR("x")` / `F("x")` | `"x"` | drop the wrapper, and `strncmp_P` / `sprintf_P` lose the `_P` |
+| `getAudioData()` and the `um_data` casts | `seg.audio()` | see section 7 |
+| `strip.getBrightness()` | drop the term | the light front end owns brightness; treat it as 255 |
+| `strip.getCurrSegmentId()` | `0` | one canvas, one segment |
+| `strip.getActiveSegmentsNum()` / `getMaxSegments()` / `getSegmentsNum()` | `1` | same |
+| `SEGMENT.vWidth()` / `vHeight()` / `vLength()` | `seg.width()` / `seg.height()` / `seg.length()` | same |
 | `FX_FALLBACK_STATIC` | `FX_FALLBACK_STATIC` | still a macro, fills with colour 0 and returns |
 | `gamma8` / `gamma8inv` / `gamma32` / `gamma32inv` | unchanged | **identity here**, see section 6 |
 | `CRGB`, `CHSV`, `CRGBW`, `CHSV32`, `CRGBPalette16` | unchanged | in `esphome::wled_fx`, not the global namespace |
@@ -211,6 +237,11 @@ bands were overwritten, if every frame came out black, or if the PNG could not b
 written. **Look at the PNGs.** "Not black" is a very low bar and it will not catch
 an effect that is subtly wrong.
 
+`--map N` overrides the 1D-to-2D mapping mode (`m12`), 0 to 4, which is the only way
+to see an effect through a mapping its metadata does not select. Use it on any 1D
+effect you port, at 64x64, to check nothing writes out of bounds in a mapping the
+default never exercises.
+
 Add `-DWLED_FX_SANITIZE=ON` at configure time for an ASan and UBSan build. That
 works with GCC or Clang on Linux; MinGW on Windows does not ship those runtimes, so
 on Windows the guard bands are the bounds check you get.
@@ -230,7 +261,7 @@ esphome compile examples/strip-esp32.yaml
   library, and a translation unit nothing names is never pulled out of the archive,
   so its static initialiser never runs. The build looks perfectly healthy and the
   effect simply is not there. If you ever suspect this, check for your metadata
-  string in the firmware image (`strings firmware.bin | grep "Your Effect"`).
+  string in the firmware image with the `strings` check in section 8.
 * **Gamma is off.** `gamma8`, `gamma8inv`, `gamma32` and `gamma32inv` are identity
   functions here. Keep the calls in the body so the diff against upstream stays
   clean, but do not expect them to do anything. Colour correction belongs to the
@@ -257,17 +288,120 @@ esphome compile examples/strip-esp32.yaml
   otherwise collide at link time. Duplicating a shared base into two files is fine
   and expected; do not try to share one between files.
 
-## 7. Checklist
+## 7. Audio effects
+
+Upstream hands an effect a `um_data_t`, a tagged array of void pointers that every
+audio effect indexes and casts by hand:
+
+```cpp
+um_data_t *um_data = getAudioData();
+float volumeSmth   = *(float*)   um_data->u_data[0];
+uint8_t *fftResult =  (uint8_t*) um_data->u_data[2];
+```
+
+Here that whole preamble collapses to one line, and the field names are the same
+words in snake case:
+
+```cpp
+AudioData &audio = seg.audio();
+// then audio.volume_smth, audio.fft_result[...], and so on
+```
+
+| WLED | wled_fx | Type |
+|---|---|---|
+| `u_data[0]` `volumeSmth` | `audio.volume_smth` | `float` |
+| `u_data[1]` `volumeRaw` | `audio.volume_raw` | `uint16_t`, cast where upstream reads it signed |
+| `u_data[2]` `fftResult` | `audio.fft_result` | `uint8_t[16]` |
+| `u_data[3]` `samplePeak` | `audio.sample_peak` | `uint8_t` |
+| `u_data[4]` `FFT_MajorPeak` | `audio.fft_major_peak` | `float` |
+| `u_data[5]` `my_magnitude` | `audio.my_magnitude` | `float` |
+| `u_data[6]` `maxVol` | `audio.max_vol` | `uint8_t`, written back by the effect |
+| `u_data[7]` `binNum` | `audio.bin_num` | `uint8_t`, written back by the effect |
+| MM `u_data[8..11]` | `fft_major_peak_smth`, `sound_pressure`, `agc_sensitivity`, `zero_crossing_count` | only the `fx_mm` batch needs these |
+| `NUM_GEQ_CHANNELS`, `MAX_FREQUENCY`, `MAX_FREQ_LOG10` | unchanged | `constexpr` in `wf_audio.h` |
+
+`seg.audio()` returns a **non-const** reference, because a few effects write
+`max_vol` and `bin_num` back from their own sliders, exactly as upstream does.
+
+There is no microphone yet. Until the real source lands, `seg.audio()` returns a
+port of WLED's `simulateSound()`, driven by `seg.now` and picked by the metadata
+key `si`, so every audio effect animates and renders in the simulator today. The
+simulated frame is generated once per timestamp, so all the effects in a frame see
+one coherent set of numbers. Nothing in an effect body changes when the real source
+arrives.
+
+## 8. Parallel batch workflow
+
+Twelve batches are being ported at the same time, one agent each. `BATCHES.md` is
+the assignment; this is the mechanic.
+
+**Set up your worktree.** From the repository, with `<batch>` being your batch name
+from `BATCHES.md`, for example `fx_1d_c`:
+
+```
+git worktree add C:\tmp\wfx-wt\<batch> -b <batch>
+```
+
+That gives you a private checkout on a private branch. Work there and nowhere else.
+
+**Edit exactly one file**, `components/wled_fx/wf_effects_<group>.cpp`, where
+`<group>` is the group id from `BATCHES.md` (`fx_1d_c` owns `wf_effects_1d_c.cpp`).
+A private `wf_effects_<group>.h` beside it is allowed if your file genuinely needs
+one, and nothing else is. Nothing outside your file names your group: both the
+ESPHome codegen and the simulator's CMake discover groups by scanning the effect
+sources for the two lines in section 2, so there is no shared list to update and
+therefore nothing for two agents to collide on.
+
+**A helper the engine does not have goes in your own file**, as a `static` function
+inside the anonymous namespace, even when another batch needs the same one. Two
+files carrying their own copy of `chase()` is expected and correct; the anonymous
+namespace is what stops them colliding at link time. Never edit an engine file to
+add a helper, and **list every helper you had to add in your final report**, so the
+engine can absorb the ones that turn out to be shared.
+
+**Build and run only your group:**
+
+```
+cmake -S tools/sim -B tools/sim/build -G Ninja
+cmake --build tools/sim/build
+tools/sim/build/wled_fx_sim --group <group> --out tools/sim/out
+```
+
+Re-run the `cmake -S` line after you add your first effect: the group table is
+generated at configure time, not build time. Before that, `--group <group>` prints
+"no effects matched" and exits 1, which is correct for an empty batch.
+
+**Check the firmware actually contains your effects.** A group that fails to link
+is silent, and this is the only cheap way to catch it:
+
+```
+esphome compile examples/strip-esp32.yaml
+strings examples/.esphome/build/wled-fx-strip/build/firmware.factory.bin | grep "Your Effect"
+```
+
+Grep for the display name of every effect you added. A missing one means the group
+object or the guard is spelled wrong, not that the effect is broken.
+
+**Commit on your branch. Do not push, do not merge, do not rebase onto another
+batch.** The orchestrator merges the branches, and because every batch is one new
+file plus nothing else, those merges cannot conflict. Leave the worktree in place
+when you are done.
+
+## 9. Checklist
 
 - [ ] Body copied from `refs/WLED/wled00/FX.cpp` at v16.0.1, transform applied, nothing else changed
 - [ ] Upstream author credit comment kept
 - [ ] Metadata string copied verbatim into `ENTRIES`
 - [ ] Effect wrapped in `#if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_<NAME>`, and the same macro listed in the group guard
+- [ ] `ENTRIES` switched from the empty `nullptr` form to the array form, `ENTRY_COUNT` follows it
 - [ ] Group object declared `extern` before its definition
 - [ ] No per-frame allocation, no VLA, no `millis()`, no `delay()`
+- [ ] Nothing outside your own translation unit was touched
 - [ ] `wled_fx_sim --group <yours>` green at all three geometries
+- [ ] 1D effects also run clean under `--map 4` at 64x64
 - [ ] Contact sheet PNGs actually look like the effect
-- [ ] `esphome compile examples/strip-esp32.yaml` green
+- [ ] `esphome compile examples/strip-esp32.yaml` green, and `strings` finds every effect name in the image
+- [ ] Every helper you had to write yourself is listed in your final report
 
 ---
 
@@ -296,10 +430,13 @@ specified.
    `mirror`, `transpose` and friends are not implemented either; the display front
    end's pixel mapping and the light front end's `serpentine` cover the real cases.
 
-3. **1D-to-2D mapping mode `M12_S_PINWHEEL` is not implemented** and falls back to
-   `M12_PIXELS`. Upstream's implementation needs two stack VLAs sized from the
-   matrix dimensions, which the no-VLA rule forbids, and no P1 effect defaults to
-   it. `M12_PIXELS`, `M12_P_BAR`, `M12_P_ARC` and `M12_P_CORNER` all work.
+3. ~~`M12_S_PINWHEEL` is not implemented.~~ **Closed before the parallel batches
+   started.** All five mapping modes now work. Upstream sizes its two Bresenham
+   coordinate arrays as stack VLAs from the matrix dimensions; here they are one
+   allocation made alongside the canvas in `Segment::set_canvas()`, sized
+   `2 rays x (max(width, height) + 2) points x 2 coordinates`, and upstream's
+   file-static `prevRays` became a segment member. Exercise it with
+   `wled_fx_sim --map 4`.
 
 4. **Scrolling Text is reduced.** WLED 16.0.1 renders live date and time tokens
    (`#DATE`, `#TIME`, …) through `localTime`, decodes UTF-8, and loads variable
@@ -332,3 +469,27 @@ specified.
 
 9. **`examples/strip-esp32-arduino.yaml` was added.** PLAN.md asks for the strip
    example to build under both frameworks, which needs two files.
+
+10. **The audio contract is a struct, not `um_data_t`.** PLAN.md already calls for
+    this ("audio effects read a plain struct, not `um_data` void pointers"), and
+    `wf_audio.h` defines it now, ahead of the microphone and the FFT, so the audio
+    batches are not blocked. Field order matches upstream's `u_data` indices, the
+    four MoonModules extras are included because they cost 14 bytes, and
+    `simulateSound()` is ported so the effects run with nothing attached. The
+    `AudioSource` interface a real microphone will implement is declared but has no
+    implementation yet.
+
+11. **`Segment` gained `now_us`.** Seven upstream effects call `micros()` for
+    sub-millisecond pacing. Rather than let effects read a clock, the frame
+    timestamp is published in microseconds as well. It is derived from `now`, so it
+    steps 1000 at a time and the simulator stays reproducible.
+
+12. **`M12_P_CORNER` read-back was wrong and is fixed.** `get_pixel_color()`
+    returned `(i, 0)` for every matrix; upstream uses the longest dimension, so a
+    tall matrix reads `(0, i)`. No P1 effect noticed, because none of them read
+    back through a corner mapping.
+
+13. **Arduino compatibility shims live in `wf_math.h`.** `constrain`, `radians`,
+    `degrees`, `sin_t`, `cos_t`, `tan_t` and the `pgm_read_*` family, all as
+    ordinary functions inside `esphome::wled_fx`. They exist so effect bodies stay
+    verbatim; they do not pull in Arduino.

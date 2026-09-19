@@ -3,9 +3,12 @@
 /* Shared prologue for every effect translation unit. Effect files include this and
  * nothing else from the engine. See PORTING.md for the transform rules. */
 
+#include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
+#include "wf_audio.h"
 #include "wf_color.h"
 #include "wf_font.h"
 #include "wf_math.h"

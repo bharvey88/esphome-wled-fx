@@ -275,13 +275,14 @@ const EffectInfo ENTRIES[] = {
     {"Plasma@Phase,!;!;!", mode_plasma},
 #endif
 };
+constexpr size_t ENTRY_COUNT = sizeof(ENTRIES) / sizeof(ENTRIES[0]);
 
 }  // namespace
 
 // extern first: a bare `const` at namespace scope has internal linkage and the
 // generated group table below would not be able to see it.
 extern const EffectGroup EFFECT_GROUP_1D_A;
-const EffectGroup EFFECT_GROUP_1D_A{"1d_a", ENTRIES, sizeof(ENTRIES) / sizeof(ENTRIES[0])};
+const EffectGroup EFFECT_GROUP_1D_A{"1d_a", ENTRIES, ENTRY_COUNT};
 
 }  // namespace wled_fx
 }  // namespace esphome

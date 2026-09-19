@@ -182,7 +182,12 @@ that have them.
 ## Contributing an effect
 
 Read `PORTING.md`. It has the exact transform table, the file conventions, how the
-metadata string is parsed, and the traps.
+metadata string is parsed, the traps, and the workflow for porting a batch of
+effects in parallel with other people.
+
+`BATCHES.md` is the work breakdown: it assigns every WLED 16.0.1 effect that is not
+ported yet to exactly one batch, one translation unit and one branch, so the
+batches cannot collide.
 
 ## Licence
 

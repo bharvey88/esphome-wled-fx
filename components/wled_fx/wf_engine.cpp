@@ -107,6 +107,7 @@ void Engine::render(uint32_t now) {
     return;
   this->random_palette_.step(now);
   this->seg_.now = now;
+  this->seg_.now_us = now * 1000u;
   this->seg_.begin_draw(this->random_palette_.current());
   this->effect_->fn(this->seg_);
   this->seg_.call++;

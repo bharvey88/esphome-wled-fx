@@ -141,6 +141,18 @@ class Segment {
   // sliders, exactly as upstream does through the um_data pointers.
   AudioData &audio() const { return audio_data(this->sound_sim, this->now); }
 
+  /* WLED's `UsermodManager::getUMData(&um_data, USERMOD_ID_AUDIOREACTIVE)`. A
+   * handful of effects test that call not to obtain the data, which audio()
+   * already gives them, but to ask "is a real microphone feeding me?", and run a
+   * different animation when the answer is no. `audio()` never says no: it falls
+   * back to simulateSound() so every audio effect animates with nothing attached.
+   * This is the one place that distinction is made, so those effects keep
+   * upstream's two branches. */
+  bool has_real_audio() const {
+    const AudioSource *src = audio_source();
+    return src != nullptr && src->has_data();
+  }
+
   // --- effect scratch data -------------------------------------------------------
   // Allocated on effect start only, never per frame. Zero filled. A repeat call
   // with the same length is a no-op, matching WLED.

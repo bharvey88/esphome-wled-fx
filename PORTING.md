@@ -238,6 +238,37 @@ Other options: `--frames N` (default 300), `--palette N` to override the palette
 `--no-images` for a text-only run, `--list` to dump the parsed defaults of every
 effect so you can check your metadata string was read the way you expected.
 
+`--check1`, `--check2` and `--check3` take 0 or 1, `--custom1` to `--custom3` take
+0 to 255, and `--checks-on` is shorthand for all three checkmarks. They pin the
+control the way the YAML options do, so they survive the effect defaults being
+applied. With none of them given, the simulator runs every effect **twice** per
+geometry, once on its own metadata defaults and once with all three checkmarks on;
+the second pass is the only thing that reaches the alternative mode most effects
+hide behind a checkbox, and its contact sheets get a `_checks` suffix. Naming any
+control collapses that to the single configuration you asked for, written with a
+`_cli` suffix so an experiment cannot overwrite the default run's sheets.
+
+Two tables at the top of `tools/sim/main.cpp` hold the per-effect exceptions, and
+both want a comment saying why:
+
+* `PACING` gives an effect a longer run or a longer frame period. Sunrise needs
+  12 s per frame because its default speed is a 60 minute sunrise; PS Galaxy needs
+  1500 frames because its arms only form after several hundred frames of spiral
+  motion, and that motion is per frame rather than clock driven. Capture frames
+  are scaled to the run length, so a longer run still gets its last tile near the
+  end.
+* `BLACK_ALLOWED` forgives the non-black assertion below a given virtual strip
+  length. It has one entry, PS Sonic Boom, whose per-beat particle count rounds to
+  zero below 21 pixels. The length bound is the point: the assertion stays live at
+  every normal size.
+
+The non-black assertion only fails in the default pass. Several effects put an
+Overlay checkmark on `check2`, which tells them not to paint a background at all,
+and the secondary colour defaults to black, so an all-black checks pass is the
+correct result for Sparkle Dark, Sparkle+ and Snow Fall. The checks pass exists
+for the guard bands and for reaching the code, so it reports black rather than
+failing on it. Guard bands are checked in every pass.
+
 Every effect is run at 16x16, 64x64, 60x1, 64x32, 32x64 and 31x17. The two
 transposed matrices catch an effect that mixes up its axes, and 31x17 is odd in
 both dimensions so nothing can quietly rely on a power of two. The run fails if
@@ -361,6 +392,28 @@ component, documented in the README. Nothing in an effect body changes either
 way: `seg.audio()` returns the live analysis when a source is attached and has
 data, and the simulation otherwise.
 
+### "Is a real microphone attached?"
+
+A handful of effects call `UsermodManager::getUMData(&um_data, USERMOD_ID_AUDIOREACTIVE)`
+not to obtain the data, which they could get anyway, but to ask whether audio is
+real, and they run a **different animation** when it is not. `seg.audio()` cannot
+answer that: it always returns a frame. Use `seg.has_real_audio()` and keep both
+of upstream's branches:
+
+```cpp
+if (seg.has_real_audio()) {  // get AR data, do not use simulated data
+  AudioData &audio = seg.audio();
+  ...
+} else {  // no AR data, fall back to normal mode
+  ...
+}
+```
+
+PS Attractor, PS Spray and PS Blobs are the three effects that need this. It is
+the **only** place the distinction belongs: an effect that simply wants numbers
+calls `seg.audio()` and takes whatever it gets, which is what keeps the other 34
+audio effects animating in the simulator.
+
 Two fields are yours to write, not the source's. `audio.max_vol` and
 `audio.bin_num` are inputs to the beat detector that effects such as Waterfall,
 Ripple Peak and Puddlepeak set from their own sliders, exactly as WLED's
@@ -393,8 +446,9 @@ therefore nothing for two agents to collide on.
 of batches turned out to share were absorbed into the engine after that wave
 merged, and they are declared there: `get_random_wheel_index()`,
 `tristate_square8()`, `sin_gap()`, `speed_formula_l()`, `blink()`,
-`mode_gravcenter_base()`, `mode_colorwaves_pride_base()`, `fx_prng()`, `IBN` and
-the `Ripple`, `Spark`, `Flasher` and `Gravity` structs. `ULTRAWHITE` and
+`mode_gravcenter_base()`, `mode_colorwaves_pride_base()`, `fx_prng()`, `IBN`, the
+`SPOT_TYPE_*` spotlight shapes and `SPOT_TYPES_COUNT`, and the `Ripple`, `Spark`,
+`Flasher` and `Gravity` structs. `ULTRAWHITE` and
 `DARKSLATEGRAY` are in `wf_color.h`, `M_PI` and `M_TWOPI` in `wf_math.h`, and
 `FRAMETIME_FIXED`, `NUM_COLORS` and `FAIR_DATA_PER_SEG` in `wf_segment.h`.
 
@@ -711,3 +765,34 @@ specified.
     rather than calling `dsps_wind_*`, so both FFT backends see identical input,
     and has no integer FFT path: esp-dsp's float transform is used on every ESP32
     variant.
+
+20. **`Segment::has_real_audio()` is a new accessor with no upstream
+    counterpart.** It answers the question upstream asks by looking the
+    audioreactive usermod up in `UsermodManager`. Three effects branch on it
+    rather than reading the data, so without it their non-audio animation is
+    unreachable: `seg.audio()` never fails, it falls back to `simulateSound()`.
+    PS Attractor, PS Spray and PS Blobs use it and keep both upstream branches.
+    See section 7.
+
+21. **PS Sonic Stream clamps a particle index upstream never clamps.**
+    `seg.aux1` tracks the last emitted particle across frames and is used to
+    index `PartSys->particles` before anything re-checks it. `usedParticles` is
+    recomputed on every init and drops when `initParticleSystem1D()`'s allocation
+    retry loop halves the particle count, so a shorter system can inherit an index
+    that is now past the end of the array. One comparison resets it to 0, which
+    only changes which particle is checked for spacing, and the next emit
+    overwrites it anyway.
+
+22. **PS Springy's spring force array is checked, not just trusted.** Upstream
+    sizes a stack VLA from `usedParticles`; here the same bytes are asked for as
+    `additionalbytes` and read back from `PartSys->PSdataEnd`. The arithmetic does
+    hold: the request is for the pre-retry particle count, the retry loop only
+    halves `numParticles`, and `setUsedParticles()` caps `usedParticles` at
+    `numParticles`. Alignment holds too, because every block
+    `updatePSpointers()` walks past is a multiple of 4 bytes long, including the
+    3 byte `PSadvancedParticle1D` array, whose length is a multiple of 4
+    particles. That is a long chain of invariants living in another file, and
+    `updateSystem()` recomputes `PSdataEnd` from the live canvas size on every
+    frame while the allocation does not move, so the effect bounds-checks the
+    region against `seg.data_size()` and falls back to static rather than writing
+    past it.

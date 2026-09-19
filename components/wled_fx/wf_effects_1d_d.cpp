@@ -839,13 +839,8 @@ void mode_flow(Segment &seg) {
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_DANCING_SHADOWS
-constexpr uint8_t SPOT_TYPE_SOLID = 0;
-constexpr uint8_t SPOT_TYPE_GRADIENT = 1;
-constexpr uint8_t SPOT_TYPE_2X_GRADIENT = 2;
-constexpr uint8_t SPOT_TYPE_2X_DOT = 3;
-constexpr uint8_t SPOT_TYPE_3X_DOT = 4;
-constexpr uint8_t SPOT_TYPE_4X_DOT = 5;
-constexpr uint8_t SPOT_TYPES_COUNT = 6;
+// The SPOT_TYPE_* shapes are in wf_fx_shared.h; PS Dancing Shadows uses the
+// same set from its own translation unit.
 constexpr uint8_t SPOT_MAX_COUNT = 49;  // Number of simultaneous waves
 
 // 13 bytes

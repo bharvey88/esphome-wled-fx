@@ -252,16 +252,8 @@ void mode_particlePinball(Segment &seg) {
 #endif
 
 #if WLED_FX_DEFAULT_ENABLE || WLED_FX_FX_PS_DANCING_SHADOWS
-/* WLED FX.cpp:4474. The spotlight shapes the original Dancing Shadows and its
- * particle replacement share. Upstream spells them as #defines next to
- * mode_dancing_shadows, which lives in another translation unit here. */
-constexpr uint32_t SPOT_TYPE_SOLID = 0;
-constexpr uint32_t SPOT_TYPE_GRADIENT = 1;
-constexpr uint32_t SPOT_TYPE_2X_GRADIENT = 2;
-constexpr uint32_t SPOT_TYPE_2X_DOT = 3;
-constexpr uint32_t SPOT_TYPE_3X_DOT = 4;
-constexpr uint32_t SPOT_TYPE_4X_DOT = 5;
-constexpr uint32_t SPOT_TYPES_COUNT = 6;
+// The SPOT_TYPE_* shapes are in wf_fx_shared.h; the original Dancing Shadows
+// uses the same set from its own translation unit.
 
 /*
   Particle Replacement for original Dancing Shadows:

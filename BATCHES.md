@@ -18,33 +18,41 @@ translation unit, and edits nothing else.
 | `fx_1d_e` | merged | `fx_1d_e` | `components/wled_fx/wf_effects_1d_e.cpp` | `1d_e` | 24 | 614 | 231 |
 | `fx_2d` | merged | `fx_2d` | `components/wled_fx/wf_effects_2d_b.cpp` | `2d_b` | 29 | 1178 | 51 |
 | `fx_1d2d` | merged | `fx_1d2d` | `components/wled_fx/wf_effects_1d2d.cpp` | `1d2d` | 7 | 468 | 50 |
-| `fx_particle_2d` | 2 of 12 done, unblocked | `fx_particle_2d` | `components/wled_fx/wf_effects_particle_2d.cpp` | `particle_2d` | 12 | 999 | 18 |
-| `fx_particle_1d` | 1 of 11 done, unblocked | `fx_particle_1d` | `components/wled_fx/wf_effects_particle_1d.cpp` | `particle_1d` | 11 | 921 | 0 |
+| `fx_particle_2d` | merged | `fx_particle_2d` | `components/wled_fx/wf_effects_particle_2d.cpp` | `particle_2d` | 12 | 999 | 18 |
+| `fx_particle_1d` | merged | `fx_particle_1d` | `components/wled_fx/wf_effects_particle_1d.cpp` | `particle_1d` | 11 | 921 | 0 |
 | `fx_audio_vol` | merged | `fx_audio_vol` | `components/wled_fx/wf_effects_audio_vol.cpp` | `audio_vol` | 16 | 312 | 115 |
 | `fx_audio_fft` | merged | `fx_audio_fft` | `components/wled_fx/wf_effects_audio_fft.cpp` | `audio_fft` | 13 | 433 | 82 |
-| `fx_audio_particle` | not started, unblocked | `fx_audio_particle` | `components/wled_fx/wf_effects_audio_particle.cpp` | `audio_particle` | 8 | 663 | 0 |
-| `fx_mm` | not started | `fx_mm` | `components/wled_fx/wf_effects_mm.cpp` | `mm` | 9 | 408 | 374 |
-| **Total** | **186 of 213 registered** | | | | **213** | | **9449** |
+| `fx_audio_particle` | merged | `fx_audio_particle` | `components/wled_fx/wf_effects_audio_particle.cpp` | `audio_particle` | 8 | 663 | 0 |
+| `fx_mm` | merged | `fx_mm` | `components/wled_fx/wf_effects_mm.cpp` | `mm` | 9 | 408 | 374 |
+| **Total** | **all 213 registered, plus 10 from phase 1** | | | | **213** | | **9449** |
 
-Status as of 2026-09-19. The six effect batches plus the particle system engine
-and the audio source are merged to `main`. The particle engine landed with three
-effects as smoke tests, PS Fire and PS Fireworks in `particle_2d` and PS DripDrop
-in `particle_1d`, so those three are already registered and the two particle
-batches are no longer blocked. 186 effects are registered: 10 from phase 1, 154
-from the six merged batches, 3 particle smoke tests, and the rest to come.
+Status as of 2026-09-19. **Every batch is merged and the port is complete.** 223
+effects are registered: the 10 from phase 1 plus the 213 assigned here. That is
+all 216 WLED 16.0.1 effects except the two excluded below, plus the nine WLED-MM
+exclusives. `tools/sim/build/wled_fx_sim --list` is the count that matters, and
+the README effect tables are generated from it.
 
-**Read this before starting a batch.** The rule that a translation unit never
-shares a helper has been relaxed for helpers that turned out to be shared. The
-ones the first wave duplicated now live in the engine, in
+The 213 in the table are counted once each even though three of them, PS Fire and
+PS Fireworks in `particle_2d` and PS DripDrop in `particle_1d`, landed early with
+the particle system engine as smoke tests rather than with their own batch.
+
+**Shared helpers live in the engine.** The rule that a translation unit never
+shares a helper was relaxed for helpers that turned out to be shared. They are in
 `components/wled_fx/wf_fx_shared.h`: `get_random_wheel_index()`,
 `tristate_square8()`, `sin_gap()`, `speed_formula_l()` (the old
 `SPEED_FORMULA_L` macro), `blink()`, `mode_gravcenter_base()`,
-`mode_colorwaves_pride_base()`, `fx_prng()` and the `Ripple`, `Spark`, `Flasher`
-and `Gravity` structs, plus `IBN`. `ULTRAWHITE` and `DARKSLATEGRAY` are in
+`mode_colorwaves_pride_base()`, `fx_prng()`, `IBN`, the `SPOT_TYPE_*` spotlight
+shapes with `SPOT_TYPES_COUNT`, and the `Ripple`, `Spark`, `Flasher`
+and `Gravity` structs. `ULTRAWHITE` and `DARKSLATEGRAY` are in
 `wf_color.h`, and `FRAMETIME_FIXED`, `NUM_COLORS` and `FAIR_DATA_PER_SEG` are in
-`wf_segment.h`. Check there before copying a helper into your own file, and
-still list anything new you had to write in your hand-off so the next
-integration can absorb it.
+`wf_segment.h`. Check there before copying a helper into a new file.
+
+What is deliberately **not** shared: `map8()`, `map2()`, `draw_line_depth()` and
+the Snow Fall bit-array and shuffle helpers in `wf_effects_mm.cpp`, because the
+engine has no equivalent and only that one file uses them; and the `particle` /
+`star` struct that `wf_effects_1d_e.cpp` and `wf_effects_mm.cpp` both declare,
+because the MM copy belongs to an intentionally duplicated MM core (see the
+`fx_mm` section). Anonymous namespaces keep the duplicate from colliding.
 
 Batch names carry an `fx_` prefix; the group id inside the source does not, because
 `1d_a` and `2d_a` were already taken by the ten effects ported in phase 1. That is
@@ -296,8 +304,8 @@ Shared upstream helpers this batch owns:
 Translation unit `components/wled_fx/wf_effects_particle_2d.cpp`, group id `particle_2d`, 12 effects,
 about 999 effect lines plus 18 helper lines.
 
-Blocked on phase P3, the particle system. Do not start this batch until
-`components/wled_fx/particle/` exists.
+Merged. Runs on the particle system in `components/wled_fx/wf_particle.h` and
+`wf_particle.cpp`; see PORTING.md section 10.
 
 | WLED ID | Name | Function | Lines |
 |---:|---|---|---:|
@@ -323,8 +331,8 @@ Shared upstream helpers this batch owns:
 Translation unit `components/wled_fx/wf_effects_particle_1d.cpp`, group id `particle_1d`, 11 effects,
 about 921 effect lines plus 0 helper lines.
 
-Blocked on phase P3, the particle system. Do not start this batch until
-`components/wled_fx/particle/` exists.
+Merged. Runs on the particle system in `components/wled_fx/wf_particle.h` and
+`wf_particle.cpp`; see PORTING.md section 10.
 
 | WLED ID | Name | Function | Lines |
 |---:|---|---|---:|
@@ -408,8 +416,8 @@ Shared upstream helpers this batch owns:
 Translation unit `components/wled_fx/wf_effects_audio_particle.cpp`, group id `audio_particle`, 8 effects,
 about 663 effect lines plus 0 helper lines.
 
-Blocked on phase P3, the particle system. Do not start this batch until
-`components/wled_fx/particle/` exists.
+Merged. Runs on the particle system in `components/wled_fx/wf_particle.h` and
+`wf_particle.cpp`; see PORTING.md section 10.
 
 Audio effects read `seg.audio()`, which returns an `AudioData &` (see
 `wf_audio.h`). With no microphone attached that is WLED's simulated sound, so

@@ -81,3 +81,79 @@ checks with zero failures; `esphome compile` green for all four example configs.
 
 Still to do in P3 to P5: 10 of the 12 particle 2D effects, 10 of the 11 particle
 1D effects, the 8 audio-particle effects and the 9 WLED-MM exclusives.
+
+### 2026-09-19, integration of the final wave: the port is complete
+
+Merged the last four branches into `main` with ordinary merge commits:
+`fx_particle_2d`, `fx_particle_1d`, `fx_audio_particle` and `fx_mm`. Every
+worktree was clean and every tip matched its hand-off. There were no conflicts at
+all: three branches touch one new effect file each and the fourth adds a licence
+subsection to `README.md`. All four worktrees and branches are removed.
+
+**223 effects registered**, which is the expected 186 + 10 + 10 + 8 + 9. That is
+all 216 WLED 16.0.1 effects except Image and Copy Segment, which need a
+filesystem and a multi-segment model this component does not have, plus the nine
+WLED-MM exclusives. `BATCHES.md` is now all merged.
+
+Consolidation. The only helper genuinely defined in two effect files was the
+`SPOT_TYPE_*` spotlight set, shared by Dancing Shadows and PS Dancing Shadows; it
+is in `wf_fx_shared.h` once. `wf_effects_mm.cpp`'s `map8()`, `map2()`,
+`draw_line_depth()` and the Snow Fall helpers stay local, because the engine has
+no equivalent and only that file uses them, and the `particle` / `star` struct
+that `1d_e` and `mm` both declare stays duplicated because the MM copy belongs to
+an intentionally copied MM core.
+
+Three correctness items closed:
+
+1. `Segment::has_real_audio()` is the one place that answers "is a microphone
+   attached", which is a different question from "is there audio data", because
+   `seg.audio()` always has a frame. PS Attractor now uses it instead of poking
+   at `audio_source()`, and PS Spray and PS Blobs get upstream's non-audio
+   animation back; both had dropped the branch as unreachable.
+2. PS Sonic Stream clamps the particle index it keeps in `seg.aux1`. Upstream
+   never does, and the index can outlive a smaller particle system.
+3. PS Springy's spring force region checks out against the allocator, both the
+   size and the alignment, and the effect now bounds-checks it against
+   `seg.data_size()` rather than trusting a chain of invariants that live in
+   another file.
+
+The simulator gained `--check1..3`, `--custom1..3` and `--checks-on`, and its
+default run now makes a second pass over every effect with all three checkmarks
+on. That pass was the only thing reaching PS Pinball's rolling and collide modes,
+PS Springy's AR mode and the Cylinder, Collide and Gravity options across the
+particle effects. Capture frames scale with the run length, and PS Galaxy is in
+the pacing table at 1500 frames so its arms have formed before the last tile.
+
+Two findings came out of the new pass, both faithful to upstream rather than port
+bugs, and both are recorded in the simulator rather than worked around. Sparkle
+Dark, Sparkle+ and Snow Fall render black with all checks on, because check2 is
+an Overlay flag that suppresses the background and the secondary colour defaults
+to black; the non-black assertion is therefore only a failure in the default
+pass. PS Sonic Boom renders nothing below 21 pixels, because its per-beat
+particle count rounds to zero there, which a 16x16 panel under `M12_P_BAR`
+reaches; `BLACK_ALLOWED` forgives it with that length bound and no wider.
+
+Verified on merged `main`, all of it locally on this machine. MinGW's
+`collect2.exe` is quarantined by Windows Defender, but the WinLibs GCC 16.1.0
+toolchain in `PATH` links fine, so nothing had to be deferred to CI:
+
+* 2676 simulator runs at all six geometries across both control passes, zero
+  failures.
+* 13380 runs across `--map` 0 to 4, zero failures.
+* 83 audio checks, zero failures.
+* All 223 metadata strings present in `firmware.factory.bin`.
+* `esphome compile` green for all four example configs.
+
+| Config | Flash | Free in a 4 MB app slot | RAM |
+|---|---:|---:|---:|
+| `m1-hub75.yaml` | 940,555 | 894,453 (48.7%) | 109,931 (32.2%) |
+| `m1-hub75-audio.yaml` | 994,879 | 840,129 (45.8%) | 118,851 (34.8%) |
+| `strip-esp32.yaml` | 932,147 | 902,861 (49.2%) | 46,668 (25.8%) |
+| `strip-esp32-arduino.yaml` | 1,019,819 | 815,189 (44.4%) | 47,820 (26.5%) |
+
+`HARDWARE-CHECKLIST.md` is new and collects every "worth a look on real
+hardware" note from the porters and from `PORTING.md`, grouped by what has to be
+flashed to check it. Nothing in this repository has ever been flashed.
+
+P2 to P5 are done. What is left is P6, the review pass and a tagged release, and
+P7, the staged upstream PRs to esphome/esphome.

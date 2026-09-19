@@ -59,6 +59,18 @@ inline uint8_t sin_gap(uint16_t in) {
  */
 int8_t tristate_square8(uint8_t x, uint8_t pulsewidth, uint8_t attdec);
 
+/* WLED FX.cpp:4474. The spotlight shapes Dancing Shadows and its particle
+ * replacement PS Dancing Shadows share. Upstream spells them as #defines next to
+ * mode_dancing_shadows; the two effects live in different translation units here,
+ * so they are one set of constants in the engine instead of two copies. */
+inline constexpr uint8_t SPOT_TYPE_SOLID = 0;
+inline constexpr uint8_t SPOT_TYPE_GRADIENT = 1;
+inline constexpr uint8_t SPOT_TYPE_2X_GRADIENT = 2;
+inline constexpr uint8_t SPOT_TYPE_2X_DOT = 3;
+inline constexpr uint8_t SPOT_TYPE_3X_DOT = 4;
+inline constexpr uint8_t SPOT_TYPE_4X_DOT = 5;
+inline constexpr uint8_t SPOT_TYPES_COUNT = 6;
+
 // WLED FX.cpp:2492 and 7125. Ripple state, one per concurrent ripple.
 typedef struct Ripple {
   uint8_t state;

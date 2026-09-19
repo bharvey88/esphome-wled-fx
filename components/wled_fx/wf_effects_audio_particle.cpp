@@ -79,13 +79,13 @@ void mode_particlespray(Segment &seg) {
   PartSys->sources[0].source.y = wf_map(seg.custom2, 0, 255, 0, PartSys->maxY);
   uint16_t angle = (256 - (((int32_t)seg.custom3 + 1) << 3)) << 8;
 
-  /* Upstream asks UsermodManager for the audioreactive usermod so it can skip the
-   * simulated sound and fall back to a plain colour-cycling spray. Here seg.audio()
-   * always has a frame: the attached source when one is configured, WLED's own
-   * simulateSound() otherwise (PORTING.md deviation 10), so the fallback branch is
-   * unreachable and the audio path is the only one kept. */
-  AudioData &audio = seg.audio();
-  {
+  /* Upstream's `UsermodManager::getUMData(..., USERMOD_ID_AUDIOREACTIVE)` is
+   * seg.has_real_audio() here: it asks whether a microphone is attached, not
+   * whether there is a frame to read. seg.audio() always has a frame, because it
+   * falls back to simulateSound() (PORTING.md deviation 10), so without this
+   * distinction the non-audio branch would never run. */
+  if (seg.has_real_audio()) {  // get AR data, do not use simulated data
+    AudioData &audio = seg.audio();
     uint32_t volumeSmth  = (uint8_t)audio.volume_smth; //0 to 255
     uint32_t volumeRaw   = (int16_t)audio.volume_raw; //0 to 255
     PartSys->sources[0].minLife = 30;
@@ -96,6 +96,15 @@ void mode_particlespray(Segment &seg) {
       uint32_t emitspeed = (seg.speed >> 2) + (volumeRaw >> 3);
       PartSys->sources[0].source.hue += volumeSmth/30;
       PartSys->angleEmit(PartSys->sources[0], angle, emitspeed);
+    }
+  }
+  else { //no AR data, fall back to normal mode
+    // change source properties
+    if (seg.call % (11 - (seg.intensity / 25)) == 0) { // every nth frame, cycle color and emit particles
+      PartSys->sources[0].maxLife = 300 + seg.intensity; // lifetime in frames
+      PartSys->sources[0].minLife = 150 + seg.intensity;
+      PartSys->sources[0].source.hue++; // = hw_random16(); //change hue of spray source
+      PartSys->angleEmit(PartSys->sources[0], angle, seg.speed >> 2);
     }
   }
 
@@ -307,10 +316,11 @@ void mode_particleblobs(Segment &seg) {
   seg.aux0 = seg.speed; //write state back
   seg.aux1 = seg.custom1;
 
-  // See the note on mode_particlespray: seg.audio() always has a frame, so the
-  // upstream "no audioreactive usermod" branch is unreachable here.
-  AudioData &audio = seg.audio();
-  {
+  /* See the note on mode_particlespray. Upstream has no else branch here: with no
+   * microphone the sizes are left to the advanced size control set in the loop
+   * above, so Pulsate becomes a no-op rather than tracking simulated volume. */
+  if (seg.has_real_audio()) {  // get AR data if available, do not use simulated data
+    AudioData &audio = seg.audio();
     uint8_t volumeSmth = (uint8_t)audio.volume_smth;
     for (uint32_t i = 0; i < PartSys->usedParticles; i++) { // update particles
       if (seg.check3) //pulsate selected
@@ -465,6 +475,16 @@ void mode_particle1DsonicStream(Segment &seg) {
     PartSys->sources[0].maxLife = PartSys->sources[0].minLife;
     PartSys->sources[0].source.hue = seg.aux0;
     PartSys->sources[0].size = seg.speed;
+    /* Deliberate deviation from upstream. seg.aux1 is an index into
+     * PartSys->particles, carried across frames, and nothing upstream re-checks
+     * it against usedParticles. usedParticles is recomputed from numParticles on
+     * every init, and numParticles itself drops when the allocation retry loop in
+     * initParticleSystem1D() halves it, so a shorter system can inherit an index
+     * that is now out of range and the read below goes past the array. Clamping
+     * costs one comparison and only ever changes which particle is checked for
+     * spacing, which the next emit overwrites anyway. */
+    if (seg.aux1 >= PartSys->usedParticles)
+      seg.aux1 = 0;
     if (PartSys->particles[seg.aux1].x > 3 * PS_P_RADIUS_1D || PartSys->particles[seg.aux1].ttl == 0) { // only emit if last particle is far enough away or dead
       int partindex = PartSys->sprayEmit(PartSys->sources[0]); // emit a particle
       if (partindex >= 0) seg.aux1 = partindex; // track last emitted particle
@@ -635,7 +655,20 @@ void mode_particleSpringy(Segment &seg) {
   }
   int dxlimit = (2 + ((255 - seg.speed) >> 5)) * springlength; // limit for spring length to avoid overstretching
 
-  int *springforce = reinterpret_cast<int *>(PartSys->PSdataEnd); // spring forces, see the note in the init branch
+  /* Spring forces, in the additional bytes asked for in the init branch. The
+   * arithmetic checks out against allocateParticleSystemMemory1D(): the request
+   * is numParticles ints for the pre-retry particle count, the retry loop only
+   * ever halves numParticles, and setUsedParticles() caps usedParticles at
+   * numParticles, so usedParticles ints always fit. Alignment holds because every
+   * block updatePSpointers() walks past is a multiple of 4 bytes long, including
+   * the 3 byte PSadvancedParticle1D array, whose length is a multiple of 4
+   * particles. That is a long chain of invariants in another file, so the bound is
+   * checked rather than trusted: updateSystem() also recomputes PSdataEnd from the
+   * live canvas size on every frame while the allocation does not move. */
+  static_assert(alignof(int) <= 4, "spring forces are carved from a 4 byte aligned region");
+  int *springforce = reinterpret_cast<int *>(PartSys->PSdataEnd);
+  if (reinterpret_cast<uint8_t *>(springforce + PartSys->usedParticles) > seg.data + seg.data_size())
+    FX_FALLBACK_STATIC; // spring force region does not fit, do not write past the allocation
   memset(springforce, 0, PartSys->usedParticles * sizeof(int)); // reset spring forces
 
   // calculate spring forces and limit particle positions

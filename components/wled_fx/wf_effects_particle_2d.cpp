@@ -991,11 +991,9 @@ void mode_particleattractor(Segment &seg) {
     PartSys->angleEmit(PartSys->sources[0], seg.aux0 + 0x7FFF, 12);  // emit at 180 degrees as well
   // apply force
   uint32_t strength = seg.speed;
-  // upstream asks the audioreactive usermod for real data and deliberately skips the simulation; the
-  // equivalent here is an attached AudioSource that has samples, because seg.audio() falls back to
-  // simulateSound() when there is none
-  AudioSource *um_data = audio_source();
-  if (um_data != nullptr && um_data->has_data()) {  // AR active, do not use simulated data
+  // upstream asks the audioreactive usermod for real data and deliberately skips the simulation;
+  // seg.has_real_audio() is that question, because seg.audio() falls back to simulateSound()
+  if (seg.has_real_audio()) {  // AR active, do not use simulated data
     uint32_t volumeSmth = static_cast<uint32_t>(seg.audio().volume_smth);  // 0-255
     strength = (seg.speed * volumeSmth) >> 8;
   }

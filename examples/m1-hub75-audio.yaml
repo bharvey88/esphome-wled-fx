@@ -1,0 +1,120 @@
+# Apollo Automation M-1 (ESP32-S3, 64x64 HUB75 panel) with a real microphone, so
+# the audio reactive effects run on live sound instead of the built-in
+# simulation.
+#
+# THE MICROPHONE PINS BELOW ARE PLACEHOLDERS. An INMP441 breakout needs three
+# free GPIOs, and the M-1's HUB75 connector already uses most of the low
+# numbered ones, so check your own wiring before building this. Nothing here has
+# been run on hardware.
+#
+# INMP441 wiring for the three pins used below:
+#   VDD -> 3V3          GND -> GND
+#   SCK -> i2s_bclk_pin       WS  -> i2s_lrclk_pin
+#   SD  -> i2s_din_pin        L/R -> GND (left channel) or 3V3 (right)
+
+esphome:
+  name: wled-fx-m1-audio
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+display:
+  - platform: hub75
+    id: matrix
+    board: apollo-automation-m1-rev6
+    panel_width: 64
+    panel_height: 64
+    update_interval: never
+    auto_clear_enabled: false
+    double_buffer: true
+
+i2s_audio:
+  - id: i2s_mic_bus
+    i2s_lrclk_pin: GPIO10 # PLACEHOLDER
+    i2s_bclk_pin: GPIO11 # PLACEHOLDER
+
+microphone:
+  - platform: i2s_audio
+    id: board_mic
+    i2s_audio_id: i2s_mic_bus
+    i2s_din_pin: GPIO12 # PLACEHOLDER
+    adc_type: external
+    channel: left
+    bits_per_sample: 32bit
+    # 22050 Hz is what the WLED usermod assumes, so the GEQ bins land exactly
+    # where upstream put them. Other rates work, the mapping is rescaled.
+    sample_rate: 22050
+
+wled_fx:
+  id: fx
+  display_id: matrix
+  update_interval: 33ms
+  effect: GEQ
+  audio:
+    microphone:
+      microphone: board_mic
+      # The analysis wants one channel of 16 bit audio. gain_factor is a plain
+      # integer multiplier applied before the analysis sees anything, so leave it
+      # at 1 unless the microphone is very quiet; the AGC below is the better
+      # tool for that.
+      bits_per_sample: 16
+      channels: [0]
+      gain_factor: 1
+    # WLED's own defaults. Every one of these is optional.
+    gain: 60
+    squelch: 10
+    input_level: 128
+    agc: normal # off, normal, vivid, lazy
+    scaling: sqrt # none, log, linear, sqrt
+    limiter: true
+    attack: 80ms
+    decay: 1400ms
+    mic_filter: false
+    bandpass: false
+    # The FFT task stack can live in PSRAM on boards that have it.
+    task_in_psram: false
+
+select:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: effect
+    name: Effect
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: palette
+    name: Palette
+
+number:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: speed
+    name: Speed
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: intensity
+    name: Intensity

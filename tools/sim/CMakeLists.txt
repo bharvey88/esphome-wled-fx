@@ -55,3 +55,23 @@ if(WLED_FX_SANITIZE)
     target_compile_options(wled_fx_sim PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer -g)
     target_link_options(wled_fx_sim PRIVATE -fsanitize=address,undefined)
 endif()
+
+# The audio processing core is framework free, so the same pipeline the firmware
+# runs can be fed synthetic PCM here. It needs no effects and no canvas, so it
+# gets its own small executable rather than a flag on the simulator.
+add_executable(wled_fx_audio_test
+    audio_test.cpp
+    ${ENGINE_DIR}/wf_audio.cpp
+    ${ENGINE_DIR}/wf_audio_core.cpp
+    ${ENGINE_DIR}/wf_fft.cpp
+    ${ENGINE_DIR}/wf_math.cpp
+    ${ENGINE_DIR}/wf_platform.cpp
+)
+target_compile_definitions(wled_fx_audio_test PRIVATE WLED_FX_HOST_BUILD)
+target_include_directories(wled_fx_audio_test PRIVATE ${ENGINE_DIR})
+target_compile_options(wled_fx_audio_test PRIVATE -Wall -Wextra -Wno-unused-parameter)
+
+if(WLED_FX_SANITIZE)
+    target_compile_options(wled_fx_audio_test PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer -g)
+    target_link_options(wled_fx_audio_test PRIVATE -fsanitize=address,undefined)
+endif()

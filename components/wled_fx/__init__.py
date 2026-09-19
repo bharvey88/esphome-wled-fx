@@ -10,7 +10,7 @@ import re
 
 from esphome import automation
 import esphome.codegen as cg
-from esphome.components import display
+from esphome.components import display, microphone
 from esphome.components.light.effects import register_addressable_effect
 from esphome.components.light.types import AddressableLightEffect
 import esphome.config_validation as cv
@@ -19,10 +19,12 @@ from esphome.const import (
     CONF_GAMMA_CORRECT,
     CONF_HEIGHT,
     CONF_ID,
+    CONF_MICROPHONE,
     CONF_NAME,
     CONF_TEXT,
     CONF_UPDATE_INTERVAL,
     CONF_WIDTH,
+    PLATFORM_ESP32,
 )
 import esphome.final_validate as fv
 
@@ -45,6 +47,20 @@ CONF_CHECK3 = "check3"
 CONF_SERPENTINE = "serpentine"
 CONF_USE_LIGHT_COLOR = "use_light_color"
 CONF_AUTO_CLEAR_ENABLED = "auto_clear_enabled"
+CONF_AUDIO = "audio"
+CONF_AUDIO_ID = "audio_id"
+CONF_GAIN = "gain"
+CONF_SQUELCH = "squelch"
+CONF_INPUT_LEVEL = "input_level"
+CONF_AGC = "agc"
+CONF_SCALING = "scaling"
+CONF_LIMITER = "limiter"
+CONF_ATTACK = "attack"
+CONF_DECAY = "decay"
+CONF_MIC_FILTER = "mic_filter"
+CONF_BANDPASS = "bandpass"
+CONF_PASSIVE = "passive"
+CONF_TASK_IN_PSRAM = "task_in_psram"
 
 # update_interval: never is stored as uint32_t max.
 UPDATE_INTERVAL_NEVER = 4294967295
@@ -57,6 +73,7 @@ WledFxDisplay = wled_fx_ns.class_(
 WledFxLightEffect = wled_fx_ns.class_(
     "WledFxLightEffect", AddressableLightEffect, WledFxController
 )
+WledFxAudioSource = wled_fx_ns.class_("WledFxAudioSource", cg.Component)
 
 SetEffectAction = wled_fx_ns.class_("SetEffectAction", automation.Action)
 NextEffectAction = wled_fx_ns.class_("NextEffectAction", automation.Action)
@@ -100,6 +117,56 @@ CONTROL_SCHEMA = {
     cv.Optional(CONF_TEXT): cv.string,
 }
 
+# --- audio -----------------------------------------------------------------
+#
+# The analysis source is process wide: the engine has one canvas and one
+# segment, so one microphone is enough, and both front ends read it through
+# Segment::audio() with no wiring of their own. That is why `audio:` sits on a
+# wled_fx entry rather than on each front end, and why an entry that carries
+# nothing but `audio:` is a perfectly good way to give the light effect a
+# microphone.
+
+# Matches the AgcPreset and FftScaling enums in wf_audio_core.h.
+AGC_MODES = {"off": 0, "normal": 1, "vivid": 2, "lazy": 3}
+FFT_SCALING_MODES = {"none": 0, "log": 1, "linear": 2, "sqrt": 3}
+
+AUDIO_SCHEMA = cv.All(
+    cv.Schema(
+        {
+            cv.GenerateID(CONF_AUDIO_ID): cv.declare_id(WledFxAudioSource),
+            cv.Required(CONF_MICROPHONE): microphone.microphone_source_schema(
+                min_bits_per_sample=16,
+                max_bits_per_sample=16,
+                min_channels=1,
+                max_channels=1,
+            ),
+            cv.Optional(CONF_PASSIVE, default=False): cv.boolean,
+            cv.Optional(CONF_GAIN, default=60): cv.int_range(min=0, max=255),
+            cv.Optional(CONF_SQUELCH, default=10): cv.int_range(min=0, max=255),
+            cv.Optional(CONF_INPUT_LEVEL, default=128): cv.int_range(min=0, max=255),
+            cv.Optional(CONF_AGC, default="normal"): cv.enum(AGC_MODES, lower=True),
+            cv.Optional(CONF_SCALING, default="sqrt"): cv.enum(
+                FFT_SCALING_MODES, lower=True
+            ),
+            cv.Optional(CONF_LIMITER, default=True): cv.boolean,
+            cv.Optional(CONF_ATTACK, default="80ms"): cv.All(
+                cv.positive_time_period_milliseconds,
+                cv.Range(max=cv.TimePeriod(milliseconds=10000)),
+            ),
+            cv.Optional(CONF_DECAY, default="1400ms"): cv.All(
+                cv.positive_time_period_milliseconds,
+                cv.Range(max=cv.TimePeriod(milliseconds=10000)),
+            ),
+            cv.Optional(CONF_MIC_FILTER, default=False): cv.boolean,
+            cv.Optional(CONF_BANDPASS, default=False): cv.boolean,
+            cv.Optional(CONF_TASK_IN_PSRAM, default=False): cv.boolean,
+        }
+    ).extend(cv.COMPONENT_SCHEMA),
+    # The microphone component, and therefore this block, is ESP32 only.
+    cv.only_on([PLATFORM_ESP32]),
+)
+
+
 _ENTRY_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.declare_id(WledFxDisplay),
@@ -108,6 +175,7 @@ _ENTRY_SCHEMA = cv.Schema(
         cv.Optional(CONF_WIDTH): cv.positive_not_null_int,
         cv.Optional(CONF_HEIGHT): cv.positive_not_null_int,
         cv.Optional(CONF_GAMMA_CORRECT, default=1.0): cv.positive_float,
+        cv.Optional(CONF_AUDIO): AUDIO_SCHEMA,
         **CONTROL_SCHEMA,
     }
 ).extend(cv.polling_component_schema("33ms"))
@@ -124,13 +192,30 @@ def _validate_entry(config):
     return config
 
 
-CONFIG_SCHEMA = cv.ensure_list(cv.All(_ENTRY_SCHEMA, _validate_entry))
+def _validate_one_audio_source(config):
+    """One canvas, one segment, one analysis source."""
+    if sum(1 for entry in config if CONF_AUDIO in entry) > 1:
+        raise cv.Invalid(
+            "Only one wled_fx entry can carry an 'audio' block. "
+            "Every effect reads the same analysis source."
+        )
+    return config
+
+
+CONFIG_SCHEMA = cv.All(
+    cv.ensure_list(cv.All(_ENTRY_SCHEMA, _validate_entry)), _validate_one_audio_source
+)
 
 
 def _final_validate(config):
     """A display handed to wled_fx must not also be driven by its own poller."""
     full_config = fv.full_config.get()
     for entry in config:
+        if (audio_config := entry.get(CONF_AUDIO)) is not None:
+            # Checks the microphone really offers the channel that was asked for.
+            microphone.final_validate_microphone_source_schema("wled_fx")(
+                audio_config[CONF_MICROPHONE]
+            )
         if CONF_DISPLAY_ID not in entry:
             continue
         path = full_config.get_path_for_id(entry[CONF_DISPLAY_ID])[:-1]
@@ -251,9 +336,51 @@ async def apply_controls(var, config):
         cg.add(engine.set_check3(config[CONF_CHECK3]))
 
 
+async def audio_to_code(config):
+    """Builds the real analysis source and pulls in the FFT dependency.
+
+    esp-dsp is already pinned by ESPHome itself, so asking for it here costs no
+    new third party dependency. On Arduino this replaces the empty stub ESPHome
+    substitutes for the component; on esp-idf it adds it.
+
+    WLED_FX_AUDIO is what compiles the microphone plumbing in at all, and
+    WLED_FX_USE_ESP_DSP picks the esp-dsp FFT. Neither is defined in a build
+    without an audio block, so those sources come out empty and wf_fft.cpp keeps
+    its own radix-2 transform, which is also the one the host simulator runs.
+    """
+    from esphome.components import esp32
+
+    esp32.add_idf_component(name="espressif/esp-dsp", ref="1.8.2")
+    cg.add_build_flag("-DWLED_FX_AUDIO")
+    cg.add_build_flag("-DWLED_FX_USE_ESP_DSP")
+
+    var = cg.new_Pvariable(config[CONF_AUDIO_ID])
+    await cg.register_component(var, config)
+
+    mic_source = await microphone.microphone_source_to_code(
+        config[CONF_MICROPHONE], passive=config[CONF_PASSIVE]
+    )
+    cg.add(var.set_microphone_source(mic_source))
+
+    cg.add(var.set_gain(config[CONF_GAIN]))
+    cg.add(var.set_squelch(config[CONF_SQUELCH]))
+    cg.add(var.set_input_level(config[CONF_INPUT_LEVEL]))
+    cg.add(var.set_agc(config[CONF_AGC]))
+    cg.add(var.set_scaling(config[CONF_SCALING]))
+    cg.add(var.set_limiter(config[CONF_LIMITER]))
+    cg.add(var.set_attack(config[CONF_ATTACK].total_milliseconds))
+    cg.add(var.set_decay(config[CONF_DECAY].total_milliseconds))
+    cg.add(var.set_mic_filter(config[CONF_MIC_FILTER]))
+    cg.add(var.set_bandpass(config[CONF_BANDPASS]))
+    cg.add(var.set_task_in_psram(config[CONF_TASK_IN_PSRAM]))
+    return var
+
+
 async def to_code(config):
     _add_effect_selection(config)
     for entry in config:
+        if (audio_config := entry.get(CONF_AUDIO)) is not None:
+            await audio_to_code(audio_config)
         if CONF_DISPLAY_ID not in entry:
             continue
         var = cg.new_Pvariable(entry[CONF_ID])

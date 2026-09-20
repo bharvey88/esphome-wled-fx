@@ -143,7 +143,16 @@ CRGBPalette16 generate_harmonic_random_palette(const CRGBPalette16 &basepalette)
   return CRGBPalette16(rgb_palette_colors[0], rgb_palette_colors[1], rgb_palette_colors[2], rgb_palette_colors[3]);
 }
 
-void load_palette(CRGBPalette16 &target, uint8_t pal, const uint32_t colors[3], const CRGBPalette16 &random_palette) {
+void load_palette(CRGBPalette16 &target, uint8_t pal, const uint32_t colors[3], const CRGBPalette16 &random_palette,
+                  uint8_t default_palette) {
+  /* WLED FX_fcn.cpp:234. Palette 0 is not a palette: it is "whatever this
+   * effect declared", which setMode worked out when the effect was selected.
+   * It falls back to Party, which is what `default_palette` holds when the
+   * metadata declares nothing. Note that an effect reading a colour through
+   * color_from_palette() never gets here at palette 0: upstream returns the
+   * segment colour instead, and so does this port. */
+  if (pal == 0)
+    pal = default_palette;
   const size_t fixed_count = DYNAMIC_PALETTE_COUNT + FASTLED_PALETTE_COUNT + GRADIENT_PALETTE_COUNT;
   if (pal >= fixed_count)
     pal = 0;

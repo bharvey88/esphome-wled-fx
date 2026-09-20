@@ -37,7 +37,20 @@ struct EffectInfo {
   EffectFn fn;
 };
 
-// Segment field defaults for an effect, read out of the metadata string.
+/* Segment field defaults for an effect, read out of the metadata string.
+ *
+ * The three signed fields are upstream's "not specified". `extractModeDefaults`
+ * returns -1 when the metadata does not name a key, and WLED's setMode treats
+ * the three of them differently from the sliders (wled00/FX_fcn.cpp:610-619):
+ *
+ *   pal   set only when the metadata names it, otherwise the segment keeps
+ *         whatever palette it had, and `default_palette` below is what a
+ *         palette of 0 then resolves to;
+ *   m12   set when named, and reset to M12_PIXELS when not;
+ *   si    set when named, otherwise left alone.
+ *
+ * The sliders and the three checkmarks are always written, to the value in the
+ * metadata or to WLED's own default, which is what the plain members are. */
 struct EffectDefaults {
   uint8_t speed{128};
   uint8_t intensity{128};
@@ -47,9 +60,13 @@ struct EffectDefaults {
   bool check1{false};
   bool check2{false};
   bool check3{false};
-  uint8_t palette{0};
-  uint8_t map1d2d{M12_PIXELS};
-  uint8_t sound_sim{0};
+  int16_t palette{-1};
+  int16_t map1d2d{-1};
+  int16_t sound_sim{-1};
+  /* What palette 0 means for this effect: the declared one, or Party when it
+   * declares none or declares zero. WLED's `_default_palette`
+   * (wled00/FX_fcn.cpp:618-619 and :234). */
+  uint8_t default_palette{6};
   uint8_t flags{EFFECT_FLAG_1D};
 };
 

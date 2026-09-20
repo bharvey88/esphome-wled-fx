@@ -33,10 +33,22 @@ void Engine::apply_effect_defaults_() {
     this->seg_.check2 = d.check2;
   if (!(this->overrides_ & OVERRIDE_CHECK3))
     this->seg_.check3 = d.check3;
-  if (!(this->overrides_ & OVERRIDE_PALETTE))
-    this->seg_.palette = d.palette;
-  this->seg_.map1d2d = d.map1d2d;
-  this->seg_.sound_sim = d.sound_sim;
+  /* The palette is upstream's odd one out (wled00/FX_fcn.cpp:616-619). The
+   * metadata is read for `pal=` on every effect change, but the segment's
+   * palette is only written when the metadata names one: an effect that
+   * declares no palette leaves the palette the user is on alone. 112 of the
+   * 223 effects here declare none, so this is most of them.
+   *
+   * `default_palette` is set either way, and it is what a palette of 0,
+   * "Default" in the select, renders as while this effect runs. */
+  if (d.palette >= 0 && !(this->overrides_ & OVERRIDE_PALETTE))
+    this->seg_.palette = static_cast<uint8_t>(d.palette);
+  this->seg_.default_palette = d.default_palette;
+  // Upstream resets the mapping mode when the metadata does not name one, and
+  // leaves the sound simulation alone.
+  this->seg_.map1d2d = d.map1d2d >= 0 ? static_cast<uint8_t>(d.map1d2d) : M12_PIXELS;
+  if (d.sound_sim >= 0)
+    this->seg_.sound_sim = static_cast<uint8_t>(d.sound_sim);
 }
 
 bool Engine::set_effect(const char *name) {

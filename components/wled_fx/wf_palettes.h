@@ -35,9 +35,13 @@ size_t palette_count();
 // Resolves a palette name to its ID. Returns -1 when unknown. Case insensitive.
 int palette_id_by_name(const char *name);
 
-// Fills target with palette pal. Colours 0 to 2 are the segment colours, used by
-// the dynamic palettes 2 to 5. random_palette is the shared morphing palette.
-void load_palette(CRGBPalette16 &target, uint8_t pal, const uint32_t colors[3], const CRGBPalette16 &random_palette);
+/* Fills target with palette pal. Colours 0 to 2 are the segment colours, used by
+ * the dynamic palettes 2 to 5. random_palette is the shared morphing palette.
+ * `default_palette` is what a pal of 0 resolves to, which on WLED is the
+ * running effect's own declared palette; the default of 6 is Party, upstream's
+ * value when an effect declares none. */
+void load_palette(CRGBPalette16 &target, uint8_t pal, const uint32_t colors[3], const CRGBPalette16 &random_palette,
+                  uint8_t default_palette = 6);
 
 CRGBPalette16 generate_random_palette();
 CRGBPalette16 generate_harmonic_random_palette(const CRGBPalette16 &basepalette);

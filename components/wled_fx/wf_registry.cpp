@@ -109,10 +109,12 @@ bool effect_name_equals(const EffectInfo &info, const char *name) {
 EffectDefaults effect_defaults(const EffectInfo &info) {
   EffectDefaults out;
 
-  // Group 3 is the palette section: a leading digit is the default palette ID.
-  const char *palette_group = group_at(info.metadata, 2);
-  if (palette_group != nullptr && *palette_group >= '0' && *palette_group <= '9')
-    out.palette = static_cast<uint8_t>(strtol(palette_group, nullptr, 10));
+  /* Group 3, the palette section, is not read here. A leading digit there pins
+   * the palette in WLED's UI and hides the selector (data/index.js:1722), and
+   * it is not one of the keys setMode loads: only `pal=` in the last group is
+   * (wled00/FX_fcn.cpp:616). No effect in this port has a numeric palette group
+   * anyway; the one in WLED-MM that does, Police, is not ported. The label
+   * layer still reads the group, in effect_labels() below. */
 
   // Group 4 is the dimensionality and audio flag set.
   const char *flag_group = group_at(info.metadata, 3);
@@ -162,8 +164,23 @@ EffectDefaults effect_defaults(const EffectInfo &info) {
     uint8_t *target;
   };
   const KeyTarget numeric[] = {
-      {"sx", &out.speed},   {"ix", &out.intensity}, {"c1", &out.custom1},  {"c2", &out.custom2},
-      {"c3", &out.custom3}, {"pal", &out.palette},  {"m12", &out.map1d2d}, {"si", &out.sound_sim},
+      {"sx", &out.speed},   {"ix", &out.intensity}, {"c1", &out.custom1}, {"c2", &out.custom2}, {"c3", &out.custom3},
+  };
+
+  /* The three keys upstream only applies when they are present. Upstream's
+   * constrain() goes on them here rather than at the segment, so a metadata
+   * string with a nonsense value cannot reach a mapping mode that does not
+   * exist (wled00/FX_fcn.cpp:610-611). */
+  struct SignedKeyTarget {
+    const char *key;
+    int16_t *target;
+    int16_t low;
+    int16_t high;
+  };
+  const SignedKeyTarget optional_numeric[] = {
+      {"pal", &out.palette, 0, 255},
+      {"m12", &out.map1d2d, 0, 7},
+      {"si", &out.sound_sim, 0, 3},
   };
   bool *const checks[] = {&out.check1, &out.check2, &out.check3};
   const char *const check_keys[] = {"o1", "o2", "o3"};
@@ -187,6 +204,13 @@ EffectDefaults effect_defaults(const EffectInfo &info) {
         break;
       }
     }
+    for (const auto &kt : optional_numeric) {
+      if (strlen(kt.key) == key_len && strncmp(p, kt.key, key_len) == 0) {
+        const long clamped = value < kt.low ? kt.low : (value > kt.high ? kt.high : value);
+        *kt.target = static_cast<int16_t>(clamped);
+        break;
+      }
+    }
     for (size_t i = 0; i < 3; i++) {
       if (strlen(check_keys[i]) == key_len && strncmp(p, check_keys[i], key_len) == 0)
         *checks[i] = value != 0;
@@ -196,12 +220,23 @@ EffectDefaults effect_defaults(const EffectInfo &info) {
     p = comma + 1;
   }
 
+  /* wled00/FX_fcn.cpp:618, "partycolors if zero or not set". This is what the
+   * segment resolves a palette of 0 to while this effect is running. */
+  out.default_palette = out.palette > 0 ? static_cast<uint8_t>(out.palette) : 6;
+
   return out;
 }
 
 // --- control labels ----------------------------------------------------------
 
-const char *const SLIDER_LABEL_DEFAULTS[5] = {"Speed", "Intensity", "Custom 1", "Custom 2", "Custom 3"};
+/* WLED's own words for the two standard sliders. Its UI restores exactly
+ * these when an effect leaves a slider at "!" (data/index.js:1646,
+ * `text = i==0 ? "Effect speed" : "Effect intensity"`), and the three custom
+ * slots are the titles in data/index.htm. The names of the ESPHome entities
+ * are the user's and are not touched by this: this is the text the "Effect
+ * controls" sensor publishes. */
+const char *const SLIDER_LABEL_DEFAULTS[5] = {"Effect speed", "Effect intensity", "Custom 1", "Custom 2",
+                                              "Custom 3"};
 const char *const CHECK_LABEL_DEFAULTS[3] = {"Check 1", "Check 2", "Check 3"};
 // WLED's three colour slot buttons: effect colour, background, custom.
 const char *const COLOR_LABEL_DEFAULTS[3] = {"Fx", "Bg", "Cs"};

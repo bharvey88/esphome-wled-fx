@@ -68,7 +68,7 @@ void Segment::pinwheel_parameters_(int i, int vw, int vh, int &startx, int &star
 }
 
 void Segment::begin_draw(const CRGBPalette16 &random_palette) {
-  load_palette(this->current_palette_, this->palette, this->colors, random_palette);
+  load_palette(this->current_palette_, this->palette, this->colors, random_palette, this->default_palette);
 }
 
 void Segment::reset() {

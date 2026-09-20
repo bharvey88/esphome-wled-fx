@@ -486,8 +486,10 @@ int main(int argc, char **argv) {
       char name[64];
       effect_name(*entry.second, name, sizeof(name));
       const EffectDefaults d = effect_defaults(*entry.second);
-      printf("%-10s %-20s flags=0x%02X pal=%u sx=%u ix=%u m12=%u\n", entry.first.c_str(), name, d.flags, d.palette,
-             d.speed, d.intensity, d.map1d2d);
+      // pal and m12 print -1 when the metadata declares neither, which is what
+      // upstream's extractModeDefaults() returns and what the engine acts on.
+      printf("%-10s %-20s flags=0x%02X pal=%d sx=%u ix=%u m12=%d\n", entry.first.c_str(), name, d.flags,
+             static_cast<int>(d.palette), d.speed, d.intensity, static_cast<int>(d.map1d2d));
     }
     printf("%zu effect(s)\n", selected.size());
     return 0;

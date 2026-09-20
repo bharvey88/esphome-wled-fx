@@ -420,6 +420,7 @@ void mode_icu(Segment &seg) {
           break;
         }
         // fall through if not blinking
+        [[fallthrough]];
       case 1:  // blink
         // not blinking or finished blinking -> pause part 2
         nextUpdate = uint16_t(now + 500 + hw_random16(1000));

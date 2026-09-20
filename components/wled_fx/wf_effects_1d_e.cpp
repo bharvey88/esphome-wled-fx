@@ -538,8 +538,17 @@ void candle(Segment &seg, bool multi) {
   if (multi && seg_len > 1) {
     // allocate segment data
     unsigned dataSize = sizeof(uint32_t) + (1 > (int) seg_len - 1 ? 1 : (int) seg_len - 1) * 3;
-    if (!seg.allocate_data(dataSize))
+    if (!seg.allocate_data(dataSize)) {
+      /* Upstream falls back to the single candle here and then carries on into
+       * the multi-candle body. It gets away with it because the recursive call
+       * stamps *lastcall, so the rate limit below returns before anything is
+       * written. It does not get away with it when the 4 byte allocation the
+       * recursive call makes fails as well: seg.data is then null and the read
+       * of *lastcall below dereferences it. One return, and the outcome is the
+       * same in every case upstream survives. */
       candle(seg, false);  // allocation failed
+      return;
+    }
   } else {
     unsigned dataSize = sizeof(uint32_t);  // for last call timestamp
     if (!seg.allocate_data(dataSize))

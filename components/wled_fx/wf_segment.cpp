@@ -145,8 +145,12 @@ void Segment::set_pixel_color(int n, uint32_t c) const {
     const int vh = this->height();
     switch (this->map1d2d) {
       case M12_P_BAR:
+        /* v_strip comes out of the index an effect built with index_to_v_strip(),
+         * so a miscounted virtual strip reaches this as a column number that can
+         * be past the right hand edge. Upstream goes through the bounds checked
+         * setter here too, so this uses the checked one rather than the raw one. */
         if (v_strip > 0) {
-          this->set_pixel_color_xy_raw(v_strip - 1, vh - n - 1, c);
+          this->set_pixel_color_xy(v_strip - 1, vh - n - 1, c);
         } else {
           for (int x = 0; x < vw; x++)
             this->set_pixel_color_xy_raw(x, vh - n - 1, c);
@@ -312,7 +316,8 @@ uint32_t Segment::get_pixel_color(int i) const {
     const int vh = this->height();
     switch (this->map1d2d) {
       case M12_P_BAR:
-        return this->get_pixel_color_xy_raw(v_strip > 0 ? v_strip - 1 : 0, vh - i - 1);
+        // Bounds checked for the same reason as the setter above.
+        return this->get_pixel_color_xy(v_strip > 0 ? v_strip - 1 : 0, vh - i - 1);
       case M12_P_ARC:
         return this->get_pixel_color_xy(i, 0);
       case M12_P_CORNER:

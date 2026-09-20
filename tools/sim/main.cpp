@@ -11,7 +11,7 @@
 //               [--size WxH] [--check1 0|1] [--check2 0|1] [--check3 0|1]
 //               [--checks-on] [--custom1 N] [--custom2 N] [--custom3 N]
 //               [--speed N] [--intensity N] [--text STRING]
-//               [--single-pass] [--anim DIR]
+//               [--single-pass] [--anim DIR] [--color1 RRGGBB] [--color2 ..] [--color3 ..]
 //
 // With none of the control options, every effect is run twice per geometry: once
 // on its own metadata defaults and once with all three checkmarks on. The second
@@ -343,6 +343,12 @@ int main(int argc, char **argv) {
   // -1 keeps the effect's own metadata default, as the other controls do.
   int speed = -1;
   int intensity = -1;
+  /* The three WLED colour slots, -1 for "leave the engine's own default". They
+   * are here so a run can be matched against a device that was captured with
+   * different colours: WLED's own default is amber and black and black, and an
+   * effect that paints the primary colour directly reports a different hue on
+   * any other. */
+  long colors[3] = {-1, -1, -1};
   // What the text effects render. The hardware test firmwares use this string.
   std::string text = "WLED FX";
 
@@ -410,6 +416,8 @@ int main(int argc, char **argv) {
       intensity = atoi(argv[++i]);
     else if (arg == "--text" && i + 1 < argc)
       text = argv[++i];
+    else if ((arg == "--color1" || arg == "--color2" || arg == "--color3") && i + 1 < argc)
+      colors[arg[7] - '1'] = strtol(argv[++i], nullptr, 16);  // RRGGBB
     else if (arg == "--size" && i + 1 < argc) {
       size_label = argv[++i];
       int w = 0, h = 0;
@@ -553,6 +561,12 @@ int main(int argc, char **argv) {
           engine.set_speed(static_cast<uint8_t>(speed));
         if (intensity >= 0)
           engine.set_intensity(static_cast<uint8_t>(intensity));
+        // After set_effect(), which does not touch the colours, exactly as
+        // WLED's fxdef does not.
+        for (int slot = 0; slot < 3; slot++) {
+          if (colors[slot] >= 0)
+            engine.segment().colors[slot] = static_cast<uint32_t>(colors[slot]);
+        }
         /* m12 is the *1D to 2D* mapping, so it only means anything for an effect
          * that can run in 1D. WLED only offers the "Expand 1D FX" selector on those
          * effects, and forcing a mapping onto a 2D-native effect breaks the same

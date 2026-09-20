@@ -70,7 +70,11 @@ class Segment {
   bool check2{false};
   bool check3{false};
   uint8_t palette{0};
-  uint32_t colors[3]{0xFFAA00, 0x000000, 0x000000};
+  // WLED's DEFAULT_COLOR, FX.h line 45. It is 0xFFA000, an amber with 160 of
+  // green; 0xFFAA00, with 170, is a different amber and is what this was until
+  // a capture of a real device showed the hue was off on every effect that
+  // paints the primary colour.
+  uint32_t colors[3]{0xFFA000, 0x000000, 0x000000};
   uint8_t map1d2d{M12_PIXELS};
   uint8_t sound_sim{0};
   // 0 wrap when moving, 1 always wrap, 2 never wrap, 3 no interpolation

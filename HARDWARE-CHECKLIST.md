@@ -70,6 +70,18 @@ component and watch the column mapping.
   mapping produce thin bands. Decide whether the default mapping for these three
   should be something other than what the metadata sets.
 
+**Panels wider than 180 pixels.** Two effects run into arithmetic upstream
+holds in 8 or 16 bits. Neither misbehaves, both just get duller, and both are
+upstream's code unchanged, so the question on hardware is whether the duller
+version is acceptable or whether this port should diverge.
+
+* **2D Octopus** scales its radius map by `180 / max(cols, rows)`, which is
+  integer zero once the larger dimension is 181 or more. Every pixel then sits
+  at radius 0 and the effect renders a flat field.
+* **Game Of Life** holds its glider period in a 16 bit segment field, which
+  wraps above about 16384 pixels on a panel whose dimensions are coprime.
+  Spaceship detection stops firing, so a stable glider is never reset.
+
 **2D effects at panel sizes.**
 
 * **Polar Lights** shows banding above 32 rows. Look at it on a 64 row panel and
@@ -133,7 +145,26 @@ clean synthetic signal. A room with a real microphone is not.
 
 ---
 
-## 4. Build configurations that compile but have never run
+---
+
+## 4. Frame rate
+
+The frame clock was wrong until the review pass: both front ends asked for
+WLED's 23 ms FRAMETIME and got 32 ms, because the gate re-armed from the moment
+the frame ran and ESPHome's main loop only ticks every 16 ms. It accumulates
+now, so the period alternates between one tick and two and the average is 23 ms.
+
+That has only ever been reasoned about, never watched. On hardware, check that
+a 64x64 hub75 panel can actually finish a frame in 23 ms with the heavier
+effects, the particle systems and anything that blurs the whole canvas, and
+that the light front end is not starving the rest of the loop on a long strip.
+If a panel cannot keep up, `update_interval` is the lever, and the effects that
+pace themselves against `seg.now` will still look right; the ones that count
+frames will run slow.
+
+---
+
+## 5. Build configurations that compile but have never run
 
 * **esp-dsp under the Arduino framework.** `strip-esp32-arduino.yaml` compiles
   with the audio pipeline in it, and that is all that has been verified. The
@@ -142,6 +173,17 @@ clean synthetic signal. A room with a real microphone is not.
 * **`examples/host.yaml`** builds in CI on Linux and does not build on Windows
   (ESPHome's host platform needs `sys/ioctl.h`). Nothing component specific, but
   it means the host front end has never been run on this machine.
+
+---
+
+## 6. Memory over a long uptime
+
+The effect scratch block grows and is reused rather than being freed on every
+effect change, which is a deliberate divergence from WLED aimed at heap
+fragmentation on a board with no PSRAM. Nothing has run long enough to know
+whether it helps. Leave a device cycling effects for a few days, watch the free
+heap and the largest free block, and compare an ESP32 with PSRAM against one
+without.
 
 ---
 

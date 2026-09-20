@@ -153,6 +153,52 @@ toolchain in `PATH` links fine, so nothing had to be deferred to CI:
 | `strip-esp32.yaml` | 932,147 | 902,861 (49.2%) | 46,668 (25.8%) |
 | `strip-esp32-arduino.yaml` | 1,019,819 | 815,189 (44.4%) | 47,820 (26.5%) |
 
+### 2026-09-20, P6 review pass
+
+Six correctness fixes, three of which a user would have hit.
+
+* **DNA Spiral hung on any panel 129 pixels or wider.** Upstream's `abs8()`
+  narrows to `int8_t`, so a difference of exactly -128 comes back as -128, the
+  unsigned step count becomes 4294967169 and the loop runs four billion times.
+  45 seconds per frame at 256x64; a watchdog reset on a device.
+* **Fire 2012 wrote past its heat buffer on a one or two pixel strip.** The
+  ignition area is at least 3 and the buffer is `seg_len` bytes.
+* **Both front ends ran at 31 fps, not WLED's 42.** The frame gate re-armed
+  from the moment the frame ran, and so does ESPHome's scheduler, so a 23 ms
+  interval came out as 32 ms on a 16 ms main loop. Every effect's speed was
+  wrong. The gate accumulates now and the display front end stopped being a
+  `PollingComponent`.
+* The bar mapping reached the framebuffer through the unchecked accessor.
+* `candle()` could dereference a null `seg.data` when both allocations failed.
+* The `select` platform read a `state` member `select::Select` does not have.
+
+Plus: effect and palette names are validated at config time with a nearest-match
+suggestion, the control entities follow the engine instead of publishing once at
+setup, the effect scratch block grows and is reused rather than being freed and
+reallocated on every effect change, and the seven config keys that validated
+clean and were then silently dropped now say so. `PORTING.md` deviations 23 to
+26 cover the behavioural changes.
+
+The simulator gained the extreme geometries, `1x1` through `3x1` and `128x64`,
+`256x64`, `1000x1`, and an optimisation level, which is what made a large
+geometry sweep cheap enough to run at all. CI stopped uploading 726 MB of
+contact sheets on every push.
+
+Verified on `387d890`, locally and in CI:
+
+* 2676 simulator runs at the six default geometries across both control passes,
+  13380 across `--map` 0 to 4 in full, and 3122 at the seven extreme
+  geometries. 19,178 runs, zero failures, guards intact.
+* 83 audio checks, zero failures.
+* All four example configs compile here; all five, including `host.yaml`,
+  compile in CI. `m1-hub75.yaml` is 941,379 flash and 109,955 RAM,
+  `m1-hub75-audio.yaml` 995,351 and 118,867.
+* Every CI job green.
+
+The sanitizers are CI only: this machine's WinLibs GCC ships no `libasan`, and
+the Fire 2012 overflow was invisible to a plain build because the guard bands
+are around the canvas and not around `seg.data`.
+
 ### 2026-09-20, review pass and the allow-list measurement
 
 The allow-list figures the README used to quote matched no row in the table

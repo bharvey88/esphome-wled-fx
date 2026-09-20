@@ -71,6 +71,10 @@ light:
           width: ${matrix_width}
           height: ${matrix_height}
           serpentine: true
+          # Width and height make this a 2D output, which offers only the
+          # 2D-capable effects. The tour has to reach all 223, so ask for the
+          # 1D ones back; they run through WLED's 1D to 2D mapping.
+          include_1d_effects: true
           update_interval: 23ms
           # Colour 1 comes from the "Color 1" entity the harness adds, the
           # same as it does on the panel builds, rather than from this

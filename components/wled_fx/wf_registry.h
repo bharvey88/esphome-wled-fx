@@ -59,6 +59,34 @@ size_t effect_name(const EffectInfo &info, char *dest, size_t dest_size);
 bool effect_name_equals(const EffectInfo &info, const char *name);
 EffectDefaults effect_defaults(const EffectInfo &info);
 
+/* --- what an output is allowed to offer -------------------------------------
+ *
+ * Which effects a front end offers depends on the shape of what it drives, and
+ * the shape is fixed when the configuration is written:
+ *
+ *   A 1D output, an addressable strip with no width and height, offers the
+ *   effects that have something to draw on a line: the 1D ones and the ones
+ *   that are written for both. A 2D-only effect there paints a solid colour and
+ *   nothing else, so it is not offered at all and there is no way to ask for it.
+ *
+ *   A 2D output, any display or a light given width and height, offers the
+ *   2D-capable effects by default: 2D, 1D and 2D, 2D particle and 2D audio. The
+ *   1D-only effects are hidden, because on a matrix they run through WLED's 1D
+ *   to 2D mapping and most of them look like a line stretched over a panel. A
+ *   configuration that wants them back asks for them with
+ *   `include_1d_effects: true`, and then they run through that mapping exactly
+ *   as they did before.
+ *
+ * The flags come from each effect's own metadata, corrected by the table in
+ * wf_registry.cpp for the upstream strings that do not say what they mean. */
+uint8_t effect_flags(const EffectInfo &info);
+bool effect_runs_1d(const EffectInfo &info);
+bool effect_runs_2d(const EffectInfo &info);
+/* True when an output of this shape offers the effect. `include_1d` is the YAML
+ * opt-in described above; it means nothing on a 1D output, where a 2D-only
+ * effect can never be offered. */
+bool effect_available(const EffectInfo &info, bool two_dimensional, bool include_1d);
+
 /* --- control labels ---------------------------------------------------------
  *
  * Every effect carries WLED's own names for the controls it uses, in the first

@@ -65,6 +65,11 @@ wled_fx:
   id: fx
   display_id: matrix
   update_interval: 23ms
+  # The point of this firmware is to walk every effect on real hardware, and a
+  # display offers only the 2D-capable ones unless it is asked for the rest.
+  # A build for a panel you actually want to look at should leave this out and
+  # save the flash; see examples/m1-hub75.yaml.
+  include_1d_effects: true
   effect: Fire 2012
   text: "WLED FX"
 

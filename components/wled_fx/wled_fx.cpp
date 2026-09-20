@@ -13,8 +13,57 @@ namespace wled_fx {
 
 static const char *const TAG = "wled_fx";
 
+bool WledFxController::effect_offered(size_t index) const {
+  const EffectInfo *info = EffectRegistry::at(index);
+  if (info == nullptr)
+    return false;
+  return effect_available(*info, this->layout_2d_, this->include_1d_effects_);
+}
+
+size_t WledFxController::first_offered_effect() const {
+  const size_t total = EffectRegistry::count();
+  for (size_t i = 0; i < total; i++) {
+    if (this->effect_offered(i))
+      return i;
+  }
+  return SIZE_MAX;
+}
+
+void WledFxController::ensure_offered_effect() {
+  if (this->effect_offered(this->engine_.effect_index()))
+    return;
+  const size_t first = this->first_offered_effect();
+  if (first == SIZE_MAX) {
+    /* Config validation refuses a build in which no effect can be offered, so
+     * reaching this means the guard there and the rule here disagree. Say so
+     * rather than render whatever index 0 happens to be. */
+    ESP_LOGE(TAG, "No compiled-in effect can run on a %s output", this->layout_2d_ ? "2D" : "1D");
+    return;
+  }
+  char buffer[64];
+  effect_name(*EffectRegistry::at(this->engine_.effect_index()), buffer, sizeof(buffer));
+  ESP_LOGW(TAG, "'%s' does not run on a %s output, starting on the first one that does", buffer,
+           this->layout_2d_ ? "2D" : "1D");
+  this->engine_.set_effect_index(first);
+  this->notify_state_change();
+}
+
 bool WledFxController::set_effect_by_name(const std::string &name) {
-  if (!this->engine_.set_effect(name.c_str()))
+  const int index = EffectRegistry::index_of(name.c_str());
+  if (index < 0)
+    return false;
+  if (!this->effect_offered(static_cast<size_t>(index))) {
+    /* Not an error: the build carries the effect, this output just cannot show
+     * it. A select that offers only what fits never asks for this, so anything
+     * arriving here is an action or an API call, and ignoring it leaves the
+     * panel on what it was running. */
+    ESP_LOGW(TAG, "'%s' does not run on a %s output, ignoring. %s", name.c_str(),
+             this->layout_2d_ ? "2D" : "1D",
+             this->layout_2d_ ? "Add 'include_1d_effects: true' to offer the 1D effects here."
+                              : "Give this output a width and a height to run the 2D effects.");
+    return false;
+  }
+  if (!this->engine_.set_effect_index(static_cast<size_t>(index)))
     return false;
   // The new effect's metadata just refilled every unpinned control.
   this->notify_state_change();
@@ -32,8 +81,17 @@ void WledFxController::next_effect() {
   const size_t total = EffectRegistry::count();
   if (total == 0)
     return;
-  this->engine_.set_effect_index((this->engine_.effect_index() + 1) % total);
-  this->notify_state_change();
+  /* Steps over the effects this output does not offer, so "next" on a matrix
+   * never lands on a 1D-only effect that the select does not even list. One
+   * pass at most: if nothing is offered, it stops where it started. */
+  for (size_t step = 1; step <= total; step++) {
+    const size_t candidate = (this->engine_.effect_index() + step) % total;
+    if (!this->effect_offered(candidate))
+      continue;
+    this->engine_.set_effect_index(candidate);
+    this->notify_state_change();
+    return;
+  }
 }
 
 std::string WledFxController::current_effect_name() const {
@@ -177,6 +235,7 @@ void WledFxDisplay::setup() {
     return;
   }
   this->engine_.set_text(this->text_.c_str());
+  this->ensure_offered_effect();
 }
 
 void WledFxDisplay::loop() {

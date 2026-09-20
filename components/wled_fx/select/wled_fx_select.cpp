@@ -11,12 +11,26 @@ void WledFxSelect::setup() {
   FixedVector<const char *> options;
   if (this->type_ == WledFxSelectType::WLED_FX_SELECT_TYPE_EFFECT) {
     const size_t total = EffectRegistry::count();
+    /* Only the effects this output can actually run. A 1D-only effect on a
+     * matrix, or a 2D-only one on a strip, is not something the user can pick
+     * their way into: the rule is in effect_available(), and the same rule
+     * rejects it at config time and ignores it at runtime. */
+    size_t offered = 0;
     // Effect names are a prefix of the metadata string, so they have to be copied
     // out. One arena allocation at setup holds them all for the life of the device.
     size_t arena_size = 0;
     for (size_t i = 0; i < total; i++) {
+      if (!this->parent_->effect_offered(i))
+        continue;
+      offered++;
       char buffer[64];
       arena_size += effect_name(*EffectRegistry::at(i), buffer, sizeof(buffer)) + 1;
+    }
+    if (offered == 0) {
+      // Config validation refuses this, so it means the two rules disagree.
+      ESP_LOGE(TAG, "No compiled-in effect runs on this output, so there is nothing to select");
+      this->mark_failed();
+      return;
     }
     RAMAllocator<char> allocator;
     this->name_arena_ = allocator.allocate(arena_size);
@@ -25,9 +39,11 @@ void WledFxSelect::setup() {
       this->mark_failed();
       return;
     }
-    options.init(total);
+    options.init(offered);
     char *cursor = this->name_arena_;
     for (size_t i = 0; i < total; i++) {
+      if (!this->parent_->effect_offered(i))
+        continue;
       const size_t len = effect_name(*EffectRegistry::at(i), cursor, 64);
       options.push_back(cursor);
       cursor += len + 1;

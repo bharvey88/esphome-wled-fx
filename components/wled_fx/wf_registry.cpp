@@ -29,6 +29,56 @@ const char *group_at(const char *metadata, int index) {
 
 }  // namespace
 
+/* --- metadata strings that do not say what they mean -------------------------
+ *
+ * The dimensionality group is the fourth ';' group. A few upstream strings have
+ * fewer groups than that, so whatever landed in the fourth position gets read as
+ * the dimensionality instead. WLED's own web UI reads the same group the same
+ * way and has the same problem, so the flags an effect ends up with upstream can
+ * be an accident rather than a decision.
+ *
+ * Editing the string is not the fix: it is copied verbatim from WLED, and the
+ * next port of an upstream revision would quietly undo the edit. This table sits
+ * beside it instead, so the string stays as upstream wrote it and the flags say
+ * what the effect does.
+ *
+ * It lives in C++ because the metadata it corrects lives in C++. The firmware
+ * reads it here and the config validation reads this same table out of this
+ * file, so there is one list and the two cannot drift; tools/check_effect_names.py
+ * fails if they ever do.
+ *
+ * Names are matched the way every other name is, case insensitively against the
+ * display name. */
+struct FlagOverride {
+  const char *name;
+  uint8_t flags;
+};
+
+const FlagOverride FLAG_OVERRIDES[] = {
+    /* "Flow Stripe@Hue speed,Effect speed;;!;pal=11" has only four groups, and
+     * the fourth is its defaults rather than its dimensionality. The parser
+     * reads "pal=11", finds the '1' in the value, and calls the effect 1D. That
+     * answer is right and the reasoning is not: a default of pal=12 on a string
+     * of the same shape would have made the same effect 2D. mode_FlowStripe()
+     * walks the strip with SEGLEN and has no 2D branch at all, so pin it. */
+    {"Flow Stripe", EFFECT_FLAG_1D},
+};
+constexpr size_t FLAG_OVERRIDE_COUNT = sizeof(FLAG_OVERRIDES) / sizeof(FLAG_OVERRIDES[0]);
+
+uint8_t effect_flags(const EffectInfo &info) { return effect_defaults(info).flags; }
+
+bool effect_runs_1d(const EffectInfo &info) {
+  return (effect_flags(info) & (EFFECT_FLAG_1D | EFFECT_FLAG_0D)) != 0;
+}
+
+bool effect_runs_2d(const EffectInfo &info) { return (effect_flags(info) & EFFECT_FLAG_2D) != 0; }
+
+bool effect_available(const EffectInfo &info, bool two_dimensional, bool include_1d) {
+  if (!two_dimensional)
+    return effect_runs_1d(info);
+  return effect_runs_2d(info) || (include_1d && effect_runs_1d(info));
+}
+
 size_t effect_name(const EffectInfo &info, char *dest, size_t dest_size) {
   if (dest_size == 0)
     return 0;
@@ -91,6 +141,14 @@ EffectDefaults effect_defaults(const EffectInfo &info) {
     }
   }
   out.flags = flags == 0 ? static_cast<uint8_t>(EFFECT_FLAG_1D) : flags;
+  // An effect whose metadata has no dimensionality group to read gets its flags
+  // from the table above instead. See the comment there.
+  for (size_t i = 0; i < FLAG_OVERRIDE_COUNT; i++) {
+    if (effect_name_equals(info, FLAG_OVERRIDES[i].name)) {
+      out.flags = FLAG_OVERRIDES[i].flags;
+      break;
+    }
+  }
 
   // Defaults live in the LAST ';' group, which is how WLED reads them too. Keys
   // are sx, ix, c1, c2, c3, o1, o2, o3, pal, m12 and si.

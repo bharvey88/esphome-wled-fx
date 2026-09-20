@@ -22,9 +22,36 @@ class WledFxController {
  public:
   Engine &engine() { return this->engine_; }
 
-  // Returns false when the effect or palette name is not compiled in.
+  /* --- the shape of this output ----------------------------------------------
+   *
+   * Set by codegen, because the shape is fixed by the configuration: a display
+   * front end is a matrix, and a light effect is one only when it was given a
+   * width and a height. Which effects the output offers follows from it; see
+   * effect_available() in wf_registry.h for the rule and why it exists.
+   *
+   * Both are set before any component's setup() runs, so an entity that builds
+   * a list of effects in its own setup() already sees the right answer. */
+  void set_layout_2d(bool two_dimensional) { this->layout_2d_ = two_dimensional; }
+  bool layout_2d() const { return this->layout_2d_; }
+  void set_include_1d_effects(bool include) { this->include_1d_effects_ = include; }
+  bool include_1d_effects() const { return this->include_1d_effects_; }
+
+  // True when this output offers the registered effect at `index`.
+  bool effect_offered(size_t index) const;
+  // The registered index of the first effect this output offers, or SIZE_MAX.
+  size_t first_offered_effect() const;
+  /* Moves off an effect this output does not offer. The engine starts on the
+   * first registered effect, which on a matrix in a build that also carries a
+   * strip is usually a 1D one, so a configuration that named no effect would
+   * otherwise boot on something it is not allowed to select. Called by both
+   * front ends once their canvas exists. */
+  void ensure_offered_effect();
+
+  // Returns false when the effect or palette name is not compiled in, or when
+  // this output does not offer it.
   bool set_effect_by_name(const std::string &name);
   bool set_palette_by_name(const std::string &name);
+  // Steps to the next effect this output offers, wrapping round.
   void next_effect();
 
   std::string current_effect_name() const;
@@ -140,6 +167,8 @@ class WledFxController {
   bool have_deadline_{false};
   uint8_t output_brightness_{255};
   bool output_enabled_{true};
+  bool layout_2d_{false};
+  bool include_1d_effects_{false};
 
   ProfileStats profile_;
   uint32_t profile_effect_start_{0};

@@ -15,6 +15,7 @@ from esphome.components import display, microphone
 from esphome.components.light.effects import register_addressable_effect
 from esphome.components.light.types import AddressableLightEffect
 import esphome.config_validation as cv
+from esphome.core import CORE
 from esphome.const import (
     CONF_BLUE,
     CONF_DISPLAY_ID,
@@ -33,8 +34,10 @@ from esphome.const import (
 import esphome.final_validate as fv
 
 from .effect_index import (
+    available_effects,
     effect_macro,
     effect_names,
+    one_dimensional_only,
     palette_names,
     suggestion,
     two_dimensional_only,
@@ -58,6 +61,7 @@ CONF_CHECK2 = "check2"
 CONF_CHECK3 = "check3"
 CONF_SERPENTINE = "serpentine"
 CONF_USE_LIGHT_COLOR = "use_light_color"
+CONF_INCLUDE_1D_EFFECTS = "include_1d_effects"
 CONF_AUTO_CLEAR_ENABLED = "auto_clear_enabled"
 CONF_AUDIO = "audio"
 CONF_AUDIO_ID = "audio_id"
@@ -146,6 +150,65 @@ def _known_palette(value):
         f'"{value}" is not a WLED FX palette.{suggestion(value, names)} '
         f"The full list is at {EFFECT_LIST_URL}"
     )
+
+
+# --- what an output offers ---------------------------------------------------
+#
+# Which effects a front end offers depends on the shape of what it drives. The
+# rule, and the reason for it, is on effect_available() in wf_registry.h; this
+# is the same rule at config time, reading the same flags out of the same C++
+# sources, so an effect the device would refuse is refused here with an
+# explanation instead. tools/check_effect_names.py fails if the two ever drift.
+#
+#   1D output: an addressable light with no width and height. Offers the 1D
+#              effects and the ones written for both. A 2D-only effect there is
+#              a solid fill, and no option changes that.
+#   2D output: any display, or a light given a width and a height. Offers the
+#              2D-capable effects. The 1D-only ones are hidden until the
+#              configuration asks for them with include_1d_effects.
+
+# The lines that tell somebody what to do about it, rather than only what is
+# wrong. Kept here so the light effect and the display front end say the same
+# thing.
+_OPT_IN_LINE = (
+    f"Add '{CONF_INCLUDE_1D_EFFECTS}: true' to this entry to offer the 1D "
+    "effects here as well; they run through WLED's own 1D to 2D mapping, "
+    "which is what they have always done on a matrix."
+)
+_GIVE_GEOMETRY_LINE = (
+    "Give this effect a 'width' and a 'height' to describe a matrix wired as "
+    "one strip, or pick an effect that runs on a strip."
+)
+
+
+def _layout_name(two_dimensional: bool) -> str:
+    return "a matrix" if two_dimensional else "a one dimensional strip"
+
+
+def _unavailable_reason(name: str, two_dimensional: bool, include_1d: bool) -> str | None:
+    """Why this output cannot offer the effect, or None when it can."""
+    if name.casefold() in {n.casefold() for n in available_effects(two_dimensional, include_1d)}:
+        return None
+    if not two_dimensional:
+        return (
+            f'"{name}" only runs on a matrix, and this output is a one '
+            "dimensional strip, where it renders a solid colour and nothing "
+            f"else. {_GIVE_GEOMETRY_LINE}"
+        )
+    return (
+        f'"{name}" is a 1D effect and this output is a matrix. WLED FX offers '
+        "the 2D effects on a matrix, because a 1D effect stretched over a panel "
+        f"is rarely what somebody meant. {_OPT_IN_LINE}"
+    )
+
+
+def _check_effect_fits(config, two_dimensional: bool, include_1d: bool):
+    """Rejects an 'effect:' the configured layout cannot run."""
+    effect = config.get(CONF_EFFECT)
+    if effect is None:
+        return
+    if (reason := _unavailable_reason(effect, two_dimensional, include_1d)) is not None:
+        raise cv.Invalid(reason, path=[CONF_EFFECT])
 
 
 CONTROL_SCHEMA = {
@@ -243,6 +306,10 @@ _ENTRY_SCHEMA = cv.Schema(
         # gamma_correct is an exponent, and 0.0 makes pow(i / 255, 0) == 1 for
         # every input, so the whole panel goes to full white and stays there.
         cv.Optional(CONF_GAMMA_CORRECT): cv.float_range(min=0.1, max=10.0),
+        # A display is a 2D output, so this is the opt-in that puts the 1D-only
+        # effects back on the list. No default, for the same reason as the two
+        # above: an entry with no display never becomes a component.
+        cv.Optional(CONF_INCLUDE_1D_EFFECTS): cv.boolean,
         cv.Optional(CONF_AUDIO): AUDIO_SCHEMA,
         cv.Optional(CONF_UPDATE_INTERVAL): cv.positive_time_period_milliseconds,
         **CONTROL_SCHEMA,
@@ -252,6 +319,8 @@ _ENTRY_SCHEMA = cv.Schema(
 
 def _validate_entry(config):
     if CONF_DISPLAY_ID in config:
+        # A display is always a 2D output: that is what makes it a display.
+        _check_effect_fits(config, True, config.get(CONF_INCLUDE_1D_EFFECTS, False))
         return config
     # An entry with no display never becomes a component, so anything that would
     # be applied to one would be silently dropped. Say so instead.
@@ -259,6 +328,7 @@ def _validate_entry(config):
         CONF_WIDTH,
         CONF_HEIGHT,
         CONF_GAMMA_CORRECT,
+        CONF_INCLUDE_1D_EFFECTS,
         CONF_UPDATE_INTERVAL,
         *_CONTROL_KEYS,
     ):
@@ -287,9 +357,81 @@ CONFIG_SCHEMA = cv.All(
 )
 
 
+# Where _final_validate() leaves what it worked out for to_code(). Final
+# validation runs once, before any to_code(), and it is the only place the light
+# effects and the wled_fx entries are both in view.
+_LAYOUT_DATA_KEY = "wled_fx_layouts"
+
+
+def _configured_light_effects(full_config):
+    """Every wled_fx entry in a light's 'effects:' list, wherever it is."""
+    for light_config in full_config.get("light", []) or []:
+        for effect in light_config.get(CONF_EFFECTS, []) or []:
+            if isinstance(effect, dict) and DOMAIN in effect:
+                yield effect[DOMAIN]
+
+
+def _configured_layouts(config, full_config):
+    """(two_dimensional, include_1d) for every front end in the configuration."""
+    layouts = [
+        (True, entry.get(CONF_INCLUDE_1D_EFFECTS, False))
+        for entry in config
+        if CONF_DISPLAY_ID in entry
+    ]
+    layouts.extend(
+        (_light_effect_is_2d(effect), effect.get(CONF_INCLUDE_1D_EFFECTS, False))
+        for effect in _configured_light_effects(full_config)
+    )
+    return layouts
+
+
+def _validate_allow_list(config, offered: set[str] | None, layouts):
+    """An 'effects:' name no configured output could ever show is an error.
+
+    Compiling it in would cost flash for something nothing can select. The
+    message has to say which way out applies, and that depends on what the
+    configuration actually has.
+    """
+    if offered is None:
+        return
+    folded = {name.casefold() for name in offered}
+    only_2d_outputs = layouts and all(two_d for two_d, _ in layouts)
+    for entry in config:
+        for index, name in enumerate(entry.get(CONF_EFFECTS, [])):
+            if name.casefold() in folded:
+                continue
+            if only_2d_outputs:
+                reason = (
+                    f'"{name}" is a 1D effect and every output in this '
+                    f"configuration is a matrix, so nothing could select it. "
+                    f"{_OPT_IN_LINE}"
+                )
+            else:
+                reason = (
+                    f'"{name}" only runs on a matrix and no output in this '
+                    "configuration is one, so nothing could select it. "
+                    f"{_GIVE_GEOMETRY_LINE}"
+                )
+            raise cv.Invalid(reason, path=[CONF_EFFECTS, index])
+
+
 def _final_validate(config):
     """A display handed to wled_fx must not also be driven by its own poller."""
     full_config = fv.full_config.get()
+
+    layouts = _configured_layouts(config, full_config)
+    if layouts:
+        offered: set[str] | None = set()
+        for two_dimensional, include_1d in layouts:
+            offered |= available_effects(two_dimensional, include_1d)
+    else:
+        # No front end at all, which is what examples/host.yaml is: a build that
+        # only proves the engine compiles. Nothing can be ruled out, so nothing
+        # is, and every effect stays available.
+        offered = None
+    _validate_allow_list(config, offered, layouts)
+    CORE.data[_LAYOUT_DATA_KEY] = offered
+
     for entry in config:
         if (audio_config := entry.get(CONF_AUDIO)) is not None:
             # Checks the microphone really offers the channel that was asked for.
@@ -357,11 +499,25 @@ def _add_effect_selection(config):
     selected: list[str] = []
     for entry in config:
         selected.extend(entry.get(CONF_EFFECTS, []))
-    macros = {effect_macro(name) for name in selected}
-    all_effects = not macros
+
+    # With no allow-list the build carries every effect the configured outputs
+    # could offer, which on a matrix-only configuration is not every effect: a
+    # 1D-only effect nothing can select is flash spent on nothing. Final
+    # validation worked the set out, because it is the only place the light
+    # effects and the display front ends are both in view.
+    offered = CORE.data.get(_LAYOUT_DATA_KEY)
+    compiled_in = selected
+    if not compiled_in and offered is not None:
+        compiled_in = sorted(offered)
+
+    macros = {effect_macro(name) for name in compiled_in}
+    # Nothing narrowed it down, so let the sources take their own default rather
+    # than list 223 macros on the compiler command line.
+    all_effects = not macros or len(macros) == len(effect_names())
 
     if all_effects:
         cg.add_build_flag("-DWLED_FX_ALL_EFFECTS")
+        macros = set()
     else:
         for macro in sorted(macros):
             cg.add_build_flag(f"-D{macro}=1")
@@ -489,6 +645,11 @@ async def to_code(config):
             var.set_dimensions(entry.get(CONF_WIDTH, 0), entry.get(CONF_HEIGHT, 0))
         )
         cg.add(var.set_gamma(entry.get(CONF_GAMMA_CORRECT, 1.0)))
+        # A display is a matrix, so this front end is always a 2D output.
+        cg.add(var.set_layout_2d(True))
+        cg.add(
+            var.set_include_1d_effects(entry.get(CONF_INCLUDE_1D_EFFECTS, False))
+        )
         cg.add(
             var.set_frame_interval(
                 entry.get(CONF_UPDATE_INTERVAL, DEFAULT_FRAME_INTERVAL)
@@ -504,6 +665,7 @@ LIGHT_EFFECT_SCHEMA = cv.Schema(
         cv.Optional(CONF_HEIGHT): cv.positive_not_null_int,
         cv.Optional(CONF_SERPENTINE, default=False): cv.boolean,
         cv.Optional(CONF_USE_LIGHT_COLOR, default=True): cv.boolean,
+        cv.Optional(CONF_INCLUDE_1D_EFFECTS, default=False): cv.boolean,
         cv.Optional(
             CONF_UPDATE_INTERVAL, default=FRAMETIME
         ): cv.positive_time_period_milliseconds,
@@ -512,32 +674,30 @@ LIGHT_EFFECT_SCHEMA = cv.Schema(
 )
 
 
-def _validate_light_effect(config):
-    """A 2D-only effect on a strip renders a solid colour and nothing else.
+def _light_effect_is_2d(config) -> bool:
+    """True when this light effect describes a matrix wired as one strip.
 
-    56 of the 223 effects say in their metadata that they only run on a matrix,
-    and every one of them falls back to a solid fill on a one pixel high canvas,
-    which is what WLED does too. That is deterministic but it is never what
-    somebody meant, so say so at config time when the geometry is knowable. The
-    display front end takes its size from the display, which is not knowable
-    here, so this check only covers the light effect.
+    Width on its own leaves start() to compute height = led_count / width, which
+    for the usual "width is the whole strip" case is exactly 1, so it takes both
+    keys to make a matrix.
     """
-    # A canvas is 2D only when a height above 1 was asked for. width on its own
-    # leaves start() to compute height = led_count / width, which for the usual
-    # "width is the whole strip" case is exactly 1.
     height = config.get(CONF_HEIGHT)
-    is_1d = height is None or height == 1
-    effect = config.get(CONF_EFFECT)
-    if is_1d and effect is not None:
-        matrix_only = {name.casefold() for name in two_dimensional_only()}
-        if effect.casefold() in matrix_only:
-            raise cv.Invalid(
-                f'"{effect}" only runs on a matrix. On a one dimensional strip '
-                "it renders a solid colour and nothing else. Give this effect "
-                "'width' and 'height' for a matrix wired as one strip, or pick "
-                "a 1D effect.",
-                path=[CONF_EFFECT],
-            )
+    return height is not None and height > 1
+
+
+def _validate_light_effect(config):
+    """Rejects an effect the light's own geometry cannot run."""
+    two_dimensional = _light_effect_is_2d(config)
+    include_1d = config.get(CONF_INCLUDE_1D_EFFECTS, False)
+    if include_1d and not two_dimensional:
+        raise cv.Invalid(
+            f"'{CONF_INCLUDE_1D_EFFECTS}' only means something on a matrix, "
+            "where the 1D effects are hidden by default. This light effect is "
+            "already a one dimensional strip, so it offers them all. Remove "
+            "the option, or give the effect a 'width' and a 'height'.",
+            path=[CONF_INCLUDE_1D_EFFECTS],
+        )
+    _check_effect_fits(config, two_dimensional, include_1d)
     return config
 
 
@@ -684,6 +844,8 @@ async def wled_fx_light_effect_to_code(config, effect_id):
     cg.add(var.set_dimensions(config.get(CONF_WIDTH, 0), config.get(CONF_HEIGHT, 0)))
     cg.add(var.set_serpentine(config[CONF_SERPENTINE]))
     cg.add(var.set_use_light_color(config[CONF_USE_LIGHT_COLOR]))
+    cg.add(var.set_layout_2d(_light_effect_is_2d(config)))
+    cg.add(var.set_include_1d_effects(config[CONF_INCLUDE_1D_EFFECTS]))
     cg.add(var.set_frame_interval(config[CONF_UPDATE_INTERVAL]))
     await apply_controls(var, config)
     return var

@@ -79,6 +79,8 @@ once Pages is switched on, which
 
 223 effects are registered. Names are the WLED display names and they are what an `effects:` allow-list, the `effect:` option and the `select` entity all use.
 
+Which of them an output offers depends on its shape: **167 on a 1D output** and **64 on a 2D output**, or all 223 on a 2D output that sets `include_1d_effects: true`. The "Runs on" column below is what decides that; see [Which effects an output offers](#which-effects-an-output-offers).
+
 **1D, batch A** (`1d_a`, 7)
 
 | Effect | Runs on |
@@ -442,6 +444,7 @@ on the light effect instead.
 | `id` | id | generated | needed to point a select, number or switch at it |
 | `display_id` | id | none | the display to drive; makes this a display front end |
 | `effects` | list of names | all | compile-time allow-list, see below; the lists of every entry are merged into one |
+| `include_1d_effects` | bool | `false` | offer the 1D-only effects on this display too, through WLED's 1D-to-2D mapping. See [Which effects an output offers](#which-effects-an-output-offers) |
 | `width` / `height` | int | from the display | canvas size override |
 | `update_interval` | time | `23ms` | one rendered frame per interval, WLED's own 42 fps |
 | `gamma_correct` | 0.1 to 10.0 | `1.0` | applied on the way to the display only |
@@ -474,13 +477,16 @@ effects:
       height: 16
       serpentine: true
       use_light_color: true # the light's own colour becomes segment colour 1
+      include_1d_effects: true  # only on a matrix, see below
       update_interval: 23ms
       # plus every control key from the table above
 ```
 
 `width` and `height` describe a matrix wired as one strip. Give both or neither:
-`width` on its own leaves the height at one, which is a strip, and a 2D-only
-effect on a strip is a config error rather than a panel of solid colour.
+`width` on its own leaves the height at one, which is a strip. Giving both makes
+this a 2D output, with everything that follows from it in
+[Which effects an output offers](#which-effects-an-output-offers), and giving
+neither makes it a 1D one.
 
 Each `wled_fx:` entry in a light's `effects:` list owns a canvas of its own, and
 keeps it once it has run, so two of them on one light hold two canvases. Turning
@@ -565,6 +571,64 @@ either way.
 Enabling audio on an ESP32 costs about 55 to 60 KB of flash and 9 KB of static
 RAM, most of it the `microphone`, `i2s_audio` and `audio` components rather than
 the analysis, plus a 12 KB task stack and an 11 KB ring buffer at runtime.
+
+### Which effects an output offers
+
+Not every effect runs on every shape of output, so a `wled_fx` front end offers
+the ones that do and hides the rest. The shape is fixed by the configuration,
+so this is decided when you build rather than guessed at runtime.
+
+| Output | What it is | What it offers |
+|---|---|---|
+| 1D | an addressable light with no `width` and `height` | 1D effects and 1D+2D effects |
+| 2D | any display, or a light given `width` and `height` | 2D, 1D+2D, 2D particle and 2D audio effects |
+
+A 2D-only effect on a strip paints a solid colour and nothing else, which is
+what WLED does too and is never what anybody meant, so it is not offered and
+there is no way to ask for it. A 1D effect on a matrix does work, through WLED's
+own 1D-to-2D mapping, but a line stretched over a panel is rarely what somebody
+was after, so those are hidden by default and one option brings them back:
+
+```yaml
+wled_fx:
+  id: fx
+  display_id: matrix
+  include_1d_effects: true
+```
+
+That is the one line an error message will tell you to add. Naming an effect the
+configured output cannot run is a configuration error that says which case it is
+and what to do about it, the `select` entity only lists what is offered, and an
+action or an API call asking for something else logs a warning and is ignored
+rather than leaving the panel on a solid fill.
+
+It also decides what gets compiled. With no `effects:` allow-list, a build whose
+only outputs are matrices carries only the effects a matrix can show, so the
+1D-only effects cost nothing. Measured on `examples/m1-hub75.yaml`, an ESP32-S3
+esp-idf build: 839,983 bytes of flash with the 64 effects a matrix offers and
+900,907 with `include_1d_effects: true` and all 223, so the 159 effects a panel
+was never going to show are 60,924 bytes, about 59 KB. RAM is identical to the
+byte, because the canvas is sized from the panel and not from the effect list.
+
+`effects:` and `include_1d_effects` are independent. The allow-list narrows what
+is built; this decides what a given output may show of it. An allow-list naming
+something no configured output could ever show is an error, because it would be
+flash spent on nothing.
+
+Dimensionality comes from each effect's own WLED metadata, with one exception.
+`Flow Stripe`'s metadata string has no dimensionality group at all, so the
+fourth `;` group that WLED and this port both read as one is really its
+defaults; the answer that falls out is right and the reasoning is not. The
+`FLAG_OVERRIDES` table in `components/wled_fx/wf_registry.cpp` pins it, and both
+the firmware and the config validation read that one table.
+
+#### Upgrading from 0.2.x
+
+A configuration that names a 1D effect on a display, or on a light with a
+`width` and a `height`, used to build and now fails with an error naming the one
+line to add. Two ways out, and the error says both: add
+`include_1d_effects: true` to keep exactly what you had, or pick a 2D effect and
+take the flash back. Nothing on a plain strip changes.
 
 ### Trimming the build
 

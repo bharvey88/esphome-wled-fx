@@ -51,7 +51,11 @@ wled_fx:
   id: fx
   display_id: matrix
   update_interval: 23ms
-  effect: Fire 2012
+  # A display is a 2D output, so this offers the 64 effects written for a
+  # matrix and hides the 159 that only run on a strip. Add
+  # `include_1d_effects: true` to offer those here too; they reach the panel
+  # through WLED's own 1D to 2D mapping, and this build grows by 59 KB.
+  effect: PS Fire
   text: "WLED FX"
 
 select:

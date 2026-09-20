@@ -191,6 +191,22 @@ pauses on whatever is showing. Every change logs one line:
 The two numbers are the position in the current filter and the size of that
 filter, so with **Tour group** set to `All` they count to 223.
 
+The tour only ever walks effects the output can actually run, because the
+component will not select the others and the **Effect** select does not list
+them. All four test firmwares set `include_1d_effects: true` on purpose, which
+is what makes `All` mean 223 on the two panel builds and the matrix build; a
+panel firmware you would actually want to look at should leave that out and
+offer the 64 effects written for a matrix. On `strip-test.yaml`, a real one
+dimensional strip, `All` is 167 and the `2D` and `Particle 2D` groups are
+empty: picking one logs
+
+```
+[W][tour:084]: [tour] this group has no effect that runs on a 1D output
+```
+
+and leaves the current effect on screen. That is the rule working, not a fault.
+[The README](../README.md#which-effects-an-output-offers) has the whole of it.
+
 | Entity | What it does |
 |---|---|
 | Tour auto advance | On steps forward on a timer, off pauses. |

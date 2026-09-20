@@ -32,6 +32,7 @@ namespace wledfx_hwtest {
 
 using esphome::wled_fx::EffectInfo;
 using esphome::wled_fx::EffectRegistry;
+using esphome::wled_fx::WledFxController;
 
 /* Tour filters, in the same order as the options of the "Tour group" select.
  * The select publishes its option index straight into the tour_filter global,
@@ -96,7 +97,18 @@ inline bool on_checklist(size_t index) {
   return false;
 }
 
-inline bool matches(int filter, size_t index) {
+/* Every one of these takes the controller, because which effects exist is not
+ * the same question as which ones this output can run. A 2D-only effect on a
+ * strip, or a 1D-only one on a matrix without `include_1d_effects: true`, is
+ * not offered: the component refuses to select it and the select entity does
+ * not list it, so a tour that walked onto it would show a panel of nothing and
+ * profile an effect the user cannot reach. The layout filter comes first and
+ * the group filters narrow what is left, so on a 2D output the "1D" group is
+ * the 1D effects that this output actually offers, which with the opt-in off
+ * is none of them. */
+inline bool matches(const WledFxController *ctrl, int filter, size_t index) {
+  if (ctrl != nullptr && !ctrl->effect_offered(index))
+    return false;
   const char *group = group_of(index);
   switch (filter) {
     case FILTER_1D:
@@ -120,23 +132,23 @@ inline bool matches(int filter, size_t index) {
 }
 
 // How many effects the filter lets through.
-inline size_t count(int filter) {
+inline size_t count(const WledFxController *ctrl, int filter) {
   const size_t total = EffectRegistry::count();
   size_t n = 0;
   for (size_t i = 0; i < total; i++) {
-    if (matches(filter, i))
+    if (matches(ctrl, filter, i))
       n++;
   }
   return n;
 }
 
 // Where `index` sits in the filtered list, 1 based. Zero when it is filtered out.
-inline size_t position(int filter, size_t index) {
-  if (!matches(filter, index))
+inline size_t position(const WledFxController *ctrl, int filter, size_t index) {
+  if (!matches(ctrl, filter, index))
     return 0;
   size_t n = 0;
   for (size_t i = 0; i <= index; i++) {
-    if (matches(filter, i))
+    if (matches(ctrl, filter, i))
       n++;
   }
   return n;
@@ -144,8 +156,10 @@ inline size_t position(int filter, size_t index) {
 
 /* The next index the filter accepts, walking forwards for delta >= 0 and
  * backwards otherwise. Returns `from` unchanged when nothing matches, which
- * leaves the current effect running rather than blanking the panel. */
-inline size_t step(int filter, size_t from, int delta) {
+ * leaves the current effect running rather than blanking the panel. That is
+ * what a group with nothing in it looks like: "2D" on a strip, or "1D" on a
+ * matrix that did not opt in. */
+inline size_t step(const WledFxController *ctrl, int filter, size_t from, int delta) {
   const size_t total = EffectRegistry::count();
   if (total == 0)
     return from;
@@ -153,18 +167,18 @@ inline size_t step(int filter, size_t from, int delta) {
   size_t index = from;
   for (size_t tries = 0; tries < total; tries++) {
     index = (index + increment) % total;
-    if (matches(filter, index))
+    if (matches(ctrl, filter, index))
       return index;
   }
   return from;
 }
 
 // The current effect if the filter accepts it, otherwise the next one that fits.
-inline size_t first(int filter, size_t from) {
+inline size_t first(const WledFxController *ctrl, int filter, size_t from) {
   const size_t total = EffectRegistry::count();
   if (total == 0)
     return from;
-  return matches(filter, from % total) ? from % total : step(filter, from, 1);
+  return matches(ctrl, filter, from % total) ? from % total : step(ctrl, filter, from, 1);
 }
 
 // Zero on a board with no PSRAM, which is the honest answer rather than an error.

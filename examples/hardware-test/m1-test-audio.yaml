@@ -96,6 +96,9 @@ wled_fx:
   id: fx
   display_id: matrix
   update_interval: 23ms
+  # Most of the audio reactive effects are 1D, so a tour of them on a panel
+  # needs the 1D effects offered here. See m1-test.yaml.
+  include_1d_effects: true
   effect: GEQ
   text: "WLED FX"
   audio:

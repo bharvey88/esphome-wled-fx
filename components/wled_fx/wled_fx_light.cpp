@@ -44,6 +44,7 @@ void WledFxLightEffect::start() {
   this->width_ = width;
   this->height_ = height;
   this->ready_ = true;
+  this->ensure_offered_effect();
   this->reset_frame_clock();
 }
 

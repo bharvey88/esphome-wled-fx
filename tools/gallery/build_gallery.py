@@ -29,6 +29,9 @@ import tempfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO / "components" / "wled_fx"))
+from effect_index import flag_overrides  # noqa: E402
+
 SIM_SRC = REPO / "tools" / "sim"
 OUT_DIR = REPO / "docs" / "gallery"
 PREVIEW_DIR = OUT_DIR / "previews"
@@ -158,6 +161,14 @@ def parse_metadata(group: str, metadata: str) -> dict:
     }
     if not (flags["d0"] or flags["d1"] or flags["d2"]):
         flags["d1"] = True  # an empty flag group means 1D, as the parser does
+    # A metadata string with no dimensionality group at all gets its answer from
+    # the override table in wf_registry.cpp instead. Reading that table rather
+    # than repeating it is what stops the gallery telling somebody an effect
+    # runs somewhere the firmware will not offer it.
+    if (override := flag_overrides().get(name.casefold())) is not None:
+        flags["d0"] = bool(override & (1 << 0))
+        flags["d1"] = bool(override & (1 << 1))
+        flags["d2"] = bool(override & (1 << 2))
 
     # The defaults live in the LAST group, which is how WLED reads them too.
     defaults = {
@@ -374,6 +385,18 @@ def write_json(effects: list[dict]) -> None:
                 "family": e["family"],
                 "dims": [d for d, on in (("1D", e["flags"]["d1"]), ("2D", e["flags"]["d2"]),
                                          ("0D", e["flags"]["d0"])) if on],
+                # Which shape of output offers this effect without being asked.
+                # A 1D-only effect is not in "2D" here: a matrix can run it, but
+                # only after include_1d_effects, which "optIn" says.
+                "offeredOn": [
+                    layout
+                    for layout, on in (
+                        ("1D", e["flags"]["d1"] or e["flags"]["d0"]),
+                        ("2D", e["flags"]["d2"]),
+                    )
+                    if on
+                ],
+                "optIn": None if e["flags"]["d2"] else "include_1d_effects",
                 "audio": ("FFT" if e["flags"]["fft"] else "volume") if e["audio"] else None,
                 "particle": e["particle"],
                 "palette": e["defaults"]["palette"],

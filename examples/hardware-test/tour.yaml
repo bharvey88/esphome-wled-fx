@@ -72,16 +72,26 @@ script:
           if (delta != 0 && to < 0) {
             ESP_LOGI("tour", "%s",
                      wledfx_hwtest::result_line(
-                         ctrl, current, (unsigned) wledfx_hwtest::position(filter, current)).c_str());
+                         ctrl, current,
+                         (unsigned) wledfx_hwtest::position(ctrl, filter, current)).c_str());
+          }
+
+          // A group can be empty on this output: "2D" on a strip, or "1D" on a
+          // matrix that did not opt in to the 1D effects. Say so once rather
+          // than log "1/0" and leave somebody wondering why nothing moved.
+          if (wledfx_hwtest::count(ctrl, filter) == 0) {
+            ESP_LOGW("tour", "[tour] this group has no effect that runs on a %s output",
+                     ctrl->layout_2d() ? "2D" : "1D");
+            return;
           }
 
           size_t index;
           if (to >= 0) {
-            index = wledfx_hwtest::first(filter, (size_t) to);
+            index = wledfx_hwtest::first(ctrl, filter, (size_t) to);
           } else if (delta == 0) {
-            index = wledfx_hwtest::first(filter, current);
+            index = wledfx_hwtest::first(ctrl, filter, current);
           } else {
-            index = wledfx_hwtest::step(filter, current, delta);
+            index = wledfx_hwtest::step(ctrl, filter, current, delta);
           }
           ctrl->engine().set_effect_index(index);
           // The engine was moved behind the platforms' backs, so ask the
@@ -91,9 +101,9 @@ script:
 
           const std::string name = ctrl->current_effect_name();
           const char *group = wledfx_hwtest::group_of(index);
-          const unsigned position = (unsigned) wledfx_hwtest::position(filter, index);
+          const unsigned position = (unsigned) wledfx_hwtest::position(ctrl, filter, index);
           ESP_LOGI("tour", "[tour] %u/%u \"%s\" group=%s",
-                   position, (unsigned) wledfx_hwtest::count(filter), name.c_str(), group);
+                   position, (unsigned) wledfx_hwtest::count(ctrl, filter), name.c_str(), group);
           id(tour_effect).publish_state(name);
           id(tour_group).publish_state(group);
 
@@ -326,7 +336,7 @@ button:
           id(tour_profile) = true;
           id(tour_profile_last) = 0;
           ESP_LOGI("tour", "[tour] PROFILE START effects=%u dwell=5s",
-                   (unsigned) wledfx_hwtest::count(id(tour_filter)));
+                   (unsigned) wledfx_hwtest::count(ctrl, id(tour_filter)));
       - script.execute:
           id: tour_goto
           delta: 0

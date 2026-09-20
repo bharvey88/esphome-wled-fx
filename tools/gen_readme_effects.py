@@ -14,6 +14,7 @@ Pass --check to fail instead of writing, which is what CI wants.
 from __future__ import annotations
 
 import argparse
+import os
 import pathlib
 import re
 import subprocess
@@ -42,6 +43,7 @@ GROUP_TITLES = {
     "mm": "WLED-MM exclusives",
 }
 
+FLAG_0D = 1 << 0
 FLAG_1D = 1 << 1
 FLAG_2D = 1 << 2
 FLAG_VOLUME = 1 << 3
@@ -51,6 +53,14 @@ LINE = re.compile(r"^(\S+)\s+(.+?)\s+flags=0x([0-9A-Fa-f]{2})\s")
 
 
 def find_sim() -> pathlib.Path:
+    # WLED_FX_SIM names a build somewhere else, which is how the WSL wrapper
+    # points this at the Linux build instead of a stale Windows .exe that WSL
+    # would otherwise run through binfmt interop. See tools/wsl/sim.sh.
+    if override := os.environ.get("WLED_FX_SIM"):
+        candidate = pathlib.Path(override)
+        if not candidate.exists():
+            sys.exit(f"WLED_FX_SIM names {candidate}, which does not exist")
+        return candidate
     for name in ("wled_fx_sim", "wled_fx_sim.exe"):
         candidate = ROOT / "tools" / "sim" / "build" / name
         if candidate.exists():
@@ -75,21 +85,28 @@ def render() -> str:
     out = subprocess.run(
         [str(find_sim()), "--list"], capture_output=True, text=True, check=True
     ).stdout
-    groups: dict[str, list[tuple[str, str]]] = {}
+    groups: dict[str, list[tuple[str, int]]] = {}
     total = 0
     for line in out.splitlines():
         match = LINE.match(line)
         if match is None:
             continue
         group, name, flags = match.group(1), match.group(2).strip(), int(match.group(3), 16)
-        groups.setdefault(group, []).append((name, dimensions(flags)))
+        groups.setdefault(group, []).append((name, flags))
         total += 1
 
+    offered_1d = sum(1 for e in groups.values() for _, f in e if f & (FLAG_1D | FLAG_0D))
+    offered_2d = sum(1 for e in groups.values() for _, f in e if f & FLAG_2D)
     lines = [
         BEGIN,
         "",
         f"{total} effects are registered. Names are the WLED display names and they are "
         "what an `effects:` allow-list, the `effect:` option and the `select` entity all use.",
+        "",
+        f"Which of them an output offers depends on its shape: **{offered_1d} on a 1D "
+        f"output** and **{offered_2d} on a 2D output**, or all {total} on a 2D output "
+        "that sets `include_1d_effects: true`. The \"Runs on\" column below is what "
+        "decides that; see [Which effects an output offers](#which-effects-an-output-offers).",
         "",
     ]
     for group in sorted(groups, key=lambda g: (GROUP_TITLES.get(g, ""), g)):
@@ -98,8 +115,8 @@ def render() -> str:
         lines.append("")
         lines.append("| Effect | Runs on |")
         lines.append("|---|---|")
-        for name, dims in entries:
-            lines.append(f"| {name} | {dims} |")
+        for name, flags in entries:
+            lines.append(f"| {name} | {dimensions(flags)} |")
         lines.append("")
     lines.append(END)
     return "\n".join(lines)

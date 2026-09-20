@@ -190,7 +190,16 @@ const BlackAllowed BLACK_ALLOWED[] = {
     // A starburst needs somewhere to throw its fragments. Upstream FX.cpp
     // mode_starburst, and the MM audio variant of the same body.
     {"Fireworks Starburst", 2},
-    {"Fw Starburst audio", 2},
+    /* The audio variant gets one more pixel of slack than the plain one, and
+     * for a different reason. Below four pixels `numStars` is 1, and a single
+     * star is born on `hw_random8(birthrate) == 0` with a birthrate up to 144,
+     * so whether anything happens in a 300 frame run is a coin toss: this
+     * effect lights up at 3 pixels with 900 frames and at 4 pixels with 300.
+     * It sat on the winning side of that toss until the simulated sound
+     * stopped drawing a random number per frame and moved the shared sequence
+     * along. Not a size at which it is structurally black, which is why the
+     * bound is 3 and not higher. */
+    {"Fw Starburst audio", 3},
     // `ledIndex = (prog * SEGLEN * 3) >> 16` with the three colour bands all at
     // the same pixel. Upstream FX.cpp mode_tricolor_wipe.
     {"Tri Wipe", 1},

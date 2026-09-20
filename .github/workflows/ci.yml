@@ -3,6 +3,9 @@ name: CI
 on:
   push:
     branches: [main]
+    # Contact sheets are only rendered on a tag or a manual run, so a tag has to
+    # be able to start a run for that to mean anything.
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
 

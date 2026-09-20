@@ -227,7 +227,9 @@ function lightYaml(effect) {
   ];
   if (!effect.dims.includes("1D")) {
     lines.push(
-      "          # 2D only: wire the strip as a matrix",
+      "          # 2D only, so it needs a matrix wired as one strip. Width and",
+      "          # height are what make this a 2D output; without them a 2D-only",
+      "          # effect is refused at config time rather than run as a flat fill.",
       "          width: 16",
       "          height: 16",
       "          serpentine: true"
@@ -259,8 +261,18 @@ function displayYaml(effect) {
     "  id: fx",
     "  display_id: matrix",
     "  update_interval: 23ms",
-    "  effect: " + quoted(effect.name),
   ];
+  // A display is a 2D output, and a 2D output offers the 2D-capable effects
+  // only. A 1D-only effect needs the opt-in, or the config is refused with a
+  // message saying exactly this.
+  if (!effect.dims.includes("2D")) {
+    lines.push(
+      "  # 1D only, so a matrix has to be asked for it. It reaches the panel",
+      "  # through WLED's 1D to 2D mapping: " + (MAPPINGS[effect.m12] || String(effect.m12)) + ".",
+      "  include_1d_effects: true"
+    );
+  }
+  lines.push("  effect: " + quoted(effect.name));
   lines.push(...controlLines(effect, "  "));
   if (effect.audio) {
     lines.push(
@@ -349,6 +361,8 @@ function openSheet(effect, card) {
   const about = [
     row("Group", effect.family + " (" + effect.group + ")"),
     row("Runs on", effect.dims.join(" and ")),
+    row("Offered on", (effect.offeredOn || effect.dims).join(" and ")
+        + (effect.optIn ? ", and on a 2D output with " + effect.optIn : "")),
     row("Audio", effect.audio ? effect.audio + " reactive" : "no", !effect.audio),
     row("Particle system", effect.particle ? "yes" : "no", !effect.particle),
     row("Default palette", effect.paletteName + " (" + effect.palette + ")"),

@@ -85,8 +85,67 @@ def compile_harness(esphome: str) -> None:
         sys.exit(f"the compile succeeded but there is no binary at {BINARY}")
 
 
+def read_reference_applied(root: Path) -> dict[str, dict]:
+    """What a reference capture says the device was actually running.
+
+    WLED's `fxdef: true` leaves the palette alone when the effect's metadata
+    names none, so it keeps whatever the previous effect was using, while this
+    port puts it back to Default. Capturing a device effect by effect therefore
+    carries a palette from one to the next: on the first full run that was 112
+    of 214 effects rendering in a different palette from the port for a reason
+    that has nothing to do with the port, which would have swamped every real
+    difference underneath it.
+
+    Reading the device's own applied state back out and forcing the same values
+    here is what makes the rest of the comparison mean anything.
+    """
+    applied: dict[str, dict] = {}
+    captures = root / "captures"
+    if not captures.is_dir():
+        sys.exit(f"--match-reference {root} has no captures/ directory")
+    for d in sorted(captures.iterdir()):
+        meta_path = d / "meta.json"
+        if not meta_path.exists():
+            continue
+        try:
+            meta = json.loads(meta_path.read_text())
+        except Exception:  # noqa: BLE001
+            continue
+        fields = meta.get("applied_state_fields")
+        if not fields or not meta.get("name"):
+            continue
+        applied[meta["name"]] = fields
+    return applied
+
+
+def write_apply_file(applied: dict[str, dict], path: Path) -> int:
+    """The tab separated file snaphelp.h reads. -1 means leave it alone."""
+    lines = []
+    for name, f in sorted(applied.items()):
+        def num(key, default=-1):
+            v = f.get(key)
+            return default if v is None else int(v)
+
+        def flag(key):
+            v = f.get(key)
+            return -1 if v is None else (1 if v else 0)
+
+        lines.append(
+            "\t".join(
+                str(x)
+                for x in (
+                    name, num("pal"), num("sx"), num("ix"),
+                    num("c1"), num("c2"), num("c3"),
+                    flag("o1"), flag("o2"), flag("o3"),
+                )
+            )
+        )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return len(lines)
+
+
 def run_workers(effects: list[str], workdir: Path, workers: int, seconds: float,
-                settle_ms: int, period_ms: int) -> list[Path]:
+                settle_ms: int, period_ms: int, apply_file: Path | None = None) -> list[Path]:
     """One process per slice. Returns the worker directories, in slice order."""
     # Round robin rather than contiguous blocks: the slow effects are clustered
     # (the particle groups sit together in the registry), and a contiguous split
@@ -118,6 +177,8 @@ def run_workers(effects: list[str], workdir: Path, workers: int, seconds: float,
                 "WFX_SNAP_PERIOD_MS": str(period_ms),
             }
         )
+        if apply_file is not None:
+            env["WFX_SNAP_APPLY"] = str(apply_file)
         log_path = wdir / "run.log"
         handle = log_path.open("w", encoding="utf-8")
         procs.append(
@@ -372,6 +433,12 @@ def main() -> int:
     ap.add_argument("--seconds", type=float, default=6.0, help="capture window per effect")
     ap.add_argument("--settle-ms", type=int, default=1500, help="run before capturing")
     ap.add_argument("--period-ms", type=int, default=50, help="between captured frames")
+    ap.add_argument(
+        "--match-reference",
+        default=None,
+        help="a reference capture folder to take each effect's applied palette "
+        "and controls from, so the two sides run the same configuration",
+    )
     ap.add_argument("--esphome", default=str(Path("/root/wfx/esphome-venv/bin/esphome")))
     ap.add_argument("--no-compile", action="store_true", help="use the binary already built")
     ap.add_argument("--keep-bmp", action="store_true", help="leave the scratch .bmp files behind")
@@ -396,13 +463,23 @@ def main() -> int:
     elif not BINARY.exists():
         sys.exit(f"--no-compile but there is no binary at {BINARY}")
 
+    apply_file = None
+    matched: dict[str, dict] = {}
+    if args.match_reference:
+        matched = read_reference_applied(Path(args.match_reference))
+        apply_file = workdir / "applied.tsv"
+        count = write_apply_file(matched, apply_file)
+        log(f"matching {count} effect(s) to the state the device was in")
+
     workers = args.workers or min(len(names), os.cpu_count() or 4)
     started = time.time()
-    dirs = run_workers(names, workdir, workers, args.seconds, args.settle_ms, args.period_ms)
+    dirs = run_workers(names, workdir, workers, args.seconds, args.settle_ms, args.period_ms,
+                       apply_file)
     log(f"capture finished in {time.time() - started:.0f} s, packing")
 
     applied = {
         "selected_by": "name, which reapplies the effect's WLED metadata defaults (as fxdef: true does)",
+        "matched_to_reference": args.match_reference or None,
         "colors": [[255, 160, 0], [0, 0, 0], [0, 0, 0]],
         "gamma_correct": 1.0,
         "master_brightness": 255,
@@ -416,7 +493,12 @@ def main() -> int:
     seen = set()
     for wdir in dirs:
         for name, entries in read_manifest(wdir).items():
-            pack_effect(name, index_of.get(name, 999), entries, wdir, outdir, applied)
+            per_effect = dict(applied)
+            if name in matched:
+                # Exactly what was forced, so the meta.json says what was run
+                # rather than only what would have been run by default.
+                per_effect["forced_from_reference"] = matched[name]
+            pack_effect(name, index_of.get(name, 999), entries, wdir, outdir, per_effect)
             seen.add(name)
             packed += 1
     missing = [n for n in names if n not in seen]

@@ -19,6 +19,7 @@
  * its own slice of the effect list and its own output directory:
  *
  *   WFX_SNAP_EFFECTS     comma separated effect names, in the order to capture
+ *   WFX_SNAP_APPLY       optional, a file of per-effect controls to force
  *   WFX_SNAP_MANIFEST    path to write the frame manifest to
  *   WFX_SNAP_SECONDS     how long to capture each effect, default 6
  *   WFX_SNAP_SETTLE_MS   how long to let an effect run before capturing, default 1500
@@ -49,8 +50,36 @@ inline constexpr uint32_t COLOR_PRIMARY = 0x00FFA000;
 inline constexpr uint32_t COLOR_SECONDARY = 0x00000000;
 inline constexpr uint32_t COLOR_TERTIARY = 0x00000000;
 
+/* Controls to force on one effect, read from the WFX_SNAP_APPLY file.
+ *
+ * This exists because WLED's `fxdef: true` and this port disagree about one
+ * thing, and it is not a small thing for a comparison. When an effect's
+ * metadata names no palette, WLED leaves the palette alone, so it keeps
+ * whatever the previous effect was using; this port puts it back to Default.
+ * Capturing a device effect by effect therefore carries a palette from one to
+ * the next, and on the first real run that was 112 of 214 effects rendering in
+ * a different palette from the port for a reason that has nothing to do with
+ * the port.
+ *
+ * So the driver can read the device's own applied state back out and force it
+ * here. -1 in any field means "leave it to the effect's own metadata", which
+ * is what happens with no file at all. */
+struct Applied {
+  std::string name;
+  int palette{-1};
+  int speed{-1};
+  int intensity{-1};
+  int custom1{-1};
+  int custom2{-1};
+  int custom3{-1};
+  int check1{-1};
+  int check2{-1};
+  int check3{-1};
+};
+
 struct State {
   std::vector<std::string> effects;
+  std::vector<Applied> applied;
   size_t current{0};
   uint32_t frame{0};
   uint32_t capture_end_ms{0};
@@ -95,6 +124,32 @@ inline void setup() {
     start = comma + 1;
   }
 
+  /* One tab separated line per effect:
+   *   name  palette  speed  intensity  custom1  custom2  custom3  o1  o2  o3
+   * with -1 for anything to leave alone. A name that is not in this run is
+   * simply never looked up. */
+  const std::string apply_path = env_or("WFX_SNAP_APPLY", "");
+  if (!apply_path.empty()) {
+    FILE *fp = fopen(apply_path.c_str(), "r");
+    if (fp == nullptr) {
+      ESP_LOGE(TAG, "Could not read %s", apply_path.c_str());
+    } else {
+      char line[512];
+      while (fgets(line, sizeof(line), fp) != nullptr) {
+        char name[128];
+        Applied a;
+        if (sscanf(line, "%127[^\t]\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d", name, &a.palette, &a.speed,
+                   &a.intensity, &a.custom1, &a.custom2, &a.custom3, &a.check1, &a.check2, &a.check3) == 10) {
+          a.name = name;
+          s.applied.push_back(a);
+        }
+      }
+      fclose(fp);
+      ESP_LOGI(TAG, "forcing controls on %u effect(s) from %s", static_cast<unsigned>(s.applied.size()),
+               apply_path.c_str());
+    }
+  }
+
   s.manifest_path = env_or("WFX_SNAP_MANIFEST", "");
   if (!s.manifest_path.empty()) {
     s.manifest = fopen(s.manifest_path.c_str(), "w");
@@ -112,12 +167,43 @@ inline void begin_effect(esphome::wled_fx::WledFxController *ctrl) {
   State &s = state();
   const std::string &name = s.effects[s.current];
 
+  /* Nothing may carry over from the effect before. Forcing a control below
+   * pins it, and a pinned control survives the next effect change, which is
+   * exactly the "a control left over from the previous effect" trap that most
+   * "this effect is broken" reports turn out to be. */
+  ctrl->engine().clear_override(0xFFFF);
+
   /* Selecting by name reapplies the effect's own metadata defaults to every
-   * control nothing pinned, which is exactly what WLED's `fxdef: true` does and
-   * is how the reference device was driven. Nothing in port.yaml pins a
-   * control, so nothing survives from the previous effect. */
+   * control nothing pinned, which is what WLED's `fxdef: true` does and is how
+   * the reference device was driven. */
   if (!ctrl->set_effect_by_name(name))
     ESP_LOGE(TAG, "'%s' was not selectable", name.c_str());
+
+  // Then whatever the device was actually running, when the driver was given a
+  // reference capture to match. See the comment on Applied.
+  for (const Applied &a : s.applied) {
+    if (a.name != name)
+      continue;
+    if (a.palette >= 0)
+      ctrl->engine().set_palette(static_cast<uint8_t>(a.palette));
+    if (a.speed >= 0)
+      ctrl->engine().set_speed(static_cast<uint8_t>(a.speed));
+    if (a.intensity >= 0)
+      ctrl->engine().set_intensity(static_cast<uint8_t>(a.intensity));
+    if (a.custom1 >= 0)
+      ctrl->engine().set_custom1(static_cast<uint8_t>(a.custom1));
+    if (a.custom2 >= 0)
+      ctrl->engine().set_custom2(static_cast<uint8_t>(a.custom2));
+    if (a.custom3 >= 0)
+      ctrl->engine().set_custom3(static_cast<uint8_t>(a.custom3));
+    if (a.check1 >= 0)
+      ctrl->engine().set_check1(a.check1 != 0);
+    if (a.check2 >= 0)
+      ctrl->engine().set_check2(a.check2 != 0);
+    if (a.check3 >= 0)
+      ctrl->engine().set_check3(a.check3 != 0);
+    break;
+  }
 
   // fxdef leaves the colours alone, so they are set here instead, every time,
   // rather than relying on nothing having moved them.

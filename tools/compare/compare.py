@@ -190,6 +190,20 @@ def check_metrics_agree(captures: dict[str, Capture], root: Path) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
+# The eight compass points estimate_motion() reports, in order round the circle.
+_OCTANTS = ["right", "up-right", "up", "up-left", "left", "down-left", "down", "down-right"]
+
+
+def octant_distance(a: str, b: str) -> int:
+    """How many 45 degree steps apart two reported directions are, 0 to 4."""
+    try:
+        i, j = _OCTANTS.index(a), _OCTANTS.index(b)
+    except ValueError:
+        return 0
+    step = abs(i - j) % 8
+    return min(step, 8 - step)
+
+
 def speed_ratio(a: float, b: float) -> float | None:
     """b relative to a, or None when neither side is really moving."""
     if a < 1.0 and b < 1.0:
@@ -221,8 +235,23 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
     pdir = pm["motion"]["direction"]
     confident = rm["motion"].get("confidence", 0) > 3 and pm["motion"].get("confidence", 0) > 3
     if confident and rdir != pdir and "none/unclear" not in (rdir, pdir):
-        findings.append(f"motion goes {rdir} on WLED and {pdir} on the port")
-        score += 60
+        # The estimator reports one of eight compass points, so two readings 45
+        # degrees apart can be the same motion landing either side of a
+        # boundary. Neighbours are noted and scored low; anything further is a
+        # real disagreement, and opposite is the interesting one.
+        turn = octant_distance(rdir, pdir)
+        if turn <= 1:
+            findings.append(
+                f"motion goes {rdir} on WLED and {pdir} on the port, one step "
+                "apart, which is inside the estimator's own resolution"
+            )
+            score += 8
+        elif turn == 4:
+            findings.append(f"motion is opposite: {rdir} on WLED, {pdir} on the port")
+            score += 90
+        else:
+            findings.append(f"motion goes {rdir} on WLED and {pdir} on the port")
+            score += 60
 
     ratio = speed_ratio(rm["motion"]["speed_px_per_s"], pm["motion"]["speed_px_per_s"])
     if ratio is not None and confident:
@@ -359,6 +388,16 @@ def write_report(results: list[dict], out: Path, ref_only: list[str], port_only:
         "and the reference's 8 bit pixels are rounded to RGB565 and back, which is "
         "what ESPHome's snapshot display does to the port's. Neither side is "
         "gamma corrected or brightness scaled.",
+        "",
+        "Two things about the motion estimate before you trust a direction. It "
+        "reports one of eight compass points, so a reading 45 degrees away can "
+        "be the same motion landing either side of a boundary, and those are "
+        "called out and scored low. And it is a phase correlation, which on a "
+        "periodic pattern cannot tell a shift of d from a shift of -(period - "
+        "d): a tartan, a stripe field or a spiral can be reported as moving "
+        "the opposite way on one side and be doing nothing of the kind. Open "
+        "the side-by-side before believing an \"opposite\" on an effect that "
+        "repeats.",
         "",
     ]
 

@@ -68,6 +68,26 @@ Both sides select each effect by name, which reapplies its WLED metadata
 defaults, the same state WLED's `fxdef: true` produces, and both set WLED's
 factory colours: amber primary, nothing in the other two slots.
 
+## Two things that bit on the first real run
+
+**The palette carries over on the device.** WLED's `fxdef: true` leaves the
+palette alone when an effect's metadata names none, so it keeps whatever the
+previous effect was using; this port puts it back to Default. Capturing a
+device effect by effect therefore carries a palette from one to the next, and
+on the first full run that was 112 of 214 effects rendering in a different
+palette from the port for a reason that had nothing to do with the port. Pass
+`--match-reference` to `capture_port.py` and it reads the device's own applied
+state back out and forces the same palette and controls, which took the flagged
+count from 138 to 111 and the colour findings from 87 to 19.
+
+**The motion estimate has two known failure modes.** It reports one of eight
+compass points, so a reading 45 degrees away can be the same motion landing
+either side of a boundary; those are called out and scored low. And it is a
+phase correlation, which on a periodic pattern cannot tell a shift of `d` from
+a shift of `-(period - d)`, so a tartan, a stripe field or a spiral can be
+reported as moving the opposite way and be doing nothing of the kind. Open the
+side-by-side before believing an "opposite" on an effect that repeats.
+
 ## Audio reactive effects
 
 Ranked separately and only loosely comparable. The device has a real microphone

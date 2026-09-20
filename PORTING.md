@@ -366,6 +366,24 @@ wrapper does. And WSL will happily run a Windows `.exe` through binfmt interop,
 so `tools/check_effect_names.py` would pick up a stale `wled_fx_sim.exe` sitting
 in the checkout: set `WLED_FX_SIM` to the Linux binary, as `sim.sh` does.
 
+### When the simulator is not enough
+
+The simulator runs `Engine::render()`. It cannot see a bug in the ESPHome
+display front end, because there is no ESPHome in it, and the front end had two
+of them: the frame was handed to `draw_pixels_at()` with the wrong endianness,
+which swapped red and blue on every display except the one it had been tried
+on, and the default primary colour was the wrong amber.
+
+[tools/snapshot](tools/snapshot) is the answer to that. It is an ESPHome `host`
+build over the `snapshot` display, so a captured frame has been through the
+YAML, codegen, the frame gate, `draw_pixels_at()` and the display's own
+`update()`. [tools/compare](tools/compare) puts its output next to a capture of
+a real WLED device and next to the plain simulator, which is what turns "this
+differs" into "and here is which half of the stack it is in".
+
+If you are porting an effect, the simulator is still the loop to work in. Reach
+for these when an effect looks right in a contact sheet and wrong on hardware.
+
 ## 6. Pitfalls hit while building P1
 
 * **A `const` object at namespace scope has internal linkage.** This bit twice:

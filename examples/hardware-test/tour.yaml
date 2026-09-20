@@ -1,0 +1,278 @@
+# The shared hardware-test harness: tour mode, the runtime controls and the
+# diagnostic sensors. Included as a package by every config in this folder.
+#
+# Two things a config has to provide before including this:
+#
+#   1. a wled_fx controller with `id: fx`, either a display front end or the
+#      `wled_fx` effect on a light;
+#   2. `esphome: includes: [hwtest.h]`, which is where the group lookup and the
+#      checklist live.
+#
+# Everything here works over the web server with no Home Assistant attached.
+
+esphome:
+  includes:
+    # Resolved against the directory of the config being built, which is this
+    # one as long as the config including this package sits beside it.
+    - hwtest.h
+  on_boot:
+    # After every setup(), so the engine exists and the entities are alive to
+    # publish into. delta 0 publishes the starting effect without changing it.
+    - priority: -100
+      then:
+        - script.execute:
+            id: tour_goto
+            delta: 0
+
+globals:
+  # Index into the "Tour group" select's options. See Filter in hwtest.h.
+  - id: tour_filter
+    type: int
+    restore_value: false
+    initial_value: "0"
+  # millis() at which the tour advances next.
+  - id: tour_next_ms
+    type: uint32_t
+    restore_value: false
+    initial_value: "0"
+
+script:
+  # delta 1 steps forward, -1 steps back, 0 stays put and only re-publishes.
+  # Everything that changes the effect goes through here, so there is exactly
+  # one place that logs the change and one place that resets the dwell timer.
+  - id: tour_goto
+    mode: single
+    parameters:
+      delta: int
+    then:
+      - lambda: |-
+          auto *ctrl = id(fx);
+          const int filter = id(tour_filter);
+          const size_t current = ctrl->engine().effect_index();
+          const size_t index = delta == 0 ? wledfx_hwtest::first(filter, current)
+                                          : wledfx_hwtest::step(filter, current, delta);
+          ctrl->engine().set_effect_index(index);
+          // The engine was moved behind the platforms' backs, so ask the
+          // select, number and switch entities to republish.
+          wledfx_hwtest::notify_state_change(ctrl);
+
+          const std::string name = wledfx_hwtest::name_of(index);
+          const char *group = wledfx_hwtest::group_of(index);
+          ESP_LOGI("tour", "[tour] %u/%u \"%s\" group=%s",
+                   (unsigned) wledfx_hwtest::position(filter, index),
+                   (unsigned) wledfx_hwtest::count(filter), name.c_str(), group);
+          id(tour_effect).publish_state(name);
+          id(tour_group).publish_state(group);
+
+          id(tour_next_ms) = millis() + (uint32_t) (id(tour_dwell).state * 1000.0f);
+
+interval:
+  # 200 ms is fine grained enough for a one second dwell and costs nothing.
+  - interval: 200ms
+    then:
+      - if:
+          condition:
+            - switch.is_on: tour_auto
+            # Signed, so the comparison survives the millis() wrap.
+            - lambda: "return (int32_t) (millis() - id(tour_next_ms)) >= 0;"
+          then:
+            - script.execute:
+                id: tour_goto
+                delta: 1
+
+switch:
+  # Off pauses the tour and leaves the current effect on screen.
+  - platform: template
+    id: tour_auto
+    name: Tour auto advance
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    icon: mdi:play-pause
+    on_turn_on:
+      - lambda: "id(tour_next_ms) = millis() + (uint32_t) (id(tour_dwell).state * 1000.0f);"
+
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: check1
+    name: Check 1
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: check2
+    name: Check 2
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: check3
+    name: Check 3
+
+number:
+  - platform: template
+    id: tour_dwell
+    name: Tour dwell
+    unit_of_measurement: s
+    min_value: 1
+    max_value: 120
+    step: 1
+    initial_value: 8
+    optimistic: true
+    restore_value: false
+    mode: box
+
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: speed
+    name: Speed
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: intensity
+    name: Intensity
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: custom1
+    name: Custom 1
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: custom2
+    name: Custom 2
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: custom3
+    name: Custom 3
+
+select:
+  # Narrows the tour to one part of the port. "Checklist" is the effects
+  # HARDWARE-CHECKLIST.md asks about, in registry order.
+  - platform: template
+    id: tour_group_filter
+    name: Tour group
+    optimistic: true
+    initial_option: All
+    restore_value: false
+    options:
+      - All
+      - 1D
+      - 2D
+      - Particle 2D
+      - Particle 1D
+      - Audio
+      - MM
+      - Checklist
+    on_value:
+      - lambda: "id(tour_filter) = (int) i;"
+      # delta 0 keeps the current effect when the new filter accepts it and
+      # jumps to the first one that fits when it does not.
+      - script.execute:
+          id: tour_goto
+          delta: 0
+
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: effect
+    name: Effect
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: palette
+    name: Palette
+
+button:
+  - platform: template
+    name: Next effect
+    icon: mdi:skip-next
+    on_press:
+      - script.execute:
+          id: tour_goto
+          delta: 1
+
+  - platform: template
+    name: Previous effect
+    icon: mdi:skip-previous
+    on_press:
+      - script.execute:
+          id: tour_goto
+          delta: -1
+
+  - platform: template
+    name: Restart effect
+    icon: mdi:restart
+    on_press:
+      - lambda: "wledfx_hwtest::restart_effect(id(fx));"
+
+  # Moving Speed, Intensity, Custom or Check pins that value for every effect
+  # that follows, which is the engine's override model and is easy to forget
+  # halfway through a tour. This puts every control back on the effect's own
+  # metadata defaults.
+  - platform: template
+    name: Unpin controls
+    icon: mdi:pin-off
+    on_press:
+      - lambda: |-
+          auto *ctrl = id(fx);
+          ctrl->engine().clear_override(0xFFFF);
+          wledfx_hwtest::restart_effect(ctrl);
+
+text_sensor:
+  - platform: template
+    id: tour_effect
+    name: Effect name
+    update_interval: never
+  - platform: template
+    id: tour_group
+    name: Effect group
+    update_interval: never
+
+debug:
+  update_interval: 10s
+
+sensor:
+  # Frames the engine actually rendered, not the interval it was asked for.
+  # Segment::call counts one per rendered frame and restarts at zero on an
+  # effect change, so a window that straddles a change counts from zero rather
+  # than reporting a nonsense negative delta.
+  - platform: template
+    id: fx_fps
+    name: Effect frame rate
+    unit_of_measurement: fps
+    accuracy_decimals: 1
+    state_class: measurement
+    update_interval: 2s
+    lambda: |-
+      static uint32_t last_call = 0;
+      static uint32_t last_ms = 0;
+      const uint32_t call = id(fx)->engine().segment().call;
+      const uint32_t now = millis();
+      const uint32_t frames = call >= last_call ? call - last_call : call;
+      const uint32_t elapsed = now - last_ms;
+      const bool first = last_ms == 0;
+      last_call = call;
+      last_ms = now;
+      if (first || elapsed == 0)
+        return {};
+      return 1000.0f * frames / elapsed;
+
+  # Segment::data_size() is the scratch block the running effect asked for. For
+  # the 31 particle effects that is the particle system allocation: the particle
+  # array, the flags, the sources and the collision bins.
+  - platform: template
+    name: Effect data bytes
+    unit_of_measurement: B
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: 5s
+    lambda: "return (float) id(fx)->engine().segment().data_size();"
+
+  - platform: template
+    name: PSRAM free
+    unit_of_measurement: B
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: 10s
+    lambda: "return (float) wledfx_hwtest::psram_free();"
+
+  - platform: debug
+    free:
+      name: Heap free
+    block:
+      name: Heap largest free block
+    fragmentation:
+      name: Heap fragmentation
+    loop_time:
+      name: Loop time

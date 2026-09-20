@@ -1,0 +1,112 @@
+# Apollo M-1 (ESP32-S3, 64x64 HUB75 panel): the hardware review firmware.
+#
+# Flash this first. It carries all 223 effects, the tour harness, every runtime
+# control and the diagnostic sensors, and it needs nothing but a browser on the
+# same network. docs/HARDWARE-TESTING.md is the session guide.
+#
+# The engine owns the frame clock, so the display is handed over with
+# `update_interval: never` and `auto_clear_enabled: false`.
+
+esphome:
+  name: wled-fx-m1-test
+  friendly_name: WLED FX M-1 test
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+  # DEBUG is what prints the sensor states and, on the audio build, the one-off
+  # analysis cost line.
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Every entity below is reachable from http://wled-fx-m1-test.local/ with no
+# Home Assistant involved. Version 3 fetches its assets from the internet the
+# first time a browser opens it.
+web_server:
+  port: 80
+  version: 3
+
+external_components:
+  - source:
+      type: local
+      path: ../../components
+
+packages:
+  tour: !include tour.yaml
+
+display:
+  - platform: hub75
+    id: matrix
+    # ONE LINE SWITCH FOR A REV4 PANEL: replace the line below with
+    #   board: apollo-automation-m1-rev4
+    board: apollo-automation-m1-rev6
+    panel_width: 64
+    panel_height: 64
+    update_interval: never
+    auto_clear_enabled: false
+    double_buffer: true
+
+wled_fx:
+  id: fx
+  display_id: matrix
+  update_interval: 23ms
+  effect: Fire 2012
+  text: "WLED FX"
+
+number:
+  - platform: template
+    id: panel_brightness
+    name: Panel brightness
+    min_value: 1
+    max_value: 255
+    step: 1
+    initial_value: 128
+    optimistic: true
+    restore_value: false
+    mode: slider
+    on_value:
+      - hub75.set_brightness:
+          id: matrix
+          brightness: !lambda "return (uint8_t) x;"
+
+# There is no physical button here on purpose. The hub75 board preset
+# `apollo-automation-m1-rev6` defines the fourteen panel pins and nothing else,
+# and no Apollo M-1 pin map in refs/esphome names a boot or user button, so the
+# GPIO would be a guess. If you know the pin, this is the block:
+#
+# binary_sensor:
+#   - platform: gpio
+#     pin:
+#       number: GPIO0        # <- the real button pin, not a guess
+#       mode:
+#         input: true
+#         pullup: true
+#       inverted: true
+#     id: boot_button
+#     on_click:
+#       - min_length: 50ms
+#         max_length: 600ms
+#         then:
+#           - script.execute: {id: tour_goto, delta: 1}
+#       - min_length: 700ms
+#         max_length: 3000ms
+#         then:
+#           - switch.toggle: tour_auto

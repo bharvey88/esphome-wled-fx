@@ -529,7 +529,12 @@ int main(int argc, char **argv) {
         FILE *anim_fp = nullptr;
         std::vector<uint8_t> anim_row;
         if (anim) {
-          res.image = anim_dir + "/" + sanitize(name) + ".rgb";
+          // One geometry is the normal case, because a preview is rendered with
+          // --size. Several would otherwise write one file over and over.
+          res.image = anim_dir + "/" + sanitize(name);
+          if (geometries.size() > 1)
+            res.image += std::string("_") + geo.label;
+          res.image += ".rgb";
           anim_fp = fopen(res.image.c_str(), "wb");
           if (anim_fp == nullptr) {
             fprintf(stderr, "FAIL %s %s: could not open %s\n", name, geo.label, res.image.c_str());

@@ -342,25 +342,32 @@ def _validate_entry(config):
     return config
 
 
-def _validate_one_audio_source(config):
-    """One canvas, one segment, one analysis source."""
-    if sum(1 for entry in config if CONF_AUDIO in entry) > 1:
-        raise cv.Invalid(
-            "Only one wled_fx entry can carry an 'audio' block. "
-            "Every effect reads the same analysis source."
-        )
-    return config
+CONFIG_SCHEMA = cv.ensure_list(cv.All(_ENTRY_SCHEMA, _validate_entry))
 
 
-CONFIG_SCHEMA = cv.All(
-    cv.ensure_list(cv.All(_ENTRY_SCHEMA, _validate_entry)), _validate_one_audio_source
-)
-
-
-# Where _final_validate() leaves what it worked out for to_code(). Final
-# validation runs once, before any to_code(), and it is the only place the light
-# effects and the wled_fx entries are both in view.
+# Where _final_validate() leaves what it worked out for to_code().
 _LAYOUT_DATA_KEY = "wled_fx_layouts"
+_ALLOW_LIST_KEY = "wled_fx_allow_list"
+_SELECTION_DONE_KEY = "wled_fx_selection_emitted"
+
+
+def _all_entries(full_config):
+    """Every wled_fx entry in the configuration, whichever way it arrives.
+
+    MULTI_CONF makes ESPHome split `wled_fx:` and hand each entry to to_code()
+    and to final validation on its own, and because CONFIG_SCHEMA is an
+    ensure_list each of those arrives wrapped in a list of one. Anything that
+    has to see all of them, which is everything about the allow-list and the
+    layouts, has to come back here for them rather than trust what it was
+    passed.
+    """
+    entries = []
+    for item in full_config.get(DOMAIN, []) or []:
+        if isinstance(item, list):
+            entries.extend(item)
+        elif isinstance(item, dict):
+            entries.append(item)
+    return entries
 
 
 def _configured_light_effects(full_config):
@@ -371,11 +378,11 @@ def _configured_light_effects(full_config):
                 yield effect[DOMAIN]
 
 
-def _configured_layouts(config, full_config):
+def _configured_layouts(entries, full_config):
     """(two_dimensional, include_1d) for every front end in the configuration."""
     layouts = [
         (True, entry.get(CONF_INCLUDE_1D_EFFECTS, False))
-        for entry in config
+        for entry in entries
         if CONF_DISPLAY_ID in entry
     ]
     layouts.extend(
@@ -385,7 +392,7 @@ def _configured_layouts(config, full_config):
     return layouts
 
 
-def _validate_allow_list(config, offered: set[str] | None, layouts):
+def _validate_allow_list(entries, offered: set[str] | None, layouts):
     """An 'effects:' name no configured output could ever show is an error.
 
     Compiling it in would cost flash for something nothing can select. The
@@ -396,7 +403,7 @@ def _validate_allow_list(config, offered: set[str] | None, layouts):
         return
     folded = {name.casefold() for name in offered}
     only_2d_outputs = layouts and all(two_d for two_d, _ in layouts)
-    for entry in config:
+    for entry in entries:
         for index, name in enumerate(entry.get(CONF_EFFECTS, [])):
             if name.casefold() in folded:
                 continue
@@ -419,7 +426,20 @@ def _final_validate(config):
     """A display handed to wled_fx must not also be driven by its own poller."""
     full_config = fv.full_config.get()
 
-    layouts = _configured_layouts(config, full_config)
+    # Every entry, not only the one this call was handed: the allow-list is
+    # merged across all of them and the layouts are the union of all of them.
+    entries = _all_entries(full_config)
+
+    # One canvas, one segment, one analysis source. This cannot live in
+    # CONFIG_SCHEMA, because MULTI_CONF hands that one entry at a time and it
+    # would never see the second block.
+    if sum(1 for entry in entries if CONF_AUDIO in entry) > 1:
+        raise cv.Invalid(
+            "Only one wled_fx entry can carry an 'audio' block. "
+            "Every effect reads the same analysis source."
+        )
+
+    layouts = _configured_layouts(entries, full_config)
     if layouts:
         offered: set[str] | None = set()
         for two_dimensional, include_1d in layouts:
@@ -429,8 +449,12 @@ def _final_validate(config):
         # only proves the engine compiles. Nothing can be ruled out, so nothing
         # is, and every effect stays available.
         offered = None
-    _validate_allow_list(config, offered, layouts)
+    _validate_allow_list(entries, offered, layouts)
     CORE.data[_LAYOUT_DATA_KEY] = offered
+    allow_list: list[str] = []
+    for entry in entries:
+        allow_list.extend(entry.get(CONF_EFFECTS, []))
+    CORE.data[_ALLOW_LIST_KEY] = allow_list
 
     for entry in config:
         if (audio_config := entry.get(CONF_AUDIO)) is not None:
@@ -488,17 +512,26 @@ def _discover_effect_groups() -> dict[str, set[str]]:
     return groups
 
 
-def _add_effect_selection(config):
+def _add_effect_selection():
     """Emits the compile-time allow-list and forces the effect groups to link.
 
     ESPHome builds the generated sources into a static library, so a translation
     unit nothing refers to is never pulled out of the archive and its registration
     object never runs. Naming the group symbols from the generated main.cpp is what
     keeps them in.
+
+    Exactly once, however many wled_fx entries there are. MULTI_CONF calls
+    to_code() once per entry, and emitting the group table twice is a
+    redefinition the compiler rejects, which is what made two entries
+    unbuildable however they were written.
     """
-    selected: list[str] = []
-    for entry in config:
-        selected.extend(entry.get(CONF_EFFECTS, []))
+    if CORE.data.get(_SELECTION_DONE_KEY):
+        return
+    CORE.data[_SELECTION_DONE_KEY] = True
+
+    # The lists of every entry merged into one, worked out in final validation
+    # because that is the only place all the entries are in view at once.
+    selected: list[str] = list(CORE.data.get(_ALLOW_LIST_KEY, []))
 
     # With no allow-list the build carries every effect the configured outputs
     # could offer, which on a matrix-only configuration is not every effect: a
@@ -625,7 +658,7 @@ async def audio_to_code(config):
 
 
 async def to_code(config):
-    _add_effect_selection(config)
+    _add_effect_selection()
     for entry in config:
         if (audio_config := entry.get(CONF_AUDIO)) is not None:
             await audio_to_code(audio_config)

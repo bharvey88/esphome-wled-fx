@@ -26,3 +26,6 @@ __pycache__/
 .idea/
 Thumbs.db
 .DS_Store
+
+# Snapshot harness build output
+tools/snapshot/.esphome/

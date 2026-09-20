@@ -1,0 +1,100 @@
+# Captures what this port renders, through the real display front end.
+#
+# This is not a simulator. Everything a frame goes through on a HUB75 panel it
+# goes through here: the YAML above, `wled_fx`'s own codegen, the frame gate in
+# WledFxController, Engine::render(), the canvas to RGB888 conversion with the
+# gamma table, one bulk `draw_pixels_at()` and the display's own `update()`.
+# The only thing swapped out is the last step, where a HUB75 panel would light
+# an LED and the `snapshot` display keeps the picture in memory for the
+# `snapshot.take` action to write out.
+#
+# tools/snapshot/capture_port.py compiles this once, runs it as one process per
+# core, and turns the .bmp files into the same frames.npz / sheet.png /
+# anim.webp / meta.json layout the WLED reference capture produces, so
+# tools/compare/compare.py can put the two side by side.
+#
+# It needs an ESPHome with the `snapshot` component, which is on the dev branch
+# and is not in any release yet. `tools/wsl/bootstrap.sh` builds a virtualenv
+# with one.
+
+esphome:
+  name: wfx-snap
+  includes:
+    # Resolved against the directory of this file.
+    - snaphelp.h
+  on_boot:
+    # After every setup(), so the engine has its canvas and the effect list is
+    # something that can be selected from.
+    - priority: -100
+      then:
+        - lambda: "wfxsnap::setup();"
+        - script.execute: capture_all
+
+host:
+
+logger:
+  level: INFO
+  # One line per effect and one summary; the frames say the rest.
+
+# No api and no web_server on purpose. Every worker process runs this same
+# binary at the same time, and two of them cannot bind the same port.
+
+external_components:
+  - source:
+      type: local
+      path: ../../components
+
+display:
+  - platform: snapshot
+    id: panel
+    dimensions:
+      width: 64
+      height: 64
+    # wled_fx owns the frame clock and paints every pixel every frame, which is
+    # what these two say. Both are enforced at codegen time.
+    update_interval: never
+    auto_clear_enabled: false
+
+wled_fx:
+  id: fx
+  display_id: panel
+  # WLED's own FRAMETIME at 42 fps, which is what the effect bodies were
+  # written against and what a panel build uses.
+  update_interval: 23ms
+  # The reference capture reads WLED's raw render buffer, before its brightness
+  # scaling and before its gamma. 1.0 is the default and makes the gamma table
+  # the identity, but a comparison harness should say what it is comparing
+  # rather than leave it to a default that could move.
+  gamma_correct: 1.0
+  # A display offers only the 2D-capable effects. This harness has to reach all
+  # 223, because the point is to compare every one of them against the device.
+  include_1d_effects: true
+  # Nothing pins a control here. That is deliberate: selecting an effect then
+  # refills every control from the effect's own metadata, which is what WLED's
+  # `fxdef: true` does and is how the reference device was driven.
+
+script:
+  - id: capture_all
+    mode: single
+    then:
+      - while:
+          condition:
+            lambda: "return wfxsnap::has_more();"
+          then:
+            - lambda: "wfxsnap::begin_effect(id(fx));"
+            # Let the effect run before anything is recorded, the same settle
+            # the reference capture gives the device. Several effects spend
+            # their first second allocating a particle system or filling a
+            # noise field, and neither side should be measured on that.
+            - delay: !lambda "return wfxsnap::state().settle_ms;"
+            - lambda: "wfxsnap::arm_capture();"
+            - while:
+                condition:
+                  lambda: "return wfxsnap::capturing();"
+                then:
+                  - snapshot.take:
+                      id: panel
+                      filename: !lambda "return wfxsnap::frame_name();"
+                  - delay: !lambda "return wfxsnap::state().period_ms;"
+            - lambda: "wfxsnap::end_effect();"
+      - lambda: "wfxsnap::finish();"

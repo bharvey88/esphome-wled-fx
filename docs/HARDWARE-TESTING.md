@@ -18,14 +18,35 @@ It is the 64x64 HUB75 build with all 223 effects, the tour and the diagnostic
 sensors, and nothing else in the session means much until the panel and the
 frame clock are known good.
 
-Copy `secrets.yaml.example` to `secrets.yaml` in that folder first, fill it in,
-then run this yourself from a PowerShell prompt with the ESPHome virtual
-environment active, with the M-1 on USB:
+There is nothing to fill in first. None of the four firmwares carries a wifi
+network, an API key or an OTA password, so no `secrets.yaml` is needed to build
+or to flash. Run this yourself from a PowerShell prompt with the ESPHome
+virtual environment active, with the M-1 on USB:
 
 ```
 cd examples/hardware-test
 esphome run m1-test.yaml
 ```
+
+Then give the board your network, once. Two ways, and either is fine:
+
+**From a phone or a laptop.** The board has no network to join, so it brings up
+its own access point at boot and keeps it up. Join **WLED FX M-1 test**. It is
+open, with no password. The captive portal page opens on its own on both
+Android and iOS; if it does not, browse to `http://192.168.4.1/`. Pick your
+network from the list, type the password, press save. The board writes the
+credentials to flash and joins straight away, with no reboot needed, and it
+loads them again on every boot after that.
+
+**Over the USB cable.** The firmware also has Improv over serial, so from a
+Chromium browser (Chrome or Edge) you can open
+[the ESPHome web tools page](https://web.esphome.io/), connect to the same
+serial port you just flashed from, and enter the network there. Nothing else
+can be using the port at the time, so close `esphome logs` first. This works on
+both the M-1 and the plain ESP32 boards.
+
+Once it has joined, the device is at `http://wled-fx-m1-test.local/` and the
+access point goes away.
 
 A healthy boot looks like this. The canvas is the panel size, the frame
 interval is 23 ms, the effect count is the whole port, and the tour publishes
@@ -63,17 +84,51 @@ rather than whether they run.
 
 The configs live in [examples/hardware-test](../examples/hardware-test).
 
-1. Copy `secrets.yaml.example` to `secrets.yaml` **in that folder** and fill it
-   in. ESPHome looks for secrets beside the config being built, so the one in
-   `examples/` does not cover these. Every `secrets.yaml` in the tree is
-   gitignored, so the file you just made cannot be committed by accident.
-2. Activate your ESPHome virtual environment. On Windows, do it from PowerShell
+1. Activate your ESPHome virtual environment. On Windows, do it from PowerShell
    and not from Git Bash: the ESP-IDF toolchain installer refuses to run under
    MSys.
-3. On Windows, if a build dies on a path length, copy the `hardware-test`
+2. On Windows, if a build dies on a path length, copy the `hardware-test`
    folder somewhere short such as `C:\tmp\wfx-hw`, change `external_components`
    to an absolute path to the repository's `components` directory, and build
    there instead.
+
+No secrets file is involved. The shared network setup is in
+[network.yaml](../examples/hardware-test/network.yaml), which every one of the
+four configs includes as a package, and it has no credentials in it at all.
+
+Each board offers its own access point, named after the config, so two of them
+can sit on the bench at the same time without colliding:
+
+| Config | Access point | Address once it has joined your network |
+|---|---|---|
+| `m1-test.yaml` | WLED FX M-1 test | `http://wled-fx-m1-test.local/` |
+| `m1-test-audio.yaml` | WLED FX M-1 audio test | `http://wled-fx-m1-audio-test.local/` |
+| `strip-test.yaml` | WLED FX strip test | `http://wled-fx-strip-test.local/` |
+| `matrix-test.yaml` | WLED FX matrix test | `http://wled-fx-matrix-test.local/` |
+
+All four are open access points with no password, and all four portals live at
+`http://192.168.4.1/` if the page does not pop up by itself.
+
+**Moving a board to another network later.** Nothing to reflash. A board that
+cannot join the network it has saved brings its access point back up after
+about 90 seconds, so take it somewhere else, wait, join the access point and
+put the new network in. Improv over serial works at any time as well and
+overwrites whatever is saved.
+
+**What is deliberately missing.** There is no API encryption key and no OTA
+password in these builds, because either one would mean writing a secrets file
+before the first build. These are throwaway test firmwares on a home LAN.
+`esphome logs` over wifi, OTA reflashing and Home Assistant adoption all work
+without them. If you want them back, uncomment the two blocks in `network.yaml`
+and copy `secrets.yaml.example` to `secrets.yaml` in that folder. Every
+`secrets.yaml` in the tree is gitignored, so it cannot be committed by
+accident.
+
+**Nothing reboots on its own.** The API's reboot timeout and wifi's are both
+set to `0s` here. A browser only session with no Home Assistant attached leaves
+the board running, which the ESPHome defaults would not: the API's default
+reboots after 15 minutes of nothing connecting to it, and that looks exactly
+like a firmware crash when you are three effects into a tour.
 
 ## The four firmwares
 
@@ -120,7 +175,8 @@ The other three are the same with their own file name and device name:
 The web interface is at `http://wled-fx-m1-test.local/` and it carries every
 entity listed below. Version 3 of the web server pulls its JavaScript from the
 internet the first time a browser opens it, so load it once on a machine that
-has a connection.
+has a connection. The captive portal does not: its page is compiled into the
+firmware, so the onboarding step above works with no internet at all.
 
 ## How the tour works
 

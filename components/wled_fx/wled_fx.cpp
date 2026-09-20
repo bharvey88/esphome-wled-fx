@@ -289,8 +289,22 @@ void WledFxDisplay::loop() {
 }
 
 void WledFxDisplay::push_frame_() {
+  /* big_endian is true because the frame holds each pixel as the three bytes
+   * R, G, B in that order, and that is the 24 bit value 0xRRGGBB stored most
+   * significant byte first.
+   *
+   * It said false until a capture of a real WLED device put the two hue
+   * histograms side by side and every effect came out rotated half a turn.
+   * hub75 never noticed: its draw_pixels_at() hands packed 24 bit straight to
+   * its driver, which reads the three bytes in memory order and ignores the
+   * flag. Every display that does not override draw_pixels_at() falls back to
+   * Display::draw_pixels_at(), which for 888 with big_endian false packs the
+   * first byte as the LEAST significant one and hands red and blue to each
+   * other. So this rendered correctly on the one panel it had been tried on
+   * and swapped on every SPI display, every DisplayBuffer and the snapshot
+   * display the comparison harness uses. */
   this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_ORDER_RGB,
-                                 display::COLOR_BITNESS_888, false);
+                                 display::COLOR_BITNESS_888, true);
   // Pushes the frame out. On hub75 with double buffering this is the flip.
   this->display_->update();
 }

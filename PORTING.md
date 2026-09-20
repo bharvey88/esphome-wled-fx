@@ -328,6 +328,44 @@ Before you open a pull request, also compile at least one example:
 esphome compile examples/strip-esp32.yaml
 ```
 
+### On Windows: run it in WSL
+
+MinGW is not a good place to run this. It has no sanitizers, and on at least one
+machine Windows Defender has quarantined its linker outright, which leaves the
+simulator unbuildable with nothing obviously wrong. WSL2 has the whole toolchain,
+a real ASan and UBSan, and is where the ESPHome host platform works too, so the
+Linux build is the one to trust.
+
+[tools/wsl](tools/wsl) is that build behind one PowerShell command:
+
+```
+powershell -File tools\wsl\wfx.ps1 bootstrap
+powershell -File tools\wsl\wfx.ps1 sweep
+```
+
+`bootstrap` installs the toolchain and builds a virtualenv with ESPHome's dev
+branch in it, which the snapshot harness needs; it checks each step and is safe
+to run again. `sweep` is the whole of what CI runs: every effect at every
+geometry under the sanitizers, the small geometries, the five mapping modes, the
+audio and behaviour tests, then the large geometries without the sanitizers, and
+the two Python checks. It takes a few minutes on sixteen cores.
+
+The other commands are `build`, `run` (everything after it goes to
+`wled_fx_sim`, so `wfx.ps1 run --effect "Fire 2012" --size 64x64` works),
+`audio`, `effect`, `snapshot`, `shell` and `clean`.
+
+The repository is not copied anywhere. WSL reads it at `/mnt/c/...` and only the
+build directories and the virtualenv live on the Linux filesystem, under
+`/root/wfx`, because a build directory on `/mnt/c` crosses the filesystem bridge
+for every object file and is several times slower. An edit made on Windows is
+picked up with no sync step.
+
+Two things to know if you are working in there by hand. `wsl.exe` writes UTF-16,
+so reading its output from PowerShell means stripping the NULs, which the
+wrapper does. And WSL will happily run a Windows `.exe` through binfmt interop,
+so `tools/check_effect_names.py` would pick up a stale `wled_fx_sim.exe` sitting
+in the checkout: set `WLED_FX_SIM` to the Linux binary, as `sim.sh` does.
+
 ## 6. Pitfalls hit while building P1
 
 * **A `const` object at namespace scope has internal linkage.** This bit twice:

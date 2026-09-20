@@ -17,6 +17,7 @@ root:
 
 from __future__ import annotations
 
+import os
 import pathlib
 import re
 import subprocess
@@ -28,18 +29,29 @@ sys.path.insert(0, str(ROOT / "components" / "wled_fx"))
 from effect_index import (  # noqa: E402
     effect_macro,
     effect_names,
+    flag_overrides,
+    one_dimensional_only,
     palette_names,
     two_dimensional_only,
 )
 
 LINE = re.compile(r"^(\S+)\s+(.+?)\s+flags=0x([0-9A-Fa-f]{2})\s")
-FLAG_1D = 1 << 1
 FLAG_0D = 1 << 0
+FLAG_1D = 1 << 1
+FLAG_2D = 1 << 2
 GUARD = re.compile(r"#define\s+WLED_FX_GROUP_\w+\s*((?:[^\n\\]*\\\s*\n)*[^\n]*)")
 FX_MACRO = re.compile(r"WLED_FX_FX_\w+")
 
 
 def find_sim() -> pathlib.Path:
+    # WLED_FX_SIM lets a build somewhere else be named, which is how the WSL
+    # wrapper points this at the Linux build rather than the stale Windows .exe
+    # sitting in the checkout. See tools/wsl/sim.sh.
+    if (override := os.environ.get("WLED_FX_SIM")):
+        candidate = pathlib.Path(override)
+        if not candidate.exists():
+            sys.exit(f"WLED_FX_SIM names {candidate}, which does not exist")
+        return candidate
     for name in ("wled_fx_sim", "wled_fx_sim.exe"):
         candidate = ROOT / "tools" / "sim" / "build" / name
         if candidate.exists():
@@ -98,9 +110,12 @@ def main() -> int:
             f"them, so an 'effects:' allow-list cannot select them: {unguarded}"
         )
 
-    # The config validation refuses a 2D-only effect on a light it can see is
-    # one pixel high, so its idea of which effects those are has to match the
-    # flags the registry parses out of the same metadata.
+    # Which effects an output offers depends on these flags, and the answer has
+    # to be the same in both places: the config validation refuses an effect the
+    # configured layout cannot run, and the firmware refuses the same one at
+    # runtime. A scanner that read the metadata differently, or missed the
+    # override table in wf_registry.cpp, would reject configs the device would
+    # have run or accept ones it will not.
     registry_2d_only = {
         name for name, flags in entries if not flags & (FLAG_1D | FLAG_0D)
     }
@@ -110,6 +125,25 @@ def main() -> int:
             "the scanner and the registry disagree about which effects are 2D "
             f"only: registry only {sorted(registry_2d_only - scanned_2d_only)}, "
             f"scanner only {sorted(scanned_2d_only - registry_2d_only)}"
+        )
+
+    registry_1d_only = {name for name, flags in entries if not flags & FLAG_2D}
+    scanned_1d_only = one_dimensional_only()
+    if registry_1d_only != scanned_1d_only:
+        problems.append(
+            "the scanner and the registry disagree about which effects are 1D "
+            f"only: registry only {sorted(registry_1d_only - scanned_1d_only)}, "
+            f"scanner only {sorted(scanned_1d_only - registry_1d_only)}"
+        )
+
+    # An override naming an effect that is not registered is dead weight that
+    # looks like it is doing something.
+    registered_folded = {name.casefold() for name in registry}
+    stray = sorted(set(flag_overrides()) - registered_folded)
+    if stray:
+        problems.append(
+            "FLAG_OVERRIDES in wf_registry.cpp names effects that are not "
+            f"registered: {stray}"
         )
 
     palettes = palette_names()

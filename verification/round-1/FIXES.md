@@ -445,15 +445,17 @@ pins every control the reference recorded, passes the simulator's new
 **Measured.** Three runs of this port, identical build and settings, on the same
 effect:
 
-| Effect | port, three full runs | range | device |
-|---|---|---:|---:|
-| Pride 2015 | 96, 134, 167 | 71 | 103, 125 |
-| Colorwaves | 69, 90, 117 | 48 | 115 |
-| Tri Wipe | 200, 242, 244 | 44 | 49 |
-| PS Ghost Rider | 26, 32, 37 | 11 | 36 |
-| PS Impact | 15, 19, 21 | 6.5 | 19 |
-| Matrix | 2.1, 3.5, 4.0 | 1.9 | 3.6, 4.4 |
-| PS Vortex | 78.1, 78.1, 78.2 | 0.1 | 80.0 |
+| Effect | port, median of three | range over the three | device |
+|---|---:|---:|---:|
+| Pride 2015 | 134 | 71 | 103, 125 |
+| Colorwaves | 90 | 48 | 115 |
+| Tri Wipe | 242 | 44 | 49 |
+| PS Ghost Rider | 32.5 | 10.9 | 36 |
+| PS Impact | 19.0 | 6.5 | 19 |
+| Matrix | 3.5 | 1.9 | 3.6, 4.4 |
+| PS Vortex | 78.1 | 0.1 | 80.0 |
+
+Sweep and Wipe are worse still, at ranges of 171 and 82 counts out of 255.
 
 PS Vortex is what a reproducible effect looks like. The others are what round 1
 ranked. Ten effects moved into or out of the flagged list between two runs of an

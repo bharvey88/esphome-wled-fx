@@ -83,6 +83,25 @@ template<typename... Ts> class SetSliderAction : public Action<Ts...>, public Pa
   ControlSlider slider_;
 };
 
+/* One of the three WLED colour slots. Which slot is picked at codegen time; the
+ * three channels are templatable so a lambda or a Home Assistant value can
+ * drive them. The light platform is the entity form of the same thing. */
+template<typename... Ts> class SetColorAction : public Action<Ts...>, public Parented<WledFxController> {
+ public:
+  explicit SetColorAction(uint8_t slot) : slot_(slot) {}
+  TEMPLATABLE_VALUE(int, red)
+  TEMPLATABLE_VALUE(int, green)
+  TEMPLATABLE_VALUE(int, blue)
+  void play(const Ts &...x) override {
+    const auto clamp = [](int v) { return static_cast<uint8_t>(v < 0 ? 0 : (v > 255 ? 255 : v)); };
+    this->parent_->set_color_slot(this->slot_, RGBW32(clamp(this->red_.value(x...)), clamp(this->green_.value(x...)),
+                                                      clamp(this->blue_.value(x...)), 0));
+  }
+
+ protected:
+  uint8_t slot_;
+};
+
 enum class ControlCheck : uint8_t {
   CONTROL_CHECK_CHECK1,
   CONTROL_CHECK_CHECK2,

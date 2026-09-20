@@ -32,6 +32,59 @@ class WledFxController {
 
   void set_text_value(const std::string &text);
 
+  /* The three WLED colour slots. Which of them an effect uses, and what it
+   * calls them, is in its metadata: see format_effect_colors(). The light
+   * platform and the wled_fx.set_color action both come through here. */
+  void set_color_slot(unsigned slot, uint32_t rgb);
+  uint32_t color_slot(unsigned slot) const;
+
+  /* Master output, which is what WLED's brightness slider and power button do:
+   * the effect keeps running and the frame is scaled on its way out, and with
+   * the output off the panel is blanked once and then left alone. Both front
+   * ends honour this. */
+  void set_output_brightness(uint8_t brightness) { this->output_brightness_ = brightness; }
+  uint8_t output_brightness() const { return this->output_brightness_; }
+  void set_output_enabled(bool enabled) { this->output_enabled_ = enabled; }
+  bool output_enabled() const { return this->output_enabled_; }
+
+  /* --- per-effect profiling --------------------------------------------------
+   *
+   * Microseconds in the effect function and microseconds pushing the frame out,
+   * as min, max and a running total, for as long as the current effect has been
+   * running. Eight counters and two micros() calls a frame, so it is always
+   * compiled in rather than hidden behind an option: at 43 fps that is under a
+   * thousandth of the frame budget and it is the only way to answer "which
+   * effects are slow on this board" without reflashing.
+   *
+   * The first second of an effect is left out. Allocating the particle system
+   * or the first pass of a noise field is real work, but it is start-up cost,
+   * not the steady state the frame rate depends on. */
+  struct ProfileStats {
+    uint32_t frames{0};
+    uint32_t window_ms{0};  // over which those frames were counted
+    uint32_t render_min_us{0};
+    uint32_t render_max_us{0};
+    uint64_t render_total_us{0};
+    uint32_t output_min_us{0};
+    uint32_t output_max_us{0};
+    uint64_t output_total_us{0};
+
+    uint32_t render_avg_us() const {
+      return this->frames == 0 ? 0 : static_cast<uint32_t>(this->render_total_us / this->frames);
+    }
+    uint32_t output_avg_us() const {
+      return this->frames == 0 ? 0 : static_cast<uint32_t>(this->output_total_us / this->frames);
+    }
+    // Frames per second over the measured window, times ten so it stays integer.
+    uint32_t fps_x10() const {
+      return this->window_ms == 0 ? 0 : static_cast<uint32_t>(this->frames * 10000ull / this->window_ms);
+    }
+  };
+
+  const ProfileStats &profile() const { return this->profile_; }
+  // Starts a fresh window, which an effect change does on its own.
+  void reset_profile(uint32_t now);
+
   /* The frame clock. ESPHome's main loop ticks about every 16 ms and its
    * scheduler re-arms an interval from the moment the callback ran, so a 23 ms
    * interval becomes 32 ms in practice, and every effect runs at 31 fps instead
@@ -69,12 +122,29 @@ class WledFxController {
   // True when `now` has reached the next frame deadline, which it then advances.
   bool frame_due_(uint32_t now);
 
+  /* Called once per rendered frame by whichever front end is driving. Restarts
+   * the window when the effect changed, and folds the two timings in once the
+   * effect has been running for a second. */
+  void profile_frame_(uint32_t now, uint32_t render_us, uint32_t output_us);
+
+  // The master brightness applied to one channel. 255 is a no-op and is skipped.
+  uint8_t scale_output_(uint8_t value) const {
+    return static_cast<uint8_t>((static_cast<uint16_t>(value) * (this->output_brightness_ + 1)) >> 8);
+  }
+
   Engine engine_;
   std::string text_;
   std::vector<std::function<void()>> state_change_callbacks_;
   uint32_t frame_interval_{FRAMETIME};
   uint32_t next_frame_{0};
   bool have_deadline_{false};
+  uint8_t output_brightness_{255};
+  bool output_enabled_{true};
+
+  ProfileStats profile_;
+  uint32_t profile_effect_start_{0};
+  size_t profile_effect_index_{SIZE_MAX};
+  bool profile_counting_{false};
 };
 
 #ifdef USE_DISPLAY
@@ -107,12 +177,18 @@ class WledFxDisplay : public Component, public WledFxController {
   float get_setup_priority() const override { return setup_priority::LATE; }
 
  protected:
+  // Blits the frame buffer and flips the display's own buffer.
+  void push_frame_();
+
   display::Display *display_{nullptr};
   uint8_t *frame_{nullptr};
   int width_{0};
   int height_{0};
   float gamma_{1.0f};
   uint8_t gamma_lut_[256]{};
+  // True once the all-black frame that the output being off asks for has been
+  // pushed, so a blanked panel costs nothing per frame.
+  bool blanked_{false};
 };
 #endif  // USE_DISPLAY
 

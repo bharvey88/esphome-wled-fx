@@ -16,12 +16,15 @@ from esphome.components.light.effects import register_addressable_effect
 from esphome.components.light.types import AddressableLightEffect
 import esphome.config_validation as cv
 from esphome.const import (
+    CONF_BLUE,
     CONF_DISPLAY_ID,
     CONF_GAMMA_CORRECT,
+    CONF_GREEN,
     CONF_HEIGHT,
     CONF_ID,
     CONF_MICROPHONE,
     CONF_NAME,
+    CONF_RED,
     CONF_TEXT,
     CONF_UPDATE_INTERVAL,
     CONF_WIDTH,
@@ -98,6 +101,7 @@ SetPaletteAction = wled_fx_ns.class_("SetPaletteAction", automation.Action)
 SetTextAction = wled_fx_ns.class_("SetTextAction", automation.Action)
 SetSliderAction = wled_fx_ns.class_("SetSliderAction", automation.Action)
 SetCheckAction = wled_fx_ns.class_("SetCheckAction", automation.Action)
+SetColorAction = wled_fx_ns.class_("SetColorAction", automation.Action)
 ControlSlider = wled_fx_ns.enum("ControlSlider", is_class=True)
 ControlCheck = wled_fx_ns.enum("ControlCheck", is_class=True)
 
@@ -633,6 +637,36 @@ for _key, _enum in SLIDERS.items():
     _register_slider_action(_key, _enum, 31 if _key == CONF_CUSTOM3 else 255)
 for _key, _enum in CHECKS.items():
     _register_check_action(_key, _enum)
+
+
+CONF_COLOR = "color"
+_CHANNEL = cv.templatable(cv.int_range(min=0, max=255))
+
+
+@automation.register_action(
+    "wled_fx.set_color",
+    SetColorAction,
+    _PARENT_SCHEMA.extend(
+        {
+            cv.Required(CONF_COLOR): cv.int_range(min=1, max=3),
+            cv.Optional(CONF_RED, default=0): _CHANNEL,
+            cv.Optional(CONF_GREEN, default=0): _CHANNEL,
+            cv.Optional(CONF_BLUE, default=0): _CHANNEL,
+        }
+    ),
+    synchronous=True,
+)
+async def set_color_action_to_code(config, action_id, template_arg, args):
+    # Colour 1 to 3 in the YAML, slot 0 to 2 in the segment.
+    var = cg.new_Pvariable(action_id, template_arg, config[CONF_COLOR] - 1)
+    await cg.register_parented(var, config[CONF_ID])
+    for key, setter in (
+        (CONF_RED, var.set_red),
+        (CONF_GREEN, var.set_green),
+        (CONF_BLUE, var.set_blue),
+    ):
+        cg.add(setter(await cg.templatable(config[key], args, cg.int_)))
+    return var
 
 
 # --- light effect ---------------------------------------------------------------

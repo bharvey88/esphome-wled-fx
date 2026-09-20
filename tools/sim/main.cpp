@@ -139,12 +139,22 @@ struct Controls {
  * regression at a normal size still fails.
  *
  * PS Sonic Boom emits `hw_random16(((4 + (maxXpixel >> 2)) * loudness) >> 10)`
- * particles per detected beat, with loudness capped at 255 by the FFT bins. The
- * inner expression only reaches 2 once `4 + (maxXpixel >> 2)` is 9, which needs
- * 21 pixels; below that it is 1 and hw_random16(1) is always 0, so no particle is
- * ever emitted. That is upstream's arithmetic unchanged (WLED FX.cpp
- * mode_particle1DsonicBoom), and it bites here because a 1D effect pushed through
- * M12_P_BAR or M12_P_CORNER on a 16x16 matrix gets a 16 pixel virtual strip. */
+ * particles per detected beat. At the metadata default of c3=0 the bin value is 0
+ * to 255, so the inner expression only reaches 2 once `4 + (maxXpixel >> 2)` is
+ * 9, which needs 21 pixels; below that it is 1 and hw_random16(1) is always 0, so
+ * no particle is ever emitted. c3 >= 26 picks a bin above 12, which the effect
+ * shifts left by 2 to a loudness of up to 1020, and then it emits at any length:
+ * `--effect "PS Sonic Boom" --size 16x1 --custom3 27` is the way to confirm the
+ * rendering path is healthy at these lengths and only the emission arithmetic is
+ * rounding to nothing. Neither of the two default passes moves c3. That is
+ * upstream's arithmetic unchanged (WLED FX.cpp mode_particle1DsonicBoom), and it
+ * bites here because a 1D effect pushed through M12_P_BAR or M12_P_CORNER on a
+ * 16x16 matrix gets a 16 pixel virtual strip.
+ *
+ * The short strip entries below are the same class of thing at the other end: an
+ * effect that divides a strip into regions and has none left at two or three
+ * pixels. Each bound is the largest length at which that effect is still black,
+ * so the assertion stays live at every size anyone would actually wire up. */
 struct BlackAllowed {
   const char *effect;
   unsigned max_length;  // forgiven only at or below this virtual strip length
@@ -152,6 +162,26 @@ struct BlackAllowed {
 
 const BlackAllowed BLACK_ALLOWED[] = {
     {"PS Sonic Boom", 20},
+    // Scanner fades the whole strip to the secondary colour and then paints one
+    // moving pixel, and at four pixels or fewer its frames-per-pixel pacing means
+    // the painted pixel is fading out faster than it moves. Scanner Dual is
+    // Scanner with check1 forced on. Upstream FX.cpp mode_larson_scanner.
+    {"Scanner", 3},
+    {"Scanner Dual", 3},
+    // `for (i = 0; i < SEGLEN - 2; i += 3)`: at two pixels there is no light to
+    // paint, and the background it filled first is the secondary colour, black by
+    // default. Upstream FX.cpp mode_traffic_light.
+    {"Traffic Light", 2},
+    // A starburst needs somewhere to throw its fragments. Upstream FX.cpp
+    // mode_starburst, and the MM audio variant of the same body.
+    {"Fireworks Starburst", 2},
+    {"Fw Starburst audio", 2},
+    // `ledIndex = (prog * SEGLEN * 3) >> 16` with the three colour bands all at
+    // the same pixel. Upstream FX.cpp mode_tricolor_wipe.
+    {"Tri Wipe", 1},
+    // `color_sep = 256 / SEGLEN` then a chase across a strip with nothing to
+    // chase along. Upstream FX.cpp mode_chase_rainbow.
+    {"Chase Rainbow", 1},
 };
 
 bool black_allowed(const char *name, unsigned seg_length) {
@@ -521,14 +551,14 @@ int main(int argc, char **argv) {
          * Fall all do this. The checks pass is there for the guard bands and for
          * reaching the code, so a black result is reported and not failed. */
         if (!res.non_black && res.guards_ok) {
-          if (black_allowed(name, engine.segment().length())) {
+          if (controls.label[0] != '\0') {
+            fprintf(stderr, "note %s %s %s: every frame was black\n", name, geo.label, controls.label);
+          } else if (black_allowed(name, engine.segment().length())) {
             fprintf(stderr, "note %s %s: every frame was black, allowed at %u pixels\n", name, geo.label,
                     engine.segment().length());
-          } else if (controls.label[0] == '\0') {
+          } else {
             fprintf(stderr, "FAIL %s %s: every frame was black\n", name, geo.label);
             failures++;
-          } else {
-            fprintf(stderr, "note %s %s %s: every frame was black\n", name, geo.label, controls.label);
           }
         }
 

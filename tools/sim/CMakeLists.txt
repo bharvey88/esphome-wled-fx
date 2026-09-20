@@ -4,6 +4,14 @@ project(wled_fx_sim CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Without this CMake passes no optimisation flag at all, and an unoptimised
+# build of 223 effects over a 16384 pixel canvas is slow enough to change what
+# is practical to run. RelWithDebInfo keeps the line numbers the sanitizers
+# need. Pass -DCMAKE_BUILD_TYPE=Debug to override.
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
+endif()
+
 option(WLED_FX_SANITIZE "Build the simulator with the address and undefined behaviour sanitizers" OFF)
 
 set(ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../components/wled_fx)

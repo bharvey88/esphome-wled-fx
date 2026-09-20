@@ -16,6 +16,7 @@
 #include "wf_effects.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <utility>
 
 // Whole-file guard. Every WLED_FX_FX_* macro this file can provide goes in the
@@ -187,7 +188,15 @@ void mode_2DDNASpiral(Segment &seg) {  // By: ldirko
       // draw a gradient line between x and x1
       x = x / 2;
       x1 = x1 / 2;
-      unsigned steps = abs8(x - x1) + 1;
+      /* Upstream writes abs8() here, which narrows to int8_t. x and x1 each run
+       * to cols - 1, so on a panel 129 or more pixels wide their difference can
+       * be exactly -128, abs8(-128) is -128 again, and `unsigned steps` becomes
+       * 4294967169: the loop below runs for four billion iterations and the
+       * watchdog fires. WLED never sees it because its matrices are narrower.
+       * Below 129 columns abs() and abs8() give the same answer for every input
+       * this can produce, so this is the same effect everywhere upstream runs
+       * and a working one everywhere else. See PORTING.md. */
+      unsigned steps = static_cast<unsigned>(std::abs(x - x1)) + 1;
       bool positive = (x1 >= x);  // direction of drawing
       for (size_t k = 1; k <= steps; k++) {
         unsigned rate = k * 255 / steps;

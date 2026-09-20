@@ -130,9 +130,11 @@ clean synthetic signal. A room with a real microphone is not.
 * **Rocktaves.** The magnitude scale is the part that depends on absolute
   microphone level rather than on relative bins, so it is the effect most likely
   to look wrong with a real mic and correct in simulation.
-* **Ripple Peak** and **Puddlepeak** look sparse under simulated peaks, because
-  the simulation produces few beat events. With a real signal they should be much
-  busier. Confirm that, and confirm they are not then too busy.
+* **Ripple Peak**, **Puddlepeak** and **Waterfall** run at exactly two beats a
+  second under the simulated source, because the simulation's beat is a 120 bpm
+  metronome and not a signal (PORTING.md deviation 27). With a real microphone
+  the beat comes from the analysis instead and the rate follows the room.
+  Confirm they get busier, and confirm they are not then too busy.
 * **DJ Light** is dim. Check whether that is the simulated signal's dynamic range
   or the effect.
 * **PS Spray** and **PS Blobs** now take a different code path with a real

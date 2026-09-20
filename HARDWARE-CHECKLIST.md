@@ -43,7 +43,7 @@ period, so their real-time behaviour is untested.
 **Short pulses: does the LED driver keep up?**
 
 * **Strobe Mega.** The pulse is 15 ms, which is shorter than one frame at the
-  33 ms default update interval. Whether it is visible at all depends on the
+  23 ms default update interval. Whether it is visible at all depends on the
   driver and the update rate. Try it at `update_interval: 16ms` too.
 
 **Effects that start black.**

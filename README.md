@@ -605,10 +605,12 @@ rather than leaving the panel on a solid fill.
 It also decides what gets compiled. With no `effects:` allow-list, a build whose
 only outputs are matrices carries only the effects a matrix can show, so the
 1D-only effects cost nothing. Measured on `examples/m1-hub75.yaml`, an ESP32-S3
-esp-idf build: 839,983 bytes of flash with the 64 effects a matrix offers and
-900,907 with `include_1d_effects: true` and all 223, so the 159 effects a panel
-was never going to show are 60,924 bytes, about 59 KB. RAM is identical to the
-byte, because the canvas is sized from the panel and not from the effect list.
+esp-idf build: 839,979 bytes of flash with the 64 effects a matrix offers and
+900,903 with `include_1d_effects: true` and all 223, so the 159 effects a panel
+was never going to show are **60,924 bytes**, about 59 KB. RAM is identical to
+the byte, because the canvas is sized from the panel and not from the effect
+list. The two totals move with the ESPHome version; the difference between them
+does not.
 
 `effects:` and `include_1d_effects` are independent. The allow-list narrows what
 is built; this decides what a given output may show of it. An allow-list naming

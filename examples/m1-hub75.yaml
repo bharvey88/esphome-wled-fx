@@ -18,6 +18,8 @@ psram:
 
 logger:
 
+# If nothing ever connects to the API, its default reboot_timeout reboots the
+# board every 15 minutes. Add `reboot_timeout: 0s` here for a browser only setup.
 api:
   encryption:
     key: !secret api_encryption_key

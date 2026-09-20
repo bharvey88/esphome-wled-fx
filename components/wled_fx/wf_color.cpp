@@ -156,9 +156,15 @@ void fill_gradient_RGB(CRGB *colors, uint32_t startpos, CRGB startcolor, uint32_
   int divisor = endpos - startpos;
   divisor = divisor == 0 ? 1 : divisor;
 
-  int rdelta = (rdistance << 16) / divisor;
-  int gdelta = (gdistance << 16) / divisor;
-  int bdelta = (bdistance << 16) / divisor;
+  /* Upstream writes these three as `distance << 16`. A distance is a difference
+   * between two channels, so it is negative whenever the gradient descends, and
+   * shifting a negative value left is undefined before C++20. Every compiler
+   * this builds with produces the multiply anyway; saying multiply is what makes
+   * a UBSan build of the host simulator come out clean, and it cannot change the
+   * result on a two's complement machine. */
+  int rdelta = (rdistance * 65536) / divisor;
+  int gdelta = (gdistance * 65536) / divisor;
+  int bdelta = (bdistance * 65536) / divisor;
 
   int rshifted = startcolor.r << 16;
   int gshifted = startcolor.g << 16;

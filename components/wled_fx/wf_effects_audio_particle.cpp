@@ -466,7 +466,9 @@ void mode_particle1DsonicStream(Segment &seg) {
       else PartSys->particles[i].ttl = 0;
     }
     if (seg.check1) { // modulate colors by mid frequencies
-      PartSys->particles[i].hue += (mids * perlin8(PartSys->particles[i].x << 2, seg.step << 2)) >> 9; // color by perlin noise from mid frequencies
+      // x is signed and goes negative off the left edge, so upstream's left
+      // shift is undefined there. Multiply by the same power of two.
+      PartSys->particles[i].hue += (mids * perlin8(PartSys->particles[i].x * 4, seg.step << 2)) >> 9; // color by perlin noise from mid frequencies
     }
   }
 
@@ -563,7 +565,9 @@ void mode_particle1DsonicBoom(Segment &seg) {
   // particle manipulation
   for (uint32_t i = 0; i < PartSys->usedParticles; i++) {
     if (seg.check1) { // modulate colors by mid frequencies
-      PartSys->particles[i].hue += (mids * perlin8(PartSys->particles[i].x << 2, seg.step << 2)) >> 9; // color by perlin noise from mid frequencies
+      // x is signed and goes negative off the left edge, so upstream's left
+      // shift is undefined there. Multiply by the same power of two.
+      PartSys->particles[i].hue += (mids * perlin8(PartSys->particles[i].x * 4, seg.step << 2)) >> 9; // color by perlin noise from mid frequencies
     }
     if (PartSys->particles[i].ttl > 16) {
       PartSys->particles[i].ttl -= 16; //ttl is linked to brightness, this allows to use higher brightness but still a (very) short lifespan

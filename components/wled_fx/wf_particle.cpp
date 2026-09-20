@@ -859,9 +859,13 @@ void ParticleSystem2D::renderLargeParticle(const uint32_t size, const uint32_t p
         render_y -= matrixY;
       }
 
-      // distance from the particle center, explanation see above
-      int32_t dx_subpixel = (px << PS_P_RADIUS_SHIFT) - x_subcenter + PS_P_HALFRADIUS;
-      int32_t dy_subpixel = (py << PS_P_RADIUS_SHIFT) - y_subcenter + PS_P_HALFRADIUS;
+      /* distance from the particle center, explanation see above
+       * Upstream shifts px and py left here. Both are signed and go negative for
+       * a particle left of or below the origin, and shifting a negative value
+       * left is undefined before C++20, which a sanitizer build reports. The
+       * multiply is the same arithmetic and the same instruction. */
+      int32_t dx_subpixel = (px * (1 << PS_P_RADIUS_SHIFT)) - x_subcenter + PS_P_HALFRADIUS;
+      int32_t dy_subpixel = (py * (1 << PS_P_RADIUS_SHIFT)) - y_subcenter + PS_P_HALFRADIUS;
 
       // calculate brightness from the squared distance to the ellipse center
       uint8_t pixel_brightness = calculateEllipseBrightness(dx_subpixel, dy_subpixel, rx_sq, ry_sq, brightness);

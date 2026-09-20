@@ -214,8 +214,11 @@ void Segment::set_pixel_color(int n, uint32_t c) const {
         for (int line_nr = 0; line_nr < 2; line_nr++) {
           int x0 = start_x;
           int y0 = start_y;
-          const int x1 = (start_x + (cos_val[line_nr] << 9));  // outside the grid
-          const int y1 = (start_y + (sin_val[line_nr] << 9));  // outside the grid
+          // Upstream shifts these left by 9. A cosine is negative over half the
+          // circle, and shifting a negative value left is undefined before
+          // C++20, so multiply by the same power of two instead.
+          const int x1 = (start_x + (cos_val[line_nr] * 512));  // outside the grid
+          const int y1 = (start_y + (sin_val[line_nr] * 512));  // outside the grid
           const int dx = x1 > x0 ? x1 - x0 : x0 - x1;
           const int sx = x0 < x1 ? 1 : -1;
           const int dy = -(y1 > y0 ? y1 - y0 : y0 - y1);

@@ -1169,8 +1169,10 @@ void mode_particlegalaxy(Segment &seg) {
       int32_t tempVy = (speedfactor * dx);
       // add speed towards center to make particles spiral in
       // subtract value from distance to make the pull-in force a bit stronger (helps on faster speeds)
-      int vxc = (dx << 9) / (distance - 19);
-      int vyc = (dy << 9) / (distance - 19);
+      // dx and dy are signed offsets from the centre, so upstream's left shift
+      // is undefined for half the panel. Multiply by the same power of two.
+      int vxc = (dx * 512) / (distance - 19);
+      int vyc = (dy * 512) / (distance - 19);
       // apply velocity
       PartSys->particles[i].x += (tempVx + vxc) / 1024;  // note: cannot use bit shift, asymmetric rounding
       PartSys->particles[i].y += (tempVy + vyc) / 1024;

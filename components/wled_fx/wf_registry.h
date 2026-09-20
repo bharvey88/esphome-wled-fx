@@ -59,6 +59,50 @@ size_t effect_name(const EffectInfo &info, char *dest, size_t dest_size);
 bool effect_name_equals(const EffectInfo &info, const char *name);
 EffectDefaults effect_defaults(const EffectInfo &info);
 
+/* --- control labels ---------------------------------------------------------
+ *
+ * Every effect carries WLED's own names for the controls it uses, in the first
+ * two metadata groups, and WLED's UI hides the ones it does not. A generic
+ * "Custom 1" slider tells nobody what it does; "Trail" does. This is the same
+ * reading of the string that setEffectParameters() in WLED 16.0.1's index.js
+ * does, so the labels and the hiding match what the WLED app would show.
+ *
+ * Nothing here copies or allocates: a Label points into the effect's own
+ * metadata string, which is a string literal with static storage duration. */
+struct ControlLabel {
+  const char *text{nullptr};  // null when the effect does not use this control
+  uint8_t length{0};
+  // The metadata said "!", so WLED falls back to its own name for the control.
+  bool is_default{false};
+
+  bool used() const { return this->text != nullptr; }
+};
+
+struct EffectLabels {
+  ControlLabel slider[5];  // speed, intensity, custom1, custom2, custom3
+  ControlLabel check[3];
+  ControlLabel color[3];
+  ControlLabel palette;
+};
+
+EffectLabels effect_labels(const EffectInfo &info);
+
+// WLED's own names, used for a label the metadata left as "!".
+extern const char *const SLIDER_LABEL_DEFAULTS[5];
+extern const char *const CHECK_LABEL_DEFAULTS[3];
+extern const char *const COLOR_LABEL_DEFAULTS[3];
+extern const char *const PALETTE_LABEL_DEFAULT;
+
+/* One readable line naming the controls the effect actually uses, in the form
+ *   Speed | Intensity: Spawning rate | Custom 1: Trail | Check 1: Custom color
+ * with a middle dot between the items. A control whose label is WLED's own name
+ * is written bare. Writes at most dest_size bytes including the terminator,
+ * never splitting a multi-byte separator, and returns the length written. */
+size_t format_effect_controls(const EffectInfo &info, char *dest, size_t dest_size);
+// The same for the palette and the three colour slots:
+//   Palette: Color palette | Color 1: Spawn | Color 2: Trail
+size_t format_effect_colors(const EffectInfo &info, char *dest, size_t dest_size);
+
 /* One effect translation unit's table. Declare exactly one of these per effect
  * file, at namespace scope and with external linkage:
  *

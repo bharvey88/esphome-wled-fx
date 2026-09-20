@@ -141,6 +141,178 @@ EffectDefaults effect_defaults(const EffectInfo &info) {
   return out;
 }
 
+// --- control labels ----------------------------------------------------------
+
+const char *const SLIDER_LABEL_DEFAULTS[5] = {"Speed", "Intensity", "Custom 1", "Custom 2", "Custom 3"};
+const char *const CHECK_LABEL_DEFAULTS[3] = {"Check 1", "Check 2", "Check 3"};
+// WLED's three colour slot buttons: effect colour, background, custom.
+const char *const COLOR_LABEL_DEFAULTS[3] = {"Fx", "Bg", "Cs"};
+const char *const PALETTE_LABEL_DEFAULT = "Color palette";
+
+namespace {
+
+/* Splits one metadata group on commas into at most `max_items` labels. An item
+ * that is empty means the effect does not use that control, which is how WLED
+ * hides it; "!" means WLED's own name for it. */
+void split_labels(const char *group, ControlLabel *out, unsigned max_items) {
+  if (group == nullptr)
+    return;
+  unsigned item = 0;
+  const char *start = group;
+  for (const char *p = group;; p++) {
+    if (*p != '\0' && *p != ';' && *p != ',')
+      continue;
+    if (item < max_items) {
+      size_t len = static_cast<size_t>(p - start);
+      // An embedded default, "Label=7", carries the value for the UI only.
+      for (size_t i = 0; i < len; i++) {
+        if (start[i] == '=') {
+          len = i;
+          break;
+        }
+      }
+      if (len > 0) {
+        out[item].text = start;
+        out[item].length = static_cast<uint8_t>(len > 255 ? 255 : len);
+        out[item].is_default = len == 1 && start[0] == '!';
+      }
+    }
+    item++;
+    if (*p == '\0' || *p == ';')
+      break;
+    start = p + 1;
+  }
+}
+
+// True when the whole label is digits, which for the palette group means WLED
+// pins the palette and hides the selector.
+bool all_digits(const ControlLabel &label) {
+  if (!label.used())
+    return false;
+  for (uint8_t i = 0; i < label.length; i++) {
+    if (label.text[i] < '0' || label.text[i] > '9')
+      return false;
+  }
+  return true;
+}
+
+/* Appends at most what fits, all of it or none of it, so a truncated line never
+ * ends half way through the multi-byte separator. Returns the new length. */
+size_t append(char *dest, size_t len, size_t cap, const char *src, size_t src_len) {
+  if (len + src_len + 1 > cap)
+    return len;
+  for (size_t i = 0; i < src_len; i++)
+    dest[len++] = src[i];
+  return len;
+}
+
+// U+00B7 MIDDLE DOT with a space either side, which is what separates the items.
+const char SEPARATOR[] = " \xC2\xB7 ";
+
+size_t append_item(char *dest, size_t len, size_t cap, const char *generic, const ControlLabel &label) {
+  if (len > 0)
+    len = append(dest, len, cap, SEPARATOR, sizeof(SEPARATOR) - 1);
+  len = append(dest, len, cap, generic, strlen(generic));
+  if (!label.is_default) {
+    len = append(dest, len, cap, ": ", 2);
+    len = append(dest, len, cap, label.text, label.length);
+  }
+  return len;
+}
+
+}  // namespace
+
+EffectLabels effect_labels(const EffectInfo &info) {
+  EffectLabels out;
+  const char *at = strchr(info.metadata, '@');
+  if (at == nullptr) {
+    /* No metadata beyond the name. WLED shows the two standard sliders, all
+     * three colour slots and the palette for an effect like this, so say the
+     * same thing rather than claim the effect has no controls. */
+    for (unsigned i = 0; i < 2; i++) {
+      out.slider[i].text = "!";
+      out.slider[i].length = 1;
+      out.slider[i].is_default = true;
+    }
+    for (unsigned i = 0; i < 3; i++) {
+      out.color[i].text = "!";
+      out.color[i].length = 1;
+      out.color[i].is_default = true;
+    }
+    out.palette.text = "!";
+    out.palette.length = 1;
+    out.palette.is_default = true;
+    return out;
+  }
+
+  // Group 0 is five sliders followed by three checkmarks.
+  ControlLabel controls[8];
+  split_labels(at + 1, controls, 8);
+  for (unsigned i = 0; i < 5; i++)
+    out.slider[i] = controls[i];
+  for (unsigned i = 0; i < 3; i++)
+    out.check[i] = controls[5 + i];
+
+  split_labels(group_at(info.metadata, 1), out.color, 3);
+
+  ControlLabel palette[1];
+  split_labels(group_at(info.metadata, 2), palette, 1);
+  // A numeric palette group is a pinned palette, and WLED hides the selector.
+  out.palette = all_digits(palette[0]) ? ControlLabel{} : palette[0];
+  return out;
+}
+
+size_t format_effect_controls(const EffectInfo &info, char *dest, size_t dest_size) {
+  if (dest == nullptr || dest_size == 0)
+    return 0;
+  const EffectLabels labels = effect_labels(info);
+  size_t len = 0;
+  for (unsigned i = 0; i < 5; i++) {
+    if (labels.slider[i].used())
+      len = append_item(dest, len, dest_size, SLIDER_LABEL_DEFAULTS[i], labels.slider[i]);
+  }
+  for (unsigned i = 0; i < 3; i++) {
+    if (labels.check[i].used())
+      len = append_item(dest, len, dest_size, CHECK_LABEL_DEFAULTS[i], labels.check[i]);
+  }
+  if (len == 0)
+    len = append(dest, len, dest_size, "No controls", 11);
+  dest[len] = '\0';
+  return len;
+}
+
+size_t format_effect_colors(const EffectInfo &info, char *dest, size_t dest_size) {
+  if (dest == nullptr || dest_size == 0)
+    return 0;
+  const EffectLabels labels = effect_labels(info);
+  size_t len = 0;
+  if (labels.palette.used()) {
+    // "Palette" is the generic name here, so a "!" prints the WLED wording
+    // rather than nothing: "uses the palette" is the thing worth saying.
+    len = append(dest, len, dest_size, "Palette: ", 9);
+    if (labels.palette.is_default)
+      len = append(dest, len, dest_size, PALETTE_LABEL_DEFAULT, strlen(PALETTE_LABEL_DEFAULT));
+    else
+      len = append(dest, len, dest_size, labels.palette.text, labels.palette.length);
+  }
+  const char *const generic[3] = {"Color 1", "Color 2", "Color 3"};
+  for (unsigned i = 0; i < 3; i++) {
+    if (!labels.color[i].used())
+      continue;
+    len = append_item(dest, len, dest_size, generic[i], labels.color[i]);
+    // A "!" colour slot still wants WLED's own name on it, because "Color 1"
+    // alone does not say that it is the effect colour.
+    if (labels.color[i].is_default) {
+      len = append(dest, len, dest_size, ": ", 2);
+      len = append(dest, len, dest_size, COLOR_LABEL_DEFAULTS[i], strlen(COLOR_LABEL_DEFAULTS[i]));
+    }
+  }
+  if (len == 0)
+    len = append(dest, len, dest_size, "No palette or colours", 21);
+  dest[len] = '\0';
+  return len;
+}
+
 size_t EffectRegistry::count() {
   size_t total = 0;
   for (unsigned g = 0; g < LINKED_EFFECT_GROUP_COUNT; g++)

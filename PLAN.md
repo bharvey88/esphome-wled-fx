@@ -153,6 +153,51 @@ toolchain in `PATH` links fine, so nothing had to be deferred to CI:
 | `strip-esp32.yaml` | 932,147 | 902,861 (49.2%) | 46,668 (25.8%) |
 | `strip-esp32-arduino.yaml` | 1,019,819 | 815,189 (44.4%) | 47,820 (26.5%) |
 
+### 2026-09-20, review pass and the allow-list measurement
+
+The allow-list figures the README used to quote matched no row in the table
+above and the config behind them was not recorded, so they were measured again.
+Two configs identical but for the `effects:` list, on `esp32dev` with esp-idf,
+carrying nothing but `logger`, the component and one `esp32_rmt_led_strip` light
+of 60 LEDs, so that the difference is only the effects:
+
+```yaml
+esphome:
+  name: wled-fx-alleffects
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+logger:
+external_components:
+  - source:
+      type: local
+      path: ../components
+wled_fx:            # the allow-list build adds: effects: [Fire 2012]
+light:
+  - platform: esp32_rmt_led_strip
+    id: strip
+    name: Strip
+    pin: GPIO16
+    num_leds: 60
+    rgb_order: GRB
+    chipset: WS2812
+    effects:
+      - wled_fx:
+          name: WLED FX
+          effect: Fire 2012
+```
+
+| Build | Flash | RAM |
+|---|---:|---:|
+| all 223 effects | 343,343 | 23,368 |
+| `effects: [Fire 2012]` | 226,115 | 23,272 |
+| difference | 117,228 | 96 |
+
+So 222 effects are about 114 KB of flash and nothing measurable in RAM, which is
+what the canvas being sized from the strip rather than from the effect list
+predicts.
+
 `HARDWARE-CHECKLIST.md` is new and collects every "worth a look on real
 hardware" note from the porters and from `PORTING.md`, grouped by what has to be
 flashed to check it. Nothing in this repository has ever been flashed.

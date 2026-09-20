@@ -472,7 +472,13 @@ async def to_code(config):
         if CONF_DISPLAY_ID not in entry:
             continue
         var = cg.new_Pvariable(entry[CONF_ID])
-        await cg.register_component(var, entry)
+        # register_component() emits set_update_interval() for any config that
+        # carries the key, and this is a plain Component with its own frame
+        # clock, not a PollingComponent. The key keeps the name a reader of the
+        # light effect would expect; it just does not go through there.
+        await cg.register_component(
+            var, {k: v for k, v in entry.items() if k != CONF_UPDATE_INTERVAL}
+        )
         target = await cg.get_variable(entry[CONF_DISPLAY_ID])
         cg.add(var.set_display(target))
         cg.add(

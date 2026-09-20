@@ -552,9 +552,13 @@ the analysis, plus a 12 KB task stack and an 11 KB ring buffer at runtime.
 
 ### Trimming the build
 
-Listing effects compiles only those in. On an ESP32 with esp-idf, every effect
-costs 903 KB of flash and 46 KB of RAM; an allow-list naming a single effect
-comes in at 812 KB, so the effects themselves are about 91 KB of that.
+Listing effects compiles only those in. Measured on an ESP32 with esp-idf, on a
+config stripped to nothing but the light and the component so the delta is all
+effects: 343,343 bytes of flash with all 223 compiled in, 226,115 with an
+allow-list naming one, so the other 222 effects are 117,228 bytes, about 114 KB.
+RAM is the same either way, within a hundred bytes, because the canvas is sized
+from the strip and not from the effect list. `PLAN.md` records the config and
+the whole-firmware figures for the four examples.
 
 ```yaml
 wled_fx:

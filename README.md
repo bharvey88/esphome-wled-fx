@@ -59,7 +59,10 @@ records why.
 * **No transition or preset model.** ESPHome owns both: the light's own
   transitions apply on top of the light front end. Brightness and blanking are
   the Colour 1 light, which is WLED's own arrangement, and the display front end
-  also takes `gamma_correct`.
+  also takes `gamma_correct`. That option is WLED's output gamma stage and
+  nothing else; the gamma effects and the particle renderer apply while drawing
+  is the engine's and is always on, because it is part of the picture rather
+  than a preference.
 
 [docs/HARDWARE-TESTING.md](docs/HARDWARE-TESTING.md) is the session guide for
 changing that first line, with four ready to flash test firmwares in
@@ -447,7 +450,7 @@ on the light effect instead.
 | `include_1d_effects` | bool | `false` | offer the 1D-only effects on this display too, through WLED's 1D-to-2D mapping. See [Which effects an output offers](#which-effects-an-output-offers) |
 | `width` / `height` | int | from the display | canvas size override |
 | `update_interval` | time | `23ms` | one rendered frame per interval, WLED's own 42 fps |
-| `gamma_correct` | 0.1 to 10.0 | `1.0` | applied on the way to the display only |
+| `gamma_correct` | 0.1 to 10.0 | `1.0` | this is WLED's `show()` stage: the whole frame on its way to the display. Set it to `2.2` for the factory WLED look, which is WLED's own default. It is not the gamma effects and the particle renderer do while drawing, which the engine always does with WLED's real tables. See PORTING.md deviation 33 |
 | `effect` | name | first registered | |
 | `palette` | name | effect default | |
 | `speed`, `intensity` | 0 to 255 | effect default | |

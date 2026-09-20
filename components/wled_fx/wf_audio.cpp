@@ -16,6 +16,11 @@ AudioData g_sim{};
 uint32_t g_sim_now = 0xFFFFFFFFu;
 uint8_t g_sim_id = 0xFF;
 
+// 120 bpm, the tempo the simulated spectrum's own beatsin8_t calls are built on.
+constexpr uint32_t SIM_BEAT_PERIOD_MS = 60000 / 120;
+// Which beat the last generated frame fell in, so a peak fires once per beat.
+uint32_t g_sim_beat = 0xFFFFFFFFu;
+
 }  // namespace
 
 void set_audio_source(AudioSource *source) { g_source = source; }
@@ -78,9 +83,27 @@ AudioData &simulate_sound(uint8_t simulation_id, uint32_t now) {
       break;
   }
 
-  g_sim.sample_peak = hw_random8() > 250;
+  /* Upstream writes `samplePeak = hw_random8() > 250;` here (wled00/util.cpp:662),
+   * outside the switch, so it is the same in all four simulation modes and no
+   * choice of `si` changes it. Five draws out of 256 is a peak on about 2 percent
+   * of frames, and the three effects that draw nothing except on a peak, Puddlepeak,
+   * Ripple Peak and Waterfall, are blank with the simulated source as a result.
+   *
+   * This is the one line of the simulation that is the port's rather than WLED's,
+   * and it is deviation 27. The rate is the 120 bpm the simulated spectrum is
+   * already built on: every mode's band 0 is `beatsin8_t(120 / (0 + 1), ...)`. One
+   * peak per beat of that, counted off the frame timestamp rather than the frame
+   * number, so it is the same two peaks a second at any frame rate and is
+   * reproducible in the simulator. */
+  const uint32_t beat = ms / SIM_BEAT_PERIOD_MS;
+  g_sim.sample_peak = (beat != g_sim_beat) ? 1 : 0;
+  g_sim_beat = beat;
   // Walks the full 21 Hz to 8200 Hz range.
   g_sim.fft_major_peak = 21 + (volume_smth * volume_smth) / 8.0f;
+  /* Upstream's simulateSound() reassigns these two on every call as well
+   * (wled00/util.cpp:664-665), so an effect that writes its own values sees them
+   * for the rest of the frame and then loses them. Only the real source leaves
+   * them alone, which is what PORTING.md section 7 is about. */
   g_sim.max_vol = 31;
   g_sim.bin_num = 8;
   g_sim.volume_raw = static_cast<uint16_t>(volume_smth);

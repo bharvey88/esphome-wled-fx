@@ -63,6 +63,21 @@ HUE_DISTANCE_LIMIT = 0.35
 COVERAGE_LIMIT = 0.25
 BRIGHTNESS_LIMIT = 40.0  # out of 255
 
+# The motion estimator's own confidence has to clear this before a direction or
+# a speed is worth reporting. See metrics.estimate_motion.
+MOTION_CONFIDENCE_LIMIT = 3.0
+
+# A twelve bin hue histogram built from a handful of pixels swings from one run
+# to the next. Round 1 flagged PS Fireworks at a hue distance of 1.00 on about
+# fifty lit pixels and Fireworks at 0.41 on twenty-eight. Below this many lit
+# pixels a frame the hue reading is reported as a note and not scored.
+HUE_MIN_SAMPLES_PER_FRAME = 40
+
+# A reference frame whose darkest pixel is this bright on all three channels is
+# showing WLED's uninitialised white channel through the live view's RGBW to RGB
+# map, not a brighter render. See TOOLING.md T6 and PORTING.md deviation 28.
+WHITE_FLOOR_LIMIT = 12
+
 # Effects whose comparison is loose by construction: the device has a real
 # microphone listening to a real room and the port runs WLED's simulateSound().
 # Identified from the flags the registry parses, not from a list kept by hand.
@@ -216,6 +231,9 @@ def speed_ratio(a: float, b: float) -> float | None:
 def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
     rm, pm = ref.metrics, port.metrics
     findings = []
+    # Things a reader needs in order to judge a finding, which are not
+    # themselves findings and do not score.
+    notes: list[str] = []
     score = 0.0
 
     # Ordered worst first, which is also the order the task asks the report to
@@ -233,7 +251,10 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
 
     rdir = rm["motion"]["direction"]
     pdir = pm["motion"]["direction"]
-    confident = rm["motion"].get("confidence", 0) > 3 and pm["motion"].get("confidence", 0) > 3
+    confident = (
+        rm["motion"].get("confidence", 0) > MOTION_CONFIDENCE_LIMIT
+        and pm["motion"].get("confidence", 0) > MOTION_CONFIDENCE_LIMIT
+    )
     if confident and rdir != pdir and "none/unclear" not in (rdir, pdir):
         # The estimator reports one of eight compass points, so two readings 45
         # degrees apart can be the same motion landing either side of a
@@ -266,9 +287,31 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
             score += 30 * min(3.0, abs(ratio - 1.0))
 
     hue = hue_distance(rm["dominant_hue_histogram_12bin"], pm["dominant_hue_histogram_12bin"])
+    hue_samples = min(
+        rm.get("hue_samples_per_frame", 1e9) or 0.0,
+        pm.get("hue_samples_per_frame", 1e9) or 0.0,
+    )
+    hue_is_solid = hue_samples >= HUE_MIN_SAMPLES_PER_FRAME
     if hue > HUE_DISTANCE_LIMIT:
-        findings.append(f"the colours are far apart, hue distance {hue:.2f}")
-        score += 40 * hue
+        if hue_is_solid:
+            findings.append(f"the colours are far apart, hue distance {hue:.2f}")
+            score += 40 * hue
+        else:
+            notes.append(
+                f"hue distance {hue:.2f}, but the histogram was built from only "
+                f"{hue_samples:.0f} lit pixels a frame, which is too few to mean anything"
+            )
+
+    # T6: the reference's own grey floor, which is not a render difference.
+    ref_floor = rm.get("channel_floor") or [0, 0, 0]
+    port_floor = pm.get("channel_floor") or [0, 0, 0]
+    if min(ref_floor) >= WHITE_FLOOR_LIMIT and (max(ref_floor) - min(ref_floor)) <= 6 and max(port_floor) < 4:
+        notes.append(
+            f"WLED's frame has a uniform floor of about {min(ref_floor)} counts on all three "
+            "channels and the port's has none. That is upstream's uninitialised white "
+            "channel arriving through the live view's qadd8(w, r) map, not a brighter "
+            "render; coverage and brightness below are both inflated by it"
+        )
 
     coverage = abs(rm["fraction_lit"] - pm["fraction_lit"])
     if coverage > COVERAGE_LIMIT:
@@ -290,6 +333,7 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
         "name": ref.name,
         "score": round(score, 2),
         "findings": findings,
+        "notes": notes,
         "audio": audio,
         "hue_distance": round(hue, 3),
         "speed_ratio": None if ratio in (None, float("inf")) else round(ratio, 3),
@@ -300,10 +344,80 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
     }
 
 
+def settings_of(cap: Capture) -> dict | None:
+    """The controls a capture was actually taken at, whichever side wrote it.
+
+    The reference tool writes `applied_state_fields` at the top level; the
+    snapshot harness writes `applied.forced_from_reference` when it was run
+    with --match-reference and nothing at all when it was not; the engine
+    capture writes `applied.fields`.
+    """
+    value = cap.meta.get("applied_state_fields")
+    if isinstance(value, dict) and value:
+        return value
+    applied = cap.meta.get("applied")
+    if isinstance(applied, dict):
+        for key in ("forced_from_reference", "fields"):
+            value = applied.get(key)
+            if isinstance(value, dict) and value:
+                return value
+    return None
+
+
+def gamma_of(cap: Capture) -> float | None:
+    """The output gamma the capture was taken with, when it says."""
+    applied = cap.meta.get("applied")
+    if isinstance(applied, dict) and "gamma_correct" in applied:
+        try:
+            return float(applied["gamma_correct"])
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
+# The controls that change what an effect draws. `fx` is left out: the two sides
+# number their effects differently and the name is what joins them.
+SETTING_KEYS = ("pal", "sx", "ix", "c1", "c2", "c3", "o1", "o2", "o3", "m12")
+
+
+def settings_differ(a: Capture, b: Capture) -> list[str]:
+    """Which controls two captures disagree on, empty when they agree."""
+    sa, sb = settings_of(a), settings_of(b)
+    if sa is None or sb is None:
+        return ["unknown"]
+    out = []
+    for key in SETTING_KEYS:
+        if key not in sa or key not in sb:
+            continue
+        # One side writes the checkmarks as booleans and the other as 0 and 1.
+        left, right = sa[key], sb[key]
+        if isinstance(left, bool) or isinstance(right, bool):
+            left, right = bool(left), bool(right)
+        if left != right:
+            out.append(f"{key} {sa[key]} against {sb[key]}")
+    return out
+
+
 def attribute(ref: Capture, port: Capture, engine: Capture | None) -> str:
-    """Engine or front end, when there is an engine capture to tell them apart."""
+    """Engine or front end, when there is an engine capture to tell them apart.
+
+    Round 1's version answered this for every effect and was wrong for most of
+    them: the engine captures were taken at the effect's own metadata defaults
+    while the reference was taken at whatever the device had, and on a virtual
+    clock half the speed of the other two. Two captures at different settings
+    cannot tell you which half of the stack a difference is in. So the first
+    thing here is a check that the settings match, and the answer when they do
+    not is that there is no answer.
+    """
     if engine is None:
         return "unknown, no engine capture"
+    mismatch = settings_differ(ref, engine)
+    if mismatch:
+        detail = "settings unknown" if mismatch == ["unknown"] else ", ".join(mismatch[:4])
+        return (
+            "attribution unavailable: the engine capture was taken at different "
+            f"settings ({detail}). Recapture it with capture_engine.py --match-reference"
+        )
     port_result = compare_one(ref, port, False)
     engine_result = compare_one(ref, engine, False)
     port_bad = port_result["score"] > 20
@@ -368,7 +482,7 @@ def side_by_side(rows: list[tuple[str, Capture]], out_path: Path, count: int = 8
 
 def write_report(results: list[dict], out: Path, ref_only: list[str], port_only: list[str],
                  skipped_ref: list[str], skipped_port: list[str], metric_problems: list[str],
-                 engine_used: bool) -> None:
+                 engine_used: bool, capture_facts: list[str]) -> None:
     ranked = sorted([r for r in results if not r["audio"]], key=lambda r: -r["score"])
     audio = sorted([r for r in results if r["audio"]], key=lambda r: -r["score"])
     flagged = [r for r in ranked if r["findings"]]
@@ -401,6 +515,11 @@ def write_report(results: list[dict], out: Path, ref_only: list[str], port_only:
         "",
     ]
 
+    if capture_facts:
+        lines += ["The settings both sides were captured at:", ""]
+        lines += [f"* {fact}" for fact in capture_facts]
+        lines.append("")
+
     if metric_problems:
         lines += [
             "> **The metric code has drifted.** `tools/compare/metrics.py` did not "
@@ -426,6 +545,8 @@ def write_report(results: list[dict], out: Path, ref_only: list[str], port_only:
         lines.append("")
         for f in r["findings"]:
             lines.append(f"* {f}")
+        for n in r.get("notes", []):
+            lines.append(f"* Note: {n}")
         if r.get("attribution"):
             lines.append(f"* Attribution: {r['attribution']}")
         lines.append("")
@@ -446,10 +567,25 @@ def write_report(results: list[dict], out: Path, ref_only: list[str], port_only:
         lines.append(f"* **{r['name']}** ({r['score']:.0f}): {state}")
     lines.append("")
 
-    lines += ["## Effects on one side only", ""]
-    lines.append(f"Only on the device ({len(ref_only)}): {', '.join(ref_only) or 'none'}")
+    lines += [
+        "## Effects with no reference available",
+        "",
+        "These are in the port and not on the device, so nothing here has been "
+        "compared against anything and none of them appears above. They are not "
+        "findings and they are not clean either: they are unverified. The nine "
+        "that come from WLED-MM rather than from stock WLED can only be checked "
+        "by reading the MM source or by capturing a WLED-MM build.",
+        "",
+    ]
+    lines.append(f"No reference ({len(port_only)}): {', '.join(port_only) or 'none'}")
     lines.append("")
-    lines.append(f"Only in the port ({len(port_only)}): {', '.join(port_only) or 'none'}")
+    lines += ["## Effects only on the device", ""]
+    lines.append(
+        "In the device's catalog and not in this port, or captured on the device "
+        "and not on this side."
+    )
+    lines.append("")
+    lines.append(f"Only on the device ({len(ref_only)}): {', '.join(ref_only) or 'none'}")
     lines.append("")
     if skipped_ref or skipped_port:
         lines += [
@@ -489,8 +625,10 @@ def write_index(results: list[dict], out: Path) -> None:
         cls = "e" + (" audio" if r["audio"] else "") + ("" if r["findings"] else " ok")
         html.append(f"<div class='{cls}'>")
         html.append(f"<div class='n'>{r['name']}<span class='s'>{r['score']:.0f}</span></div>")
-        if r["findings"]:
-            html.append("<ul>" + "".join(f"<li>{f}</li>" for f in r["findings"]) + "</ul>")
+        if r["findings"] or r.get("notes"):
+            items = "".join(f"<li>{f}</li>" for f in r["findings"])
+            items += "".join(f"<li><em>note:</em> {n}</li>" for n in r.get("notes", []))
+            html.append("<ul>" + items + "</ul>")
         if r.get("attribution"):
             html.append(f"<div class='att'>{r['attribution']}</div>")
         html.append(f"<img loading='lazy' src='images/{r['slug']}.png'>")
@@ -551,8 +689,31 @@ def main() -> int:
 
     ref_only = sorted(set(ref) - set(subject))
     port_only = sorted(set(subject) - set(ref))
+
+    # The output gamma each side was captured with decides whether the particle
+    # findings are visible at all, and round 1's report did not record it.
+    capture_facts = []
+    for label, side in (("device", ref), (subject_label, subject)):
+        if not side:
+            continue
+        example = next(iter(side.values()))
+        gamma = gamma_of(example)
+        capture_facts.append(
+            f"{label}: output gamma "
+            + ("not recorded" if gamma is None else f"{gamma:g}")
+            + (
+                ", controls matched to the reference"
+                if settings_of(example) is not None
+                else ", controls not recorded"
+            )
+        )
+    matched = sum(1 for n in results if not settings_differ(ref[n["name"]], subject[n["name"]]))
+    capture_facts.append(
+        f"{matched} of {len(results)} effects were captured at the same controls on both sides"
+    )
+
     write_report(results, out, ref_only, port_only, skipped_ref,
-                 skipped_port or skipped_engine, metric_problems, bool(args.engine))
+                 skipped_port or skipped_engine, metric_problems, bool(args.engine), capture_facts)
     write_index(results, out)
     (out / "metrics.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
 

@@ -5,7 +5,7 @@ can be put side by side.
 
 | Capture | Tool | What it exercises |
 |---|---|---|
-| **WLED** | `tools/reference/capture_wled.py` on the `wled-ref` branch | a real WLED 16.0.1 device, over its live view websocket |
+| **WLED** | [`tools/reference/capture_wled.py`](../reference/capture_wled.py) | a real WLED 16.0.1 device, over its live view websocket |
 | **port** | [`tools/snapshot/capture_port.py`](../snapshot/capture_port.py) | the whole ESPHome display front end: YAML, codegen, frame gate, `draw_pixels_at`, the display's own `update()` |
 | **engine** | [`capture_engine.py`](capture_engine.py) | `Engine::render()` and nothing else, through `wled_fx_sim --anim` |
 
@@ -44,12 +44,16 @@ not. What is compared is behaviour: moving or frozen, lit or black, which way,
 how fast in pixels per second, how much of the frame is lit, what colours are
 in it, how symmetric it is.
 
-The metric functions live in [`metrics.py`](metrics.py) and are the reference
-capture tool's own, copied rather than reimplemented so that a difference in a
-number is a difference in the animation. `compare.py` recomputes the reference
-side's metrics from its raw frames and shouts if they do not match the
-`meta.json` the reference wrote, which is what keeps that claim honest rather
-than merely stated.
+The metric functions live in [`metrics.py`](metrics.py) and there is one copy
+of them: the reference capture tool imports them from there rather than
+carrying its own, so a difference in a number is a difference in the animation.
+It used to be a hand-kept duplicate, which is how a sign error survived in both
+halves for a whole round. [`test_metrics.py`](test_metrics.py) feeds the
+estimator synthetic patterns whose velocity is known in advance, in both
+directions along both axes and on a diagonal, at speeds from 5 to 120 px/s, and
+it runs in CI. `compare.py` also recomputes the reference side's metrics from
+its raw frames and shouts if they do not match the `meta.json` the reference
+wrote.
 
 Three things are normalised first, and leaving any of them out turns a property
 of the capture path into a finding on all 223 effects:
@@ -80,13 +84,72 @@ palette from the port for a reason that had nothing to do with the port. Pass
 state back out and forces the same palette and controls, which took the flagged
 count from 138 to 111 and the colour findings from 87 to 19.
 
-**The motion estimate has two known failure modes.** It reports one of eight
-compass points, so a reading 45 degrees away can be the same motion landing
-either side of a boundary; those are called out and scored low. And it is a
-phase correlation, which on a periodic pattern cannot tell a shift of `d` from
-a shift of `-(period - d)`, so a tartan, a stripe field or a spiral can be
-reported as moving the opposite way and be doing nothing of the kind. Open the
-side-by-side before believing an "opposite" on an effect that repeats.
+**The motion estimate used to be wrong in two ways at once**, and about half of
+round 1's flags came out of it. It correlated frames an eighth of the capture
+apart, which on a 32 px frame wraps at 16 px and cannot tell 20 px/s from
+-20 px/s; and it took the correlation peak as the displacement when the peak of
+`F(a) * conj(F(b))` lands at minus the displacement, so every direction word was
+the opposite of the truth. The two mistakes hid each other.
+
+What it does now: phase correlation at frame gaps of 1, 2, 4 and up, sub-pixel
+refined, with three guards. A gap whose displacement has wrapped past a third
+of the frame is discarded and so is every longer one. The three shortest usable
+gaps have to agree on the velocity, because a real translation goes twice as
+far in twice the time and an alias does not. And the correlation peak has to be
+at least a quarter taller than the next peak anywhere else, which is what rules
+out a checkerboard or a stripe field at the resolution limit, where there
+genuinely is no single answer. When any of those fails the direction is
+reported as unknown rather than as a number.
+
+It still reports one of eight compass points, so a reading 45 degrees away can
+be the same motion landing either side of a boundary; those are called out and
+scored low.
+
+## Attribution, and when it is not available
+
+The engine capture only tells you which half of the stack a difference is in if
+it was taken at the same settings as the other two. Round 1's was not: it ran
+at each effect's own metadata defaults while the device was on whatever palette
+the previous effect had left, on a 50 ms clock against the device's 23 ms, and
+with a per-effect PACING table that gave PS Galaxy a 1500 frame head start.
+`compare.py` now checks the recorded settings of the two captures before
+attributing anything and prints "attribution unavailable" when they differ.
+`capture_engine.py --match-reference` is what makes them match: it pins every
+control the reference recorded, passes `--step-ms 23` and turns the pacing
+table off.
+
+## Thresholds that are relative, and things that are not findings
+
+* A hue histogram built from a handful of lit pixels swings from run to run.
+  Below 40 lit pixels a frame the hue distance is printed as a note and not
+  scored.
+* When the reference's darkest pixel is well above zero and about equal on all
+  three channels, that is upstream's uninitialised white channel arriving
+  through the live view's `qadd8(w, r)` map and not a brighter render. It is
+  called out as a note, because it inflates both coverage and brightness. See
+  PORTING.md deviation 28.
+* Effects the device does not have get their own section, "no reference
+  available", rather than vanishing from a report that claims to cover the
+  port. Nine effects come from WLED-MM and stock WLED 16.0.1 has none of them.
+* The report records the output gamma each side was captured with, and how many
+  effects were captured at matching controls.
+
+## Still known to be weak
+
+* **A capture shorter than the effect.** Sweep, Wipe, Tartan, Slow Transition,
+  PS Galaxy and Halloween Eyes all have periods longer than six seconds, so
+  where in the period each capture started decides the coverage and brightness
+  numbers. Capture those for 30 s, or capture twice and believe a flag only
+  when it reproduces in both windows.
+* **A single reference capture treated as ground truth.** Game Of Life's
+  reference frame did not reproduce on two later attempts. Capturing the
+  reference twice and comparing the two runs first would give both a
+  reproducibility check and a noise floor to set the thresholds from.
+* **The palette latched at `call == 0`.** WLED cross-fades a palette change over
+  its transition time, so an effect that samples the palette once, at its first
+  frame, keeps the previous one for the whole capture. Aurora is the clean
+  case. Send `{"transition": 0}` with the palette, or send the palette and the
+  effect in two requests with the transition time in between.
 
 ## Audio reactive effects
 

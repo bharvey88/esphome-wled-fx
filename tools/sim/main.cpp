@@ -12,6 +12,7 @@
 //               [--checks-on] [--custom1 N] [--custom2 N] [--custom3 N]
 //               [--speed N] [--intensity N] [--text STRING]
 //               [--single-pass] [--anim DIR] [--color1 RRGGBB] [--color2 ..] [--color3 ..]
+//               [--step-ms N]
 //
 // With none of the control options, every effect is run twice per geometry: once
 // on its own metadata defaults and once with all three checkmarks on. The second
@@ -334,6 +335,12 @@ int main(int argc, char **argv) {
   bool list_only = false;
   bool list_meta = false;
   std::string anim_dir;  // non-empty switches the run over to raw frame output
+  /* --step-ms pins the frame period for every effect and turns the PACING
+   * table off, including its warm-up. A comparison run against a real device
+   * needs both: the device renders at about 23 ms and gives no effect a head
+   * start, and an engine capture on a 50 ms clock with PS Galaxy 1500 frames
+   * ahead is not comparable with it. 0 leaves the pacing alone. */
+  uint32_t step_ms_override = 0;
   // --size WxH replaces the three default geometries with one of your own, for
   // checking a geometry the defaults do not cover (128x64, 300x1, ...).
   std::string size_label;
@@ -428,6 +435,8 @@ int main(int argc, char **argv) {
       geometries.assign(1, Geometry{size_label.c_str(), static_cast<uint16_t>(w), static_cast<uint16_t>(h)});
     } else if (arg == "--anim" && i + 1 < argc)
       anim_dir = argv[++i];
+    else if (arg == "--step-ms" && i + 1 < argc)
+      step_ms_override = static_cast<uint32_t>(atoi(argv[++i]));
     else if (arg == "--no-images")
       images = false;
     else if (arg == "--list")
@@ -526,13 +535,16 @@ int main(int argc, char **argv) {
     char name[64];
     effect_name(*entry.second, name, sizeof(name));
     const Pacing pacing = pacing_for(name);
-    const int effect_frames = frames > 0 ? frames : (anim ? ANIM_FRAMES : pacing.frames);
+    const bool paced = step_ms_override == 0;
+    const int effect_frames =
+        frames > 0 ? frames : (anim ? ANIM_FRAMES : (paced ? pacing.frames : DEFAULT_FRAMES));
     // Same time acceleration as the default run, at the preview's frame period.
     const uint32_t step_ms =
-        anim ? std::max<uint32_t>(1, pacing.step_ms * ANIM_STEP_MS / DEFAULT_STEP_MS) : pacing.step_ms;
+        !paced ? step_ms_override
+               : (anim ? std::max<uint32_t>(1, pacing.step_ms * ANIM_STEP_MS / DEFAULT_STEP_MS) : pacing.step_ms);
     // Rendered and thrown away, so a per-frame paced effect has built its picture
     // by the first written frame.
-    const int warmup = anim ? ANIM_WARMUP + std::max(0, pacing.frames - DEFAULT_FRAMES) : 0;
+    const int warmup = (anim && paced) ? ANIM_WARMUP + std::max(0, pacing.frames - DEFAULT_FRAMES) : 0;
 
     for (const Geometry &geo : geometries) {
       for (const Controls &controls : passes) {

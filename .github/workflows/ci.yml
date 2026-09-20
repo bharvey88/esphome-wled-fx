@@ -14,6 +14,14 @@ jobs:
   host-sim:
     name: Host simulator
     runs-on: ubuntu-latest
+    env:
+      # Contact sheets are about 726 MB per run: 223 effects x 6 geometries x 2
+      # control passes, and the 64 row geometries dominate. They are worth having
+      # when somebody is going to look at them and worth nothing on every routine
+      # push, so they are only rendered on a manual run or a tag, and they expire
+      # in days rather than the default 90. Skipping them also takes a few
+      # minutes off the ordinary run.
+      WANT_IMAGES: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +40,22 @@ jobs:
       - name: Run every effect at every default geometry
         run: |
           mkdir -p tools/sim/out
-          tools/sim/build/wled_fx_sim --out tools/sim/out
+          if [ "$WANT_IMAGES" = "true" ]; then
+            tools/sim/build/wled_fx_sim --out tools/sim/out
+          else
+            tools/sim/build/wled_fx_sim --no-images --out tools/sim/out
+          fi
+
+      # The small end of the geometries the defaults do not cover. Division by a
+      # length that turned out to be zero only happens here, and these sizes cost
+      # almost nothing to run because a frame is one to three pixels. The large
+      # end, 128x64, 256x64 and 1000x1, is in the job below, because those are
+      # too slow to put in front of the sanitizers.
+      - name: Run every effect at the smallest geometries
+        run: |
+          for size in 1x1 1x2 2x1 3x1; do
+            tools/sim/build/wled_fx_sim --size "$size" --no-images --out tools/sim/out
+          done
 
       # --single-pass, so this is five runs of every effect rather than ten. The
       # mapping sweep is looking for out-of-bounds writes under a mapping the
@@ -52,12 +75,44 @@ jobs:
       - name: README effect list is generated from the registry, not hand typed
         run: python3 tools/gen_readme_effects.py --check
 
+      - name: Effect and palette names the config validation sees match the registry
+        run: python3 tools/check_effect_names.py
+
       - name: Upload contact sheets
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && env.WANT_IMAGES == 'true'
         with:
           name: contact-sheets
           path: tools/sim/out/*.png
+          retention-days: 5
+
+  # A 256x64 frame is 16384 pixels, sixteen times a 64x64 one, and the particle
+  # and blur effects scale with it. Under the sanitizers that is hours, so this
+  # runs the same binary without them, in parallel, and relies on the canvas
+  # guard bands rather than ASan to catch a write past the end. Between the two
+  # jobs every effect still sees every size.
+  large-geometries:
+    name: Host simulator, large geometries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configure
+        run: cmake -S tools/sim -B tools/sim/build -G Ninja
+
+      - name: Build
+        run: cmake --build tools/sim/build
+
+      # 128x64 and 256x64 are the panel sizes where an index held in 8 or 16 bits
+      # runs out of room. 1000x1 is the same question for a long strip.
+      - name: Run every effect at 128x64, 256x64 and 1000x1
+        run: |
+          for size in 128x64 256x64 1000x1; do
+            tools/sim/build/wled_fx_sim --size "$size" --no-images --out /tmp/wled_fx_out
+          done
 
   compile:
     name: esphome compile ${{ matrix.config }}

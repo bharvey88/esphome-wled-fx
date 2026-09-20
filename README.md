@@ -37,10 +37,16 @@ records why.
 * **One segment.** WLED's multi-segment model is not ported, so there is one
   canvas, one effect and one set of controls per front end. Image and Copy
   Segment are the two upstream effects that need what is missing.
-* **The control entities do not restore across a reboot.** A `select`, `number`
-  or `switch` publishes what the YAML and the effect metadata say, so a change
-  made from Home Assistant is lost on restart. Pin the value in YAML, or set it
-  from an `on_boot` automation.
+* **The control entities do not restore across a reboot by default.** A
+  `select`, `number` or `switch` publishes what the YAML and the effect metadata
+  say, so a change made from Home Assistant is lost on restart. Pin the value in
+  YAML, or set it from an `on_boot` automation. The `switch` platform does take
+  ESPHome's `restore_mode`, defaulting to `DISABLED` because the engine owns the
+  checkmark; set it to something else and the switch drives the engine at boot
+  instead.
+* **There is no way to blank the display front end.** It renders whenever the
+  device is running. A light effect stops when the light is turned off; a
+  display has no equivalent.
 * **Panels wider than 180 pixels hit upstream's own arithmetic.** A handful of
   2D effects hold a coordinate or a scale factor in 8 or 16 bits, which is
   upstream's code unchanged and is fine to the 256x64 this has been tested at,
@@ -419,17 +425,27 @@ on the light effect instead.
 |---|---|---|---|
 | `id` | id | generated | needed to point a select, number or switch at it |
 | `display_id` | id | none | the display to drive; makes this a display front end |
-| `effects` | list of names | all | compile-time allow-list, see below |
+| `effects` | list of names | all | compile-time allow-list, see below; the lists of every entry are merged into one |
 | `width` / `height` | int | from the display | canvas size override |
 | `update_interval` | time | `23ms` | one rendered frame per interval, WLED's own 42 fps |
-| `gamma_correct` | float | `1.0` | applied on the way to the display only |
+| `gamma_correct` | 0.1 to 10.0 | `1.0` | applied on the way to the display only |
 | `effect` | name | first registered | |
 | `palette` | name | effect default | |
 | `speed`, `intensity` | 0 to 255 | effect default | |
 | `custom1`, `custom2` | 0 to 255 | effect default | |
 | `custom3` | 0 to 31 | effect default | |
 | `check1`, `check2`, `check3` | bool | effect default | |
-| `text` | string | empty | for the text effects |
+| `text` | string | empty | read by Scrolling Text |
+
+Every control key here, and on the light effect below, is **pinned**: naming
+`speed:` in YAML keeps that value when the effect changes, and leaving it out
+lets the new effect's own metadata refill it. That is the single most surprising
+thing about the component, and it is what the `select`, `number` and `switch`
+entities follow when they republish.
+
+The 1D-to-2D mapping is not configurable. It comes from each effect's `m12`
+metadata key, which is what WLED's "Expand 1D FX" selector sets. The simulator's
+`--map` can force it; the component cannot.
 
 ### The light effect
 
@@ -445,6 +461,15 @@ effects:
       update_interval: 23ms
       # plus every control key from the table above
 ```
+
+`width` and `height` describe a matrix wired as one strip. Give both or neither:
+`width` on its own leaves the height at one, which is a strip, and a 2D-only
+effect on a strip is a config error rather than a panel of solid colour.
+
+Each `wled_fx:` entry in a light's `effects:` list owns a canvas of its own, and
+keeps it once it has run, so two of them on one light hold two canvases. Turning
+the light off puts the effect back to frame zero but does not hand the memory
+back; see the memory note under Licence.
 
 ### Audio reactive effects
 
@@ -486,10 +511,10 @@ effect a microphone, and only one entry may carry the block.
 | Option | Type | Default | Notes |
 |---|---|---|---|
 | `microphone` | microphone source | required | `microphone`, `bits_per_sample`, `channels`, `gain_factor`, exactly as `sound_level` takes them. One channel of 16 bit audio |
-| `passive` | bool | `false` | leave the microphone to another component to start and stop, and only listen in |
+| `passive` | bool | `false` | leave the microphone to another component to start and stop, and only listen in. Only useful when something else, a voice assistant or `sound_level`, is already running that microphone; on its own it leaves the analysis permanently silent |
 | `gain` | 0 to 255 | `60` | WLED `sampleGain`, the manual input gain. Ignored while AGC is on |
 | `squelch` | 0 to 255 | `10` | WLED `soundSquelch`, the noise gate |
-| `input_level` | 0 to 255 | `128` | WLED `inputLevel`. With AGC on it is the post-amplifier on the GEQ channels |
+| `input_level` | 0 to 255 | `128` | WLED `inputLevel`, and 128 is unity. With AGC off it multiplies the pre-amplifier on both the volume and the GEQ channels, alongside `gain`. With AGC on the AGC owns that stage, and `input_level` becomes a post-amplifier on the GEQ channels only, softened below unity so it cannot mute them |
 | `agc` | `off`, `normal`, `vivid`, `lazy` | `normal` | WLED's three AGC presets, a PI controller over the input level |
 | `scaling` | `none`, `log`, `linear`, `sqrt` | `sqrt` | WLED `FFTScalingMode`, how a GEQ channel maps to 0 to 255 |
 | `limiter` | bool | `true` | WLED's dynamics limiter on the smoothed volume |
@@ -557,7 +582,7 @@ number:
   - platform: wled_fx
     wled_fx_id: fx
     type: speed       # intensity, custom1, custom2, custom3
-    name: Speed
+    name: Speed       # the range is fixed by the type, 0 to 255 or 0 to 31
 
 switch:
   - platform: wled_fx

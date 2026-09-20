@@ -94,8 +94,6 @@ class WledFxDisplay : public Component, public WledFxController {
     this->height_ = height;
   }
   void set_gamma(float gamma) { this->gamma_ = gamma; }
-  void set_enabled(bool enabled) { this->enabled_ = enabled; }
-  bool is_enabled() const { return this->enabled_; }
 
   void setup() override;
   /* A plain loop(), not a PollingComponent's update(). ESPHome's scheduler
@@ -115,7 +113,6 @@ class WledFxDisplay : public Component, public WledFxController {
   int height_{0};
   float gamma_{1.0f};
   uint8_t gamma_lut_[256]{};
-  bool enabled_{true};
 };
 #endif  // USE_DISPLAY
 

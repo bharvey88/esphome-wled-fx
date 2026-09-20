@@ -113,7 +113,7 @@ void WledFxDisplay::setup() {
 }
 
 void WledFxDisplay::loop() {
-  if (!this->enabled_ || this->frame_ == nullptr)
+  if (this->frame_ == nullptr)
     return;
   const uint32_t now = App.get_loop_component_start_time();
   if (!this->frame_due_(now))

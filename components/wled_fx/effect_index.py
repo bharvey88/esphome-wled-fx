@@ -74,15 +74,19 @@ def runs_in_1d(metadata: str) -> bool:
     """True unless the effect's metadata says it is 2D only.
 
     The fourth ';' group of a WLED metadata string is the dimensionality set:
-    '1' for 1D, '2' for 2D, and an empty or missing group means 1D. Matches
-    effect_defaults() in wf_registry.cpp, which reads the same group.
+    '0', '1' and '2' for the three dimensionalities, plus 'v' and 'f' for the
+    two audio kinds. Matches effect_defaults() in wf_registry.cpp, which reads
+    the same group and, crucially, falls back to 1D when the group contains no
+    dimension character at all. Disagreeing with it would mean rejecting a
+    config the engine would have run. tools/check_effect_names.py fails if the
+    two ever drift.
     """
     groups = metadata.split("@", 1)[-1].split(";")
     if len(groups) < 4:
         return True
     dimensions = groups[3].strip()
-    if not dimensions:
-        return True
+    if not any(c in dimensions for c in "012"):
+        return True  # no dimension named, so 1D, as the C++ does
     return "1" in dimensions or "0" in dimensions
 
 

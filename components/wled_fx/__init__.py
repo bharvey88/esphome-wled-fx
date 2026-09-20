@@ -78,6 +78,11 @@ UPDATE_INTERVAL_NEVER = 4294967295
 # effect bodies were written against. Kept in step with FRAMETIME in
 # wf_segment.h and with frame_interval_ in wled_fx_light.h.
 FRAMETIME = "23ms"
+DEFAULT_FRAME_INTERVAL = cv.positive_time_period_milliseconds(FRAMETIME)
+
+# Where somebody who installed this with external_components can actually read
+# the effect and palette lists. A bare "see README.md" means nothing to them.
+EFFECT_LIST_URL = "https://github.com/bharvey88/esphome-wled-fx#effects"
 
 wled_fx_ns = cg.esphome_ns.namespace("wled_fx")
 WledFxController = wled_fx_ns.class_("WledFxController")
@@ -122,8 +127,8 @@ def _known_effect(value):
         return value
     raise cv.Invalid(
         f'"{value}" is not a WLED FX effect.{suggestion(value, names)} '
-        "The full list is in README.md; names are the WLED display names, "
-        'for example "Fire 2012".'
+        "Names are the WLED display names; the full list is at "
+        f"{EFFECT_LIST_URL}"
     )
 
 
@@ -135,7 +140,7 @@ def _known_palette(value):
         return value
     raise cv.Invalid(
         f'"{value}" is not a WLED FX palette.{suggestion(value, names)} '
-        "The full list is in README.md."
+        f"The full list is at {EFFECT_LIST_URL}"
     )
 
 
@@ -226,11 +231,16 @@ _ENTRY_SCHEMA = cv.Schema(
         cv.Optional(CONF_EFFECTS): cv.ensure_list(_known_effect),
         cv.Optional(CONF_WIDTH): cv.positive_not_null_int,
         cv.Optional(CONF_HEIGHT): cv.positive_not_null_int,
-        cv.Optional(CONF_GAMMA_CORRECT, default=1.0): cv.positive_float,
+        # No defaults on these two: _validate_entry() has to be able to tell
+        # "not given" from "given", because an entry with no display_id never
+        # becomes a component and would drop them silently. The defaults are
+        # applied in to_code() instead.
+        #
+        # gamma_correct is an exponent, and 0.0 makes pow(i / 255, 0) == 1 for
+        # every input, so the whole panel goes to full white and stays there.
+        cv.Optional(CONF_GAMMA_CORRECT): cv.float_range(min=0.1, max=10.0),
         cv.Optional(CONF_AUDIO): AUDIO_SCHEMA,
-        cv.Optional(
-            CONF_UPDATE_INTERVAL, default=FRAMETIME
-        ): cv.positive_time_period_milliseconds,
+        cv.Optional(CONF_UPDATE_INTERVAL): cv.positive_time_period_milliseconds,
         **CONTROL_SCHEMA,
     }
 ).extend(cv.COMPONENT_SCHEMA)
@@ -241,7 +251,13 @@ def _validate_entry(config):
         return config
     # An entry with no display never becomes a component, so anything that would
     # be applied to one would be silently dropped. Say so instead.
-    for key in (CONF_WIDTH, CONF_HEIGHT, *_CONTROL_KEYS):
+    for key in (
+        CONF_WIDTH,
+        CONF_HEIGHT,
+        CONF_GAMMA_CORRECT,
+        CONF_UPDATE_INTERVAL,
+        *_CONTROL_KEYS,
+    ):
         if key in config:
             raise cv.Invalid(
                 f"'{key}' only applies to a wled_fx entry that drives a display. "
@@ -462,8 +478,12 @@ async def to_code(config):
         cg.add(
             var.set_dimensions(entry.get(CONF_WIDTH, 0), entry.get(CONF_HEIGHT, 0))
         )
-        cg.add(var.set_gamma(entry[CONF_GAMMA_CORRECT]))
-        cg.add(var.set_frame_interval(entry[CONF_UPDATE_INTERVAL]))
+        cg.add(var.set_gamma(entry.get(CONF_GAMMA_CORRECT, 1.0)))
+        cg.add(
+            var.set_frame_interval(
+                entry.get(CONF_UPDATE_INTERVAL, DEFAULT_FRAME_INTERVAL)
+            )
+        )
         await apply_controls(var, entry)
 
 
@@ -492,9 +512,11 @@ def _validate_light_effect(config):
     display front end takes its size from the display, which is not knowable
     here, so this check only covers the light effect.
     """
+    # A canvas is 2D only when a height above 1 was asked for. width on its own
+    # leaves start() to compute height = led_count / width, which for the usual
+    # "width is the whole strip" case is exactly 1.
     height = config.get(CONF_HEIGHT)
-    width = config.get(CONF_WIDTH)
-    is_1d = height == 1 or (height is None and width is None)
+    is_1d = height is None or height == 1
     effect = config.get(CONF_EFFECT)
     if is_1d and effect is not None:
         matrix_only = {name.casefold() for name in two_dimensional_only()}
@@ -517,7 +539,7 @@ _PARENT_SCHEMA = cv.Schema({cv.GenerateID(): cv.use_id(WledFxController)})
 @automation.register_action(
     "wled_fx.set_effect",
     SetEffectAction,
-    _PARENT_SCHEMA.extend({cv.Required(CONF_EFFECT): cv.templatable(cv.string)}),
+    _PARENT_SCHEMA.extend({cv.Required(CONF_EFFECT): cv.templatable(_known_effect)}),
     synchronous=True,
 )
 async def set_effect_action_to_code(config, action_id, template_arg, args):
@@ -542,7 +564,7 @@ async def next_effect_action_to_code(config, action_id, template_arg, args):
 @automation.register_action(
     "wled_fx.set_palette",
     SetPaletteAction,
-    _PARENT_SCHEMA.extend({cv.Required(CONF_PALETTE): cv.templatable(cv.string)}),
+    _PARENT_SCHEMA.extend({cv.Required(CONF_PALETTE): cv.templatable(_known_palette)}),
     synchronous=True,
 )
 async def set_palette_action_to_code(config, action_id, template_arg, args):

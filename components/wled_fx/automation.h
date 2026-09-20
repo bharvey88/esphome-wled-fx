@@ -1,15 +1,26 @@
 #pragma once
 
 #include "esphome/core/automation.h"
+#include "esphome/core/log.h"
 #include "wled_fx.h"
 
 namespace esphome {
 namespace wled_fx {
 
+/* A literal name in YAML is checked at config time. A templated one cannot be,
+ * so when the lambda produces something the build does not carry, say so rather
+ * than do nothing. This is an automation, not the render loop, so a log line
+ * here is not in any hot path. */
+static const char *const ACTION_TAG = "wled_fx.action";
+
 template<typename... Ts> class SetEffectAction : public Action<Ts...>, public Parented<WledFxController> {
  public:
   TEMPLATABLE_VALUE(std::string, effect)
-  void play(const Ts &...x) override { this->parent_->set_effect_by_name(this->effect_.value(x...)); }
+  void play(const Ts &...x) override {
+    const std::string name = this->effect_.value(x...);
+    if (!this->parent_->set_effect_by_name(name))
+      ESP_LOGW(ACTION_TAG, "'%s' is not an effect this build carries", name.c_str());
+  }
 };
 
 template<typename... Ts> class NextEffectAction : public Action<Ts...>, public Parented<WledFxController> {
@@ -20,7 +31,11 @@ template<typename... Ts> class NextEffectAction : public Action<Ts...>, public P
 template<typename... Ts> class SetPaletteAction : public Action<Ts...>, public Parented<WledFxController> {
  public:
   TEMPLATABLE_VALUE(std::string, palette)
-  void play(const Ts &...x) override { this->parent_->set_palette_by_name(this->palette_.value(x...)); }
+  void play(const Ts &...x) override {
+    const std::string name = this->palette_.value(x...);
+    if (!this->parent_->set_palette_by_name(name))
+      ESP_LOGW(ACTION_TAG, "'%s' is not a palette this build carries", name.c_str());
+  }
 };
 
 template<typename... Ts> class SetTextAction : public Action<Ts...>, public Parented<WledFxController> {

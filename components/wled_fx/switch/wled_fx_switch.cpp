@@ -8,6 +8,13 @@ namespace wled_fx {
 static const char *const TAG = "wled_fx.switch";
 
 void WledFxSwitch::setup() {
+  /* With the platform's default restore mode, DISABLED, this returns nothing
+   * and the engine's value is what gets published: either what YAML pinned or
+   * what the effect's metadata says. Any other restore mode is a deliberate
+   * choice to let the switch drive the engine at boot instead. */
+  const optional<bool> restored = this->get_initial_state_with_restore_mode();
+  if (restored.has_value())
+    this->write_state(*restored);
   this->publish_current_();
   /* Changing the effect refills every checkmark the user did not pin from the
    * new effect's metadata defaults, so this entity is stale the moment anything

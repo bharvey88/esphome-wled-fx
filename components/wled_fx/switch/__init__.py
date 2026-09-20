@@ -24,7 +24,12 @@ TYPES = {
 }
 
 CONFIG_SCHEMA = (
-    switch.switch_schema(WledFxSwitch)
+    # DISABLED by default, because the engine owns this checkmark: it comes from
+    # YAML if it was pinned there and from the effect's own metadata otherwise,
+    # and it is refilled every time the effect changes. Anything else is honoured
+    # at boot and then behaves like any other switch, but it is an explicit
+    # choice rather than something a default quietly does.
+    switch.switch_schema(WledFxSwitch, default_restore_mode="DISABLED")
     .extend(
         {
             cv.GenerateID(CONF_WLED_FX_ID): cv.use_id(WledFxController),

@@ -179,7 +179,12 @@ void Segment::set_pixel_color(int n, uint32_t c) const {
         } else {
           const float r = static_cast<float>(n);
           const float step = 1.5707963f / (2.8284f * r + 4);
-          for (float rad = 0.0f; rad <= (1.5707963f / 2) + step / 2; rad += step) {
+          /* WLED walks rad from 0 while rad <= pi/4 + step/2. Counting the steps
+           * reaches the same samples without accumulating the increment, so the
+           * last one is not a few ulps off where it should be. */
+          const int steps = static_cast<int>(((1.5707963f / 2) + step / 2) / step);
+          for (int s = 0; s <= steps; s++) {
+            const float rad = static_cast<float>(s) * step;
             const int x = static_cast<int>(std::lround(sin_approx(rad) * r));
             const int y = static_cast<int>(std::lround(cos_approx(rad) * r));
             this->set_pixel_color_xy(x, y, c);

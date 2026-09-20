@@ -512,7 +512,8 @@ class CRGBPalette16 {
   CRGBPalette16() { memset(entries, 0, sizeof(entries)); }
   CRGBPalette16(const CRGBPalette16 &rhs) { memmove(&entries[0], &rhs.entries[0], sizeof(entries)); }
   CRGBPalette16 &operator=(const CRGBPalette16 &rhs) {
-    memmove(&entries[0], &rhs.entries[0], sizeof(entries));
+    if (this != &rhs)
+      memmove(&entries[0], &rhs.entries[0], sizeof(entries));
     return *this;
   }
   CRGBPalette16(const CRGB rhs[16]) {  // NOLINT(google-explicit-constructor)

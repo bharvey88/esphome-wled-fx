@@ -67,7 +67,10 @@ CRGBPalette16 generate_random_palette() {
 
 CRGBPalette16 generate_harmonic_random_palette(const CRGBPalette16 &basepalette) {
   CHSV palettecolors[4];
-  uint8_t keepcolorposition = hw_random8(4);
+  // The mask is a no-op on hw_random8(4). It is there because hw_random8 is
+  // defined in another translation unit, so a static analyser cannot prove the
+  // bound and reports palettecolors as possibly unwritten.
+  uint8_t keepcolorposition = hw_random8(4) & 0x03;
   palettecolors[keepcolorposition] = rgb2hsv(basepalette.entries[keepcolorposition * 5]);
   palettecolors[keepcolorposition].hue += hw_random8(10) - 5;
 
@@ -84,7 +87,7 @@ CRGBPalette16 generate_harmonic_random_palette(const CRGBPalette16 &basepalette)
   }
 
   uint8_t basehue = palettecolors[keepcolorposition].hue;
-  uint8_t harmonics[3];
+  uint8_t harmonics[3]{};
   uint8_t type = hw_random8(5);
 
   switch (type) {
@@ -117,7 +120,7 @@ CRGBPalette16 generate_harmonic_random_palette(const CRGBPalette16 &basepalette)
 
   if (hw_random8() < 128) {
     for (int i = 2; i > 0; i--)
-      std::swap(harmonics[i], harmonics[hw_random8(i + 1)]);
+      std::swap(harmonics[i], harmonics[hw_random8(i + 1) % 3]);
   }
 
   int j = 0;

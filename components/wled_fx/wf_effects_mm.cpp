@@ -492,11 +492,10 @@ void mode_starburst_core(Segment &seg, bool useaudio) {
   if (seg_len == 1)
     FX_FALLBACK_STATIC;
   unsigned maxData = FAIR_DATA_PER_SEG;  // ESP8266: 256 ESP32: 640
-  // One canvas, one segment: getActiveSegmentsNum() and getMaxSegments() are both 1.
-  unsigned segs = 1;
-  if (segs <= (1 / 2))
+  unsigned segs = strip_active_segments_num();
+  if (segs <= (strip_max_segments() / 2))
     maxData *= 2;  // ESP8266: 512 if <= 8 segs ESP32: 1280 if <= 16 segs
-  if (segs <= (1 / 4))
+  if (segs <= (strip_max_segments() / 4))
     maxData *= 2;  // ESP8266: 1024 if <= 4 segs ESP32: 2560 if <= 8 segs
   unsigned maxStars = maxData / sizeof(star);  // ESP8266: max. 4/9/19 stars/seg, ESP32: max. 10/21/42 stars/seg
 

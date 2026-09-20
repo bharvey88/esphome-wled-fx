@@ -515,10 +515,10 @@ void mode_exploding_fireworks(Segment &seg) {
 
   // allocate segment data
   unsigned maxData = FAIR_DATA_PER_SEG;  // ESP8266: 256 ESP32: 640
-  unsigned segs = 1;                     // strip.getActiveSegmentsNum()
-  if (segs <= (1 / 2))
+  unsigned segs = strip_active_segments_num();
+  if (segs <= (strip_max_segments() / 2))
     maxData *= 2;  // ESP8266: 512 if <= 8 segs ESP32: 1280 if <= 16 segs
-  if (segs <= (1 / 4))
+  if (segs <= (strip_max_segments() / 4))
     maxData *= 2;  // ESP8266: 1024 if <= 4 segs ESP32: 2560 if <= 8 segs
   int maxSparks = maxData / sizeof(spark);  // ESP8266: max. 21/42/85 sparks/seg, ESP32: max. 53/106/213 sparks/seg
 

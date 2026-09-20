@@ -92,6 +92,17 @@ bool Segment::allocate_data(size_t len) {
     this->deallocate_data();
     return false;
   }
+  /* WLED FX_fcn.cpp:163-171 caps the total effect scratch at MAX_SEGMENT_DATA on
+   * builds without PSRAM, and lets it run on the builds that have some. Same rule
+   * here, with one segment so the total is this one block. It cannot fire on any
+   * effect shipped today, the largest of which is a 2D particle system at about
+   * 24 KB, but the budget an effect sizes itself from is a fair share of this
+   * number and a future effect could ask for all of it at once on a board that
+   * has nowhere to put it. Failing here rather than in the allocator leaves the
+   * previous block intact and the effect on its static fallback. */
+  if (SEGMENT_DATA_IS_CAPPED && len > MAX_SEGMENT_DATA)
+    return false;
+
   if (this->data != nullptr && this->data_len_ == len)
     return true;  // already the right size, matches WLED
 

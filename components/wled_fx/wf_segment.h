@@ -20,6 +20,7 @@
 #include "wf_font.h"
 #include "wf_math.h"
 #include "wf_palettes.h"
+#include "wf_platform.h"
 
 namespace esphome {
 namespace wled_fx {
@@ -45,18 +46,58 @@ inline constexpr uint32_t FRAMETIME_FIXED = 1000 / 42;
 // WLED const.h: the number of colour slots a segment carries.
 inline constexpr unsigned NUM_COLORS = 3;
 
-/* WLED FX.h:101, FAIR_DATA_PER_SEG = MAX_SEGMENT_DATA / MAX_NUM_SEGMENTS: the share
- * of the effect data budget one segment out of many may claim, which effects use as
- * an upper bound on how many particles, balls or sparks they allocate.
+/* WLED's effect data budget, FX.h:82-101, reproduced per platform rather than
+ * flattened to one number.
  *
- * Upstream on a plain ESP32 that is (64 * 1024) / 32 = 2048. A board with PSRAM
- * raises MAX_NUM_SEGMENTS to 64 and so *lowers* the figure to 1024, because the
- * budget is shared out more ways, and upstream then lifts the cap entirely when
- * PSRAM is present. There is one canvas and one segment here, so the plain ESP32
- * value is taken as the single fixed figure: it is the larger of the two upstream
- * numbers, it is what nearly every WLED user actually runs, and it keeps particle
- * counts matching upstream on a large matrix. */
-inline constexpr unsigned FAIR_DATA_PER_SEG = (64 * 1024) / 32;
+ * MAX_NUM_SEGMENTS is how many segments a WLED build *could* have, not how many
+ * are running. Effects ask both questions and they are different questions: an
+ * effect that wants a bigger scratch block asks "am I one of only a few segments
+ * out of the many this build allows?" and doubles its budget twice when it is.
+ * Collapsing MAX_NUM_SEGMENTS to 1 turns `segs <= (MAX_NUM_SEGMENTS / 2)` into
+ * `1 <= 0`, which is false, and the effect silently keeps the undoubled budget.
+ * Fireworks Starburst lost three quarters of its stars that way.
+ *
+ * So the two upstream constants are kept as constants, and
+ * strip_active_segments_num() is the one that is 1 here. With one segment both
+ * doublings always fire, giving FAIR_DATA_PER_SEG * 4:
+ *
+ *   ESP32-S3 or ESP32 with PSRAM   64 segments, 64k  -> FAIR 1024 -> 4096 bytes
+ *   ESP32 or ESP32-S3, no PSRAM    32 segments, 64k  -> FAIR 2048 -> 8192 bytes
+ *   ESP32-S2                       32 segments, 20k  -> FAIR  640 -> 2560 bytes
+ *
+ * The no-PSRAM board getting the larger budget looks backwards and is upstream's
+ * behaviour: the budget is a fair *share*, and a board that allows twice as many
+ * segments shares it twice as many ways. It is not a licence to use more heap
+ * than the board has, which is why allocate_data() enforces MAX_SEGMENT_DATA on
+ * exactly the builds upstream enforces it on, the ones without PSRAM.
+ *
+ * The host builds, the simulator and the ESPHome host platform take the PSRAM
+ * profile: both stand in for the reference hardware, an ESP32-S3 with PSRAM, and
+ * a comparison against it is only meaningful if both sides size their scratch
+ * the same way. */
+#if WLED_FX_PSRAM
+inline constexpr unsigned MAX_NUM_SEGMENTS = 64;
+inline constexpr unsigned MAX_SEGMENT_DATA = 64 * 1024;
+inline constexpr bool SEGMENT_DATA_IS_CAPPED = false;
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+inline constexpr unsigned MAX_NUM_SEGMENTS = 32;
+inline constexpr unsigned MAX_SEGMENT_DATA = 20 * 1024;
+inline constexpr bool SEGMENT_DATA_IS_CAPPED = true;
+#else
+inline constexpr unsigned MAX_NUM_SEGMENTS = 32;
+inline constexpr unsigned MAX_SEGMENT_DATA = 64 * 1024;
+inline constexpr bool SEGMENT_DATA_IS_CAPPED = true;
+#endif
+
+// WLED FX.h:101. The share of the budget one segment out of many may claim, which
+// effects use as an upper bound on how many particles, balls or sparks they size.
+inline constexpr unsigned FAIR_DATA_PER_SEG = MAX_SEGMENT_DATA / MAX_NUM_SEGMENTS;
+
+/* WLED FX.h:937 and FX_fcn.cpp:1846. `getMaxSegments()` is a build constant;
+ * `getActiveSegmentsNum()` counts what is running, and here that is always the one
+ * canvas. Effect bodies call these exactly as upstream does. */
+inline constexpr unsigned strip_max_segments() { return MAX_NUM_SEGMENTS; }
+inline constexpr unsigned strip_active_segments_num() { return 1; }
 
 class Segment {
  public:

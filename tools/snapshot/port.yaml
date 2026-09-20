@@ -72,6 +72,13 @@ wled_fx:
   # Nothing pins a control here. That is deliberate: selecting an effect then
   # refills every control from the effect's own metadata, which is what WLED's
   # `fxdef: true` does and is how the reference device was driven.
+  #
+  # Except the text, which is not a control the metadata carries a default for.
+  # With none, Scrolling Text has nothing to draw and renders black, which
+  # would be reported as a dead effect. What the device happens to be
+  # scrolling is its own business, so that one effect is never going to line
+  # up character for character; this at least makes it animate.
+  text: "WLED FX"
 
 script:
   - id: capture_all

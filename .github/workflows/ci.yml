@@ -120,6 +120,80 @@ jobs:
             tools/sim/build/wled_fx_sim --size "$size" --no-images --out /tmp/wled_fx_out
           done
 
+  # The one check that runs the real ESPHome display front end rather than the
+  # engine on its own: codegen, the frame gate, draw_pixels_at() and the
+  # display's own update(), into an in-memory display that writes the frames
+  # out. It is what caught the red and blue swap that hub75 was hiding.
+  #
+  # Eight effects at three seconds, not all 223: this is here to keep the
+  # harness working, and the full capture is a local job against a real device.
+  # It needs the `snapshot` component, which is on ESPHome's dev branch and is
+  # not in any release, so this is the one job that installs from dev.
+  snapshot-harness:
+    name: Snapshot harness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install ESPHome from dev, for the snapshot component
+        run: pip install "esphome @ git+https://github.com/esphome/esphome@dev" numpy pillow
+
+      - name: Capture eight effects through the display front end
+        run: |
+          python tools/snapshot/capture_port.py \
+            --outdir "$RUNNER_TEMP/portcap" \
+            --workdir "$RUNNER_TEMP/snapwork" \
+            --esphome "$(command -v esphome)" \
+            --effects "Fire 2012,Matrix,Firenoise,Blink,Rainbow,Scrolling Text,PS Fire,GEQ" \
+            --seconds 3
+
+      # An effect that renders nothing would still write files, so check the
+      # metrics rather than the directory listing.
+      - name: Every one of them rendered something that moves
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, sys
+          root = pathlib.Path(os.environ["RUNNER_TEMP"]) / "portcap"
+          entries = json.loads((root / "index.json").read_text())
+          if len(entries) != 8:
+              sys.exit(f"expected 8 captures, got {len(entries)}")
+          bad = []
+          for e in entries:
+              m = e.get("metrics", {})
+              if e.get("status") != "ok":
+                  bad.append(f"{e['name']}: {e.get('error')}")
+              elif m.get("all_black"):
+                  bad.append(f"{e['name']}: every frame was black")
+              elif e.get("frame_count", 0) < 20:
+                  bad.append(f"{e['name']}: only {e.get('frame_count')} frames")
+          # Scrolling Text is the one that legitimately holds still at its
+          # defaults for a while, so "frozen" is not failed on here.
+          if bad:
+              sys.exit("\n".join(bad))
+          print(f"{len(entries)} effects captured through the display front end")
+          PY
+
+      - name: The comparison tool loads its own output
+        run: |
+          python tools/compare/compare.py \
+            --reference "$RUNNER_TEMP/portcap" \
+            --port "$RUNNER_TEMP/portcap" \
+            --out "$RUNNER_TEMP/cmp"
+          test -f "$RUNNER_TEMP/cmp/REPORT.md"
+          test -f "$RUNNER_TEMP/cmp/index.html"
+
+      - name: Upload the captures
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: snapshot-harness
+          path: ${{ runner.temp }}/portcap
+          retention-days: 5
+
   compile:
     name: esphome compile ${{ matrix.config }}
     runs-on: ubuntu-latest

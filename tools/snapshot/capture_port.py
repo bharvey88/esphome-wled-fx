@@ -320,6 +320,12 @@ CAPTURE_NOTES = {
         "WLED's own simulateSound(). The reference device has a real "
         "microphone, so those effects are only loosely comparable."
     ),
+    "text": (
+        "Scrolling Text is given the string 'WLED FX', because with no text it "
+        "has nothing to draw and would look like a dead effect. Whatever the "
+        "device is scrolling is its own setting, so that one effect will never "
+        "line up character for character."
+    ),
 }
 
 

@@ -1,0 +1,258 @@
+# Apollo M-1 with a real microphone: the same tour harness plus the audio
+# analysis and enough instrumentation to judge gain and squelch against a real
+# room rather than against WLED's simulated sound.
+#
+# Flash this second, after m1-test.yaml has proved the panel and the engine.
+# Section 3 of HARDWARE-CHECKLIST.md is what this build exists to settle.
+
+substitutions:
+  # ---------------------------------------------------------------------------
+  # PLACEHOLDERS. Set all three to your own wiring before building. They are
+  # copied from examples/m1-hub75-audio.yaml and have never been on hardware:
+  # the M-1's HUB75 connector already takes most of the low numbered GPIOs, so
+  # check the three you pick against the board preset pins in
+  # esphome/components/hub75/boards/apollo.py before soldering anything.
+  #
+  # INMP441 breakout:
+  #   VDD -> 3V3               GND -> GND
+  #   SCK -> mic_bclk_pin      WS  -> mic_lrclk_pin
+  #   SD  -> mic_din_pin       L/R -> GND for the left channel
+  # ---------------------------------------------------------------------------
+  mic_lrclk_pin: GPIO10
+  mic_bclk_pin: GPIO11
+  mic_din_pin: GPIO12
+
+esphome:
+  name: wled-fx-m1-audio-test
+  friendly_name: WLED FX M-1 audio test
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+  # The analysis task reports its own cost once, a few seconds after the first
+  # real audio arrives, at DEBUG under the tag wled_fx.audio:
+  #   Analysis costs 1234 us per 512 sample block, 5.3% of one core
+  # It is logged once per boot, so to read it again, restart the device.
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+web_server:
+  port: 80
+  version: 3
+
+external_components:
+  - source:
+      type: local
+      path: ../../components
+
+packages:
+  tour: !include tour.yaml
+
+display:
+  - platform: hub75
+    id: matrix
+    # ONE LINE SWITCH FOR A REV4 PANEL: replace the line below with
+    #   board: apollo-automation-m1-rev4
+    board: apollo-automation-m1-rev6
+    panel_width: 64
+    panel_height: 64
+    update_interval: never
+    auto_clear_enabled: false
+    double_buffer: true
+
+i2s_audio:
+  - id: i2s_mic_bus
+    i2s_lrclk_pin: ${mic_lrclk_pin}
+    i2s_bclk_pin: ${mic_bclk_pin}
+
+microphone:
+  - platform: i2s_audio
+    id: board_mic
+    i2s_audio_id: i2s_mic_bus
+    i2s_din_pin: ${mic_din_pin}
+    adc_type: external
+    channel: left
+    bits_per_sample: 32bit
+    # 22050 Hz is what the WLED usermod assumes, so the GEQ bins land where
+    # upstream put them.
+    sample_rate: 22050
+
+wled_fx:
+  id: fx
+  display_id: matrix
+  update_interval: 23ms
+  effect: GEQ
+  text: "WLED FX"
+  audio:
+    microphone:
+      microphone: board_mic
+      bits_per_sample: 16
+      channels: [0]
+      # Leave this at 1 and tune with the AGC and the squelch instead. It is a
+      # plain multiplier applied before the analysis sees anything.
+      gain_factor: 1
+    # WLED's own defaults, which is exactly the thing this build is here to
+    # question. Change them here and reflash; they are compile time.
+    gain: 60
+    squelch: 10
+    input_level: 128
+    agc: normal # off, normal, vivid, lazy
+    scaling: sqrt # none, log, linear, sqrt
+    limiter: true
+    attack: 80ms
+    decay: 1400ms
+    mic_filter: false
+    bandpass: false
+    task_in_psram: false
+
+number:
+  - platform: template
+    id: panel_brightness
+    name: Panel brightness
+    min_value: 1
+    max_value: 255
+    step: 1
+    initial_value: 128
+    optimistic: true
+    restore_value: false
+    mode: slider
+    on_value:
+      - hub75.set_brightness:
+          id: matrix
+          brightness: !lambda "return (uint8_t) x;"
+
+# Everything below reads the attached microphone only, never the simulation, so
+# an empty reading means the analysis really has nothing. 5 s is deliberately
+# slow: this is for judging levels in a room, not for watching the beat.
+text_sensor:
+  - platform: template
+    name: GEQ bands
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq_row();"
+
+sensor:
+  - platform: template
+    name: Volume smoothed
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::volume_smth();"
+
+  - platform: template
+    name: Major peak
+    unit_of_measurement: Hz
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::major_peak();"
+
+  - platform: template
+    name: Sound pressure
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::sound_pressure();"
+
+  # What the AGC settled on. If this sits pinned at either end, the gain or the
+  # squelch is wrong for the room rather than the AGC being wrong.
+  - platform: template
+    name: AGC sensitivity
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::agc_sensitivity();"
+
+  - platform: template
+    name: GEQ 01
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(0);"
+  - platform: template
+    name: GEQ 02
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(1);"
+  - platform: template
+    name: GEQ 03
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(2);"
+  - platform: template
+    name: GEQ 04
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(3);"
+  - platform: template
+    name: GEQ 05
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(4);"
+  - platform: template
+    name: GEQ 06
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(5);"
+  - platform: template
+    name: GEQ 07
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(6);"
+  - platform: template
+    name: GEQ 08
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(7);"
+  - platform: template
+    name: GEQ 09
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(8);"
+  - platform: template
+    name: GEQ 10
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(9);"
+  - platform: template
+    name: GEQ 11
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(10);"
+  - platform: template
+    name: GEQ 12
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(11);"
+  - platform: template
+    name: GEQ 13
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(12);"
+  - platform: template
+    name: GEQ 14
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(13);"
+  - platform: template
+    name: GEQ 15
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(14);"
+  - platform: template
+    name: GEQ 16
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: "return wledfx_hwtest::geq(15);"

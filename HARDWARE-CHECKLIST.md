@@ -13,6 +13,8 @@ what to look for, so a session can be planned rather than improvised.
 Nothing here is a known bug. These are the places where the simulator's evidence
 runs out.
 
+[docs/HARDWARE-TESTING.md](docs/HARDWARE-TESTING.md) is the session guide for working through this page: four ready to flash firmwares in `examples/hardware-test`, a tour mode that walks every effect, and a pass or fail row for every entry below.
+
 ---
 
 ## 1. On any strip, no panel and no microphone

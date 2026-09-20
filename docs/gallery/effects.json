@@ -1,0 +1,10636 @@
+{
+ "generated_by": "tools/gallery/build_gallery.py",
+ "preview": {
+  "fps": 20,
+  "panel": [
+   64,
+   32
+  ],
+  "strip": [
+   64,
+   1
+  ]
+ },
+ "families": [
+  "1D",
+  "1D and 2D",
+  "2D",
+  "Audio reactive",
+  "Particle",
+  "WLED-MM"
+ ],
+ "effects": [
+  {
+   "name": "Fireworks",
+   "group": "1d2d",
+   "family": "1D and 2D",
+   "dims": [
+    "1D",
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 192,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "intensity",
+     "label": "Frequency",
+     "default": 192,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "fireworks",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Rain",
+   "group": "1d2d",
+   "family": "1D and 2D",
+   "dims": [
+    "1D",
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Spawning rate",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "rain",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Ripple",
+   "group": "1d2d",
+   "family": "1D and 2D",
+   "dims": [
+    "1D",
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Wave #",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ripple",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Ripple Rainbow",
+   "group": "1d2d",
+   "family": "1D and 2D",
+   "dims": [
+    "1D",
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Wave #",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "ripple_rainbow",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Palette",
+   "group": "1d2d",
+   "family": "1D and 2D",
+   "dims": [
+    "1D",
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 112,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Shift",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Size",
+     "default": 112,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Rotation",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Animate Shift",
+     "default": true
+    },
+    {
+     "key": "check2",
+     "label": "Animate Rotation",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Anamorphic",
+     "default": true
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "palette",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Halloween Eyes",
+   "group": "1d2d",
+   "family": "1D and 2D",
+   "dims": [
+    "1D",
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Eye off time",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Eye on time",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "halloween_eyes",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Fireworks 1D",
+   "group": "1d2d",
+   "family": "1D and 2D",
+   "dims": [
+    "1D",
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Gravity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Firing side",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "fireworks_1d",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Solid",
+   "group": "1d_a",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "solid",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Blink",
+   "group": "1d_a",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Duty cycle",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "blink",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Rainbow",
+   "group": "1d_a",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "rainbow",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Pride 2015",
+   "group": "1d_a",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "pride_2015",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Fire 2012",
+   "group": "1d_a",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 35,
+   "paletteName": "Fire",
+   "speed": 64,
+   "intensity": 160,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Cooling",
+     "default": 64,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Spark rate",
+     "default": 160,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "2D Blur",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Boost",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "fire_2012",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Noise 1",
+   "group": "1d_a",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 20,
+   "paletteName": "Pastel",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "noise_1",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Plasma",
+   "group": "1d_a",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Phase",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "plasma",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Wipe",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "wipe",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Wipe Random",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "wipe_random",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sweep",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "sweep",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sweep Random",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "sweep_random",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Strobe",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "strobe",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Strobe Rainbow",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "strobe_rainbow",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Blink Rainbow",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Frequency",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blink duration",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "blink_rainbow",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Twinkle",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "twinkle",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Twinkleup",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "twinkleup",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Fairytwinkle",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "fairytwinkle",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Colortwinkles",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Spawn speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "colortwinkles",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Twinklefox",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Twinkle rate",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Cool",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "twinklefox",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Twinklecat",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Twinkle rate",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Cool",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Reverse",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "twinklecat",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Gradient",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 16,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Spread",
+     "default": 16,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "gradient",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Loading",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 16,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Fade",
+     "default": 16,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "loading",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Glitter",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Glitter color"
+   ],
+   "preview": {
+    "stem": "glitter",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Solid Glitter",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Bg",
+    "Glitter color"
+   ],
+   "preview": {
+    "stem": "solid_glitter",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Dynamic",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smooth",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "dynamic",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Dynamic Smooth",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "dynamic_smooth",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Rolling Balls",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of balls",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Collide",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Trails",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "rolling_balls",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Tetrix",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 0,
+   "intensity": 0,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "One color",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "tetrix",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "ICU",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "icu",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Oscillate",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "oscillate",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sunrise",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 35,
+   "paletteName": "Fire",
+   "speed": 60,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Time [min]",
+     "default": 60,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "sunrise",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Stream",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Zone size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "stream",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Solid Pattern Tri",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "intensity",
+     "label": "Size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "1",
+    "2",
+    "3"
+   ],
+   "preview": {
+    "stem": "solid_pattern_tri",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Chunchun",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Gap size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "chunchun",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sine",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Scale",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "sine",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Perlin Move",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of pixels",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "perlin_move",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Wavesins",
+   "group": "1d_b",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Brightness variation",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Starting color",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Range of colors",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Color variation",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "wavesins",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Dissolve",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Repeat speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Dissolve speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Random",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Complete",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "dissolve",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Dissolve Rnd",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Repeat speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Dissolve speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "dissolve_rnd",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Scan",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of dots",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "scan",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Scan Dual",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of dots",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "scan_dual",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Scanner",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Trail",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Delay",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Dual",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Bi-delay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "scanner",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Scanner Dual",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Trail",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Delay",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Dual",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Bi-delay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "scanner_dual",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sinelon",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Trail",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "sinelon",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sinelon Dual",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Trail",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "sinelon_dual",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sinelon Rainbow",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Trail",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "sinelon_rainbow",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Spots",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Spread",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "spots",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Spots Fade",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Spread",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "spots_fade",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Washing Machine",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "washing_machine",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PacMan",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 192,
+   "intensity": 64,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 192,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of PowerDots",
+     "default": 64,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Blink distance",
+     "default": 64,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "# of Ghosts",
+     "default": 12,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Dots",
+     "default": true
+    },
+    {
+     "key": "check2",
+     "label": "Smear",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Compact",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "pacman",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "TV Simulator",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "tv_simulator",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Drip",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Gravity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of drips",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "drip",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Fairy",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of flashers",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "fairy",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Meteor",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Trail",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Gradient",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Smooth",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "meteor",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Tri Fade",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "1",
+    "2",
+    "3"
+   ],
+   "preview": {
+    "stem": "tri_fade",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Traffic Light",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "US style",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "traffic_light",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Fire Flicker",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "fire_flicker",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Two Dots",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Dot size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "1",
+    "2",
+    "Bg"
+   ],
+   "preview": {
+    "stem": "two_dots",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Juggle",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 64,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 64,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Trail",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "juggle",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Colorloop",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Saturation",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "colorloop",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Fade",
+   "group": "1d_c",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "fade",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Theater",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Gap size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "theater",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Theater Rainbow",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Gap size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "theater_rainbow",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Chase 2",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "chase_2",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Running",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Wave width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "running",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Saw",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "saw",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Running Dual",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Wave width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "L",
+    "Colour 2",
+    "R"
+   ],
+   "preview": {
+    "stem": "running_dual",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Chase Flash",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Bg",
+    "Fx"
+   ],
+   "preview": {
+    "stem": "chase_flash",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Chase Flash Rnd",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "chase_flash_rnd",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Random Colors",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Fade time",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "random_colors",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Pacifica",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 51,
+   "paletteName": "Atlantica",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Angle",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "pacifica",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Noise 2",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 43,
+   "paletteName": "Yelblu",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "noise_2",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Noise 3",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 35,
+   "paletteName": "Fire",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "noise_3",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Noise 4",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 26,
+   "paletteName": "Beech",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "noise_4",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Fill Noise",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "fill_noise",
+    "w": 64,
+    "h": 1,
+    "palette": 11,
+    "paletteName": "Rainbow"
+   }
+  },
+  {
+   "name": "Noise Pal",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Scale",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "noise_pal",
+    "w": 64,
+    "h": 1,
+    "palette": 11,
+    "paletteName": "Rainbow"
+   }
+  },
+  {
+   "name": "Sparkle",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "sparkle",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sparkle Dark",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Bg",
+    "Fx"
+   ],
+   "preview": {
+    "stem": "sparkle_dark",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sparkle+",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Bg",
+    "Fx"
+   ],
+   "preview": {
+    "stem": "sparkle_plus",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Dancing Shadows",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of shadows",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "dancing_shadows",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Shimmer",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 15,
+   "paletteName": "Breeze",
+   "speed": 220,
+   "intensity": 10,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 220,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Interval",
+     "default": 10,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Size",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Granular",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Flow",
+     "default": 0,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Zebra",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Reverse",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Sporadic",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Fx",
+    "Bg",
+    "Cx"
+   ],
+   "preview": {
+    "stem": "shimmer",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Popcorn",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "popcorn",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Colorful",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Saturation",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "1",
+    "2",
+    "3"
+   ],
+   "preview": {
+    "stem": "colorful",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Aurora",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 50,
+   "paletteName": "Aurora",
+   "speed": 24,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 24,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "1",
+    "2",
+    "3"
+   ],
+   "preview": {
+    "stem": "aurora",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Tri Wipe",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "1",
+    "2",
+    "3"
+   ],
+   "preview": {
+    "stem": "tri_wipe",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Flow",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Zones",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "flow",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Railway",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 3,
+   "paletteName": "* Colors 1&2",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Smoothness",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "1",
+    "2"
+   ],
+   "preview": {
+    "stem": "railway",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Strobe Mega",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "strobe_mega",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Blends",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Shift speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blend speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "blends",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Breathe",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "breathe",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Flow Stripe",
+   "group": "1d_d",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Hue speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Effect speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "flow_stripe",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Android",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "android",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Chase",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "chase",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Chase Random",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "chase_random",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Chase Rainbow",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "chase_rainbow",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Rainbow Runner",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Bg"
+   ],
+   "preview": {
+    "stem": "rainbow_runner",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Lighthouse",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "lighthouse",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Chase 3",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "1",
+    "2",
+    "3"
+   ],
+   "preview": {
+    "stem": "chase_3",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Multi Comet",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Fade",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "multi_comet",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Stream 2",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "stream_2",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Lightning",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "lightning",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Colorwaves",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 26,
+   "paletteName": "Beech",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Hue",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "colorwaves",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Bpm",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 64,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 64,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "bpm",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Lake",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Fx"
+   ],
+   "preview": {
+    "stem": "lake",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Solid Pattern",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fg size",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Bg size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Fg",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "solid_pattern",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Bouncing Balls",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Gravity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of balls",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "bouncing_balls",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Candle",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 96,
+   "intensity": 224,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 96,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 224,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "candle",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Candle Multi",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 96,
+   "intensity": 224,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 96,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 224,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "candle_multi",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Fireworks Starburst",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Chance",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Fragments",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "fireworks_starburst",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Percent",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "% of fill",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "One color",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "percent",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Heartbeat",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "heartbeat",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Phased",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "phased",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Phased Noise",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "phased_noise",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Color Clouds",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 24,
+   "intensity": 32,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 24,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 32,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Clouds",
+     "default": 48,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Colors",
+     "default": 64,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Distance",
+     "default": 12,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check3",
+     "label": "Cozy",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "color_clouds",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Slow Transition",
+   "group": "1d_e",
+   "family": "1D",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 2,
+   "paletteName": "* Color 1",
+   "speed": 0,
+   "intensity": 0,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Time (min)",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Sweep",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "slow_transition",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Matrix",
+   "group": "2d_a",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Spawning rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Trail",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Custom color",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Spawn",
+    "Trail"
+   ],
+   "preview": {
+    "stem": "matrix",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Metaballs",
+   "group": "2d_a",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "metaballs",
+    "w": 64,
+    "h": 32,
+    "palette": 46,
+    "paletteName": "April Night"
+   }
+  },
+  {
+   "name": "Scrolling Text",
+   "group": "2d_a",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Y Offset",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Trail",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Font size",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Rotate",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Gradient",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Reverse",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Gradient"
+   ],
+   "preview": {
+    "stem": "scrolling_text",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Black Hole",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Outer Y freq.",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Outer X freq.",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Inner X freq.",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Inner Y freq.",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Solid",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Blur",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "black_hole",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Colored Bursts",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of lines",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Blur",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Gradient",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Smear",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Dots",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "colored_bursts",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "DNA",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 0,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Scroll speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "dna",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "DNA Spiral",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Scroll speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Y frequency",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "dna_spiral",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Drift",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 0,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Rotation speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Twin",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Smear",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "drift",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Firenoise",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 66,
+   "paletteName": "Red Flash",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "X scale",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Y scale",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Palette",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "firenoise",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Frizzles",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "X frequency",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Y frequency",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "frizzles",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Game Of Life",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check3",
+     "label": "Mutation",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "game_of_life",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Hiphotic",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "X scale",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Y scale",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Speed",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "hiphotic",
+    "w": 64,
+    "h": 32,
+    "palette": 11,
+    "paletteName": "Rainbow"
+   }
+  },
+  {
+   "name": "Julia",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 24,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "intensity",
+     "label": "Max iterations per pixel",
+     "default": 24,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "X center",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Y center",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Area size",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Blur",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "julia",
+    "w": 64,
+    "h": 32,
+    "palette": 13,
+    "paletteName": "Sunset"
+   }
+  },
+  {
+   "name": "Lissajous",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "X frequency",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Speed",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "lissajous",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Noise2D",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Scale",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "noise2d",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Plasma Ball",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Fade",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "plasma_ball",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Polar Lights",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 71,
+   "paletteName": "Traffic Light",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Scale",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Flip Palette",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "polar_lights",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Pulser",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "pulser",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sindots",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Dot distance",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "sindots",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Squared Swirl",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "intensity",
+     "label": "Fade",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Blur",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "squared_swirl",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Sun Radiation",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Variance",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Brightness",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "sun_radiation",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Tartan",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "X scale",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Y scale",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Sharpness",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "tartan",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Spaceships",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "spaceships",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Crazy Bees",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 0,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "crazy_bees",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Ghost Rider",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "ghost_rider",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Blobs",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# blobs",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Blur",
+     "default": 8,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Trail",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1"
+   ],
+   "preview": {
+    "stem": "blobs",
+    "w": 64,
+    "h": 32,
+    "palette": 13,
+    "paletteName": "Sunset"
+   }
+  },
+  {
+   "name": "Drift Rose",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "drift_rose",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Rotozoomer",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 54,
+   "paletteName": "Temperature",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Scale",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Alt",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "rotozoomer",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Distortion Waves",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Scale",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Fill",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Zoom",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Alt",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "distortion_waves",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Soap",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Smoothness",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Density",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "soap",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Octopus",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Offset X",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Offset Y",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Legs",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "fasttan",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "octopus",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Waving Cell",
+   "group": "2d_b",
+   "family": "2D",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 0,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Amplitude 1",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Amplitude 2",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Amplitude 3",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Flow",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "waving_cell",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Gravfreq",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Rate of fall",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Sensitivity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "gravfreq",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Freqwave",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 2,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Sound effect",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Low bin",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "High bin",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Pre-amp",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "freqwave",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Freqmatrix",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 3,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Sound effect",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Low bin",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "High bin",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Sensitivity",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "freqmatrix",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "GEQ",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "2D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Ripple decay",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "# of bands",
+     "default": 255,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Bin",
+     "default": 0,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Color bars",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Peaks"
+   ],
+   "preview": {
+    "stem": "geq",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Waterfall",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 2,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Adjust color",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Select bin",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Volume (min)",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "waterfall",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Freqpixels",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Starting color and # of pixels",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "freqpixels",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Noisemove",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Move speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "noisemove",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Freqmap",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Starting color",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "freqmap",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "DJ Light",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 2,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "dj_light",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Funky Plank",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "2D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Scroll speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "# of bands",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "funky_plank",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Blurz",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Color mix"
+   ],
+   "preview": {
+    "stem": "blurz",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Rocktaves",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 1,
+   "sliders": [],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "rocktaves",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Akemi",
+   "group": "audio_fft",
+   "family": "Audio reactive",
+   "dims": [
+    "2D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Color speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Dance",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Head palette",
+    "Arms & Legs",
+    "Eyes & Mouth"
+   ],
+   "preview": {
+    "stem": "akemi",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Spray",
+   "group": "audio_particle",
+   "family": "Audio reactive",
+   "dims": [
+    "2D"
+   ],
+   "audio": "volume",
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 150,
+   "intensity": 150,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 150,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 150,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Left/Right",
+     "default": 220,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Up/Down",
+     "default": 30,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Angle",
+     "default": 21,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Gravity",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Cylinder/Square",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Collide",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_spray",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS GEQ 2D",
+   "group": "audio_particle",
+   "family": "Audio reactive",
+   "dims": [
+    "2D"
+   ],
+   "audio": "FFT",
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 155,
+   "intensity": 200,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 155,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 200,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Diverge",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Bounce",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Gravity",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Cylinder",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Walls",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Floor",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_geq_2d",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS GEQ Nova",
+   "group": "audio_particle",
+   "family": "Audio reactive",
+   "dims": [
+    "2D"
+   ],
+   "audio": "FFT",
+   "particle": true,
+   "palette": 13,
+   "paletteName": "Sunset",
+   "speed": 128,
+   "intensity": 180,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 180,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Rotation Speed",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Color Change",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Nozzle",
+     "default": 8,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Direction",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_geq_nova",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Blobs",
+   "group": "audio_particle",
+   "family": "Audio reactive",
+   "dims": [
+    "2D"
+   ],
+   "audio": "volume",
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 30,
+   "intensity": 64,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 30,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Blobs",
+     "default": 64,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Size",
+     "default": 200,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Life",
+     "default": 130,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Blur",
+     "default": 0,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Wobble",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Collide",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Pulsate",
+     "default": true
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_blobs",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS GEQ 1D",
+   "group": "audio_particle",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "FFT",
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 50,
+   "intensity": 200,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 50,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 200,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Size",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_geq_1d",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Sonic Stream",
+   "group": "audio_particle",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "FFT",
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Color",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Bin",
+     "default": 0,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Mod",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Filter",
+     "default": true
+    },
+    {
+     "key": "check3",
+     "label": "Push",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_sonic_stream",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Sonic Boom",
+   "group": "audio_particle",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "FFT",
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Color",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Position",
+     "default": 63,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Bin",
+     "default": 0,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Mod",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Filter",
+     "default": true
+    },
+    {
+     "key": "check3",
+     "label": "Blur",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_sonic_boom",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Springy",
+   "group": "audio_particle",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "FFT",
+   "particle": true,
+   "palette": 54,
+   "paletteName": "Temperature",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Stiffness",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Damping",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Density",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Hue",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Mode",
+     "default": 23,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "XL",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "AR",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_springy",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Ripple Peak",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Max # of ripples",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Select bin",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Volume (min)",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ripple_peak",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Swirl",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "2D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 64,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Sensitivity",
+     "default": 64,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Blur",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Bg Swirl"
+   ],
+   "preview": {
+    "stem": "swirl",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Waverly",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "2D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 64,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Amplification",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Sensitivity",
+     "default": 64,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Blur",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "waverly",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Gravcenter",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 2,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Rate of fall",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Sensitivity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "gravcenter",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Gravcentric",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 3,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Rate of fall",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Sensitivity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "gravcentric",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Gravimeter",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 2,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Rate of fall",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Sensitivity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "gravimeter",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Juggles",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of balls",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "juggles",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Matripix",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 64,
+   "m12": 2,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Brightness",
+     "default": 64,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "matripix",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Midnoise",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Max. length",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "midnoise",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Noisefire",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 2,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [],
+   "preview": {
+    "stem": "noisefire",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Noisemeter",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 2,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Width",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "noisemeter",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Pixelwave",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 64,
+   "m12": 2,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Sensitivity",
+     "default": 64,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "pixelwave",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Plasmoid",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D",
+    "0D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Phase",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of pixels",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "plasmoid",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Puddlepeak",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Puddle size",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Select bin",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Volume (min)",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "puddlepeak",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Puddles",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Puddle size",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "puddles",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Pixels",
+   "group": "audio_vol",
+   "family": "Audio reactive",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Fade rate",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of pixels",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "pixels",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Meteor Smooth",
+   "group": "mm",
+   "family": "WLED-MM",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Trail",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Gradient",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "meteor_smooth",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Party jerk",
+   "group": "mm",
+   "family": "WLED-MM",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Effect speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Sensitivity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Color change speed",
+     "default": 8,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Effect speed active multiplier",
+     "default": 48,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "party_jerk",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Popcorn audio",
+   "group": "mm",
+   "family": "WLED-MM",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 1,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2",
+    "Colour 3"
+   ],
+   "preview": {
+    "stem": "popcorn_audio",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Multi Comet audio",
+   "group": "mm",
+   "family": "WLED-MM",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 160,
+   "intensity": 32,
+   "m12": 4,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 160,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Tail Length",
+     "default": 32,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "multi_comet_audio",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Fw Starburst audio",
+   "group": "mm",
+   "family": "WLED-MM",
+   "dims": [
+    "1D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Chance",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Fragments",
+     "default": 128,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Overlay",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "fw_starburst_audio",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Fireworks audio",
+   "group": "mm",
+   "family": "WLED-MM",
+   "dims": [
+    "1D",
+    "2D"
+   ],
+   "audio": "volume",
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 192,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "intensity",
+     "label": "Frequency",
+     "default": 192,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "fireworks_audio",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "GEQ 3D",
+   "group": "mm",
+   "family": "WLED-MM",
+   "dims": [
+    "2D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 255,
+   "intensity": 228,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 255,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Front Fill",
+     "default": 228,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Horizon",
+     "default": 255,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Depth",
+     "default": 255,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Num Bands",
+     "default": 15,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Borders",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Soft",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Peaks"
+   ],
+   "preview": {
+    "stem": "geq_3d",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Paintbrush",
+   "group": "mm",
+   "family": "WLED-MM",
+   "dims": [
+    "2D"
+   ],
+   "audio": "FFT",
+   "particle": false,
+   "palette": 72,
+   "paletteName": "72",
+   "speed": 160,
+   "intensity": 255,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Oscillator Offset",
+     "default": 160,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "# of lines",
+     "default": 255,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Fade Rate",
+     "default": 80,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Min Length",
+     "default": 0,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Color Chaos",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Anti-aliasing",
+     "default": true
+    },
+    {
+     "key": "check3",
+     "label": "Phase Chaos",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Peaks"
+   ],
+   "preview": {
+    "stem": "paintbrush",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "Snow Fall",
+   "group": "mm",
+   "family": "WLED-MM",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": false,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 16,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Spawn Rate",
+     "default": 16,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Despawn Rate",
+     "default": 17,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Sway Chance",
+     "default": 0,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Use Palette",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Inverted Overlay",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Prevent Overflow",
+     "default": true
+    }
+   ],
+   "colors": [
+    "Colour 1",
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "snow_fall",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS DripDrop",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 150,
+   "intensity": 25,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 150,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 25,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Splash",
+     "default": 220,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 30,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Gravity",
+     "default": 21,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Rain",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "PushSplash",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Smooth",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_dripdrop",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Pinball",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 220,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 220,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Size",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Gravity",
+     "default": 8,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Collide",
+     "default": true
+    },
+    {
+     "key": "check2",
+     "label": "Rolling",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Position Color",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_pinball",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Dancing Shadows",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 100,
+   "intensity": 180,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 100,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 180,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Color Cycle",
+     "default": 0,
+     "max": 255
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Position Color",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Smooth",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_dancing_shadows",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Fireworks 1D",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Gravity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Explosion",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Firing side",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 30,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Color",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Colorful",
+     "default": true
+    },
+    {
+     "key": "check2",
+     "label": "Trail",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Smooth",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_fireworks_1d",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Sparkler",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 255,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Move",
+     "default": 255,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Saturation",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Sparklers",
+     "default": 6,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Slide",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Bounce",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Large",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_sparkler",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Hourglass",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 34,
+   "paletteName": "Tertiary",
+   "speed": 5,
+   "intensity": 200,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Interval",
+     "default": 5,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 200,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Color",
+     "default": 140,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 80,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Gravity",
+     "default": 4,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Colorflip",
+     "default": true
+    },
+    {
+     "key": "check2",
+     "label": "Start",
+     "default": true
+    },
+    {
+     "key": "check3",
+     "label": "Fast Reset",
+     "default": true
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_hourglass",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Spray 1D",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 200,
+   "intensity": 220,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed(+/-)",
+     "default": 200,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 220,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Position",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Gravity(+/-)",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "AgeColor",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Bounce",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Position Color",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_spray_1d",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS 1D Balance",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 18,
+   "paletteName": "Analogous",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Hardness",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Tilt",
+     "default": 4,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Position Color",
+     "default": true
+    },
+    {
+     "key": "check2",
+     "label": "Wrap",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Random",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_1d_balance",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Chase",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 50,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 50,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Density",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Size",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Hue",
+     "default": 5,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Blur",
+     "default": 0,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Playful",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Position Color",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_chase",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Starburst",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 52,
+   "paletteName": "C9 2",
+   "speed": 150,
+   "intensity": 150,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Chance",
+     "default": 150,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Fragments",
+     "default": 150,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Size",
+     "default": 120,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Cooling",
+     "default": 21,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Gravity",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Colorful",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Push",
+     "default": false
+    }
+   ],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_starburst",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Fire 1D",
+   "group": "particle_1d",
+   "family": "Particle",
+   "dims": [
+    "1D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 35,
+   "paletteName": "Fire",
+   "speed": 100,
+   "intensity": 50,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 100,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 50,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Cooling",
+     "default": 80,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 100,
+     "max": 255
+    }
+   ],
+   "checks": [],
+   "colors": [
+    "Colour 2"
+   ],
+   "preview": {
+    "stem": "ps_fire_1d",
+    "w": 64,
+    "h": 1,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Fire",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 35,
+   "paletteName": "Fire",
+   "speed": 110,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 110,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Flame Height",
+     "default": 110,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Wind",
+     "default": 50,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Spread",
+     "default": 31,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smooth",
+     "default": true
+    },
+    {
+     "key": "check2",
+     "label": "Cylinder",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Turbulence",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_fire",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Fireworks",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 128,
+   "intensity": 50,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Launches",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Explosion Size",
+     "default": 50,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Fuse",
+     "default": 40,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Blur",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Gravity",
+     "default": 12,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Cylinder",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Ground",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Fast",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_fireworks",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Vortex",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 27,
+   "paletteName": "Sherbet",
+   "speed": 128,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Rotation Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Particle Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Arms",
+     "default": 200,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Flip",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Nozzle",
+     "default": 0,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Smear",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Direction",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Random Flip",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_vortex",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Volcano",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 35,
+   "paletteName": "Fire",
+   "speed": 100,
+   "intensity": 190,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 100,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 190,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Move",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Bounce",
+     "default": 160,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Spread",
+     "default": 6,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "AgeColor",
+     "default": true
+    },
+    {
+     "key": "check2",
+     "label": "Walls",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Collide",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_volcano",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Ballpit",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 11,
+   "paletteName": "Rainbow",
+   "speed": 100,
+   "intensity": 220,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 100,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 220,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Size",
+     "default": 70,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Hardness",
+     "default": 180,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Saturation",
+     "default": 31,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Cylinder",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Walls",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Ground",
+     "default": true
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_ballpit",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Waterfall",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 9,
+   "paletteName": "Ocean",
+   "speed": 15,
+   "intensity": 200,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 15,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 200,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Variation",
+     "default": 32,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Collide",
+     "default": 160,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Position",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Cylinder",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Walls",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Ground",
+     "default": true
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_waterfall",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Box",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 53,
+   "paletteName": "C9 New",
+   "speed": 128,
+   "intensity": 50,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Particles",
+     "default": 50,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Tilt",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Hardness",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Size",
+     "default": 1,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Random",
+     "default": true
+    },
+    {
+     "key": "check2",
+     "label": "Washing Machine",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Sloshing",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_box",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Fuzzy Noise",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 64,
+   "paletteName": "Yelblu Hot",
+   "speed": 50,
+   "intensity": 200,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 50,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Particles",
+     "default": 200,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Bounce",
+     "default": 130,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Friction",
+     "default": 30,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Scale",
+     "default": 5,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Cylinder",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Smear",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Collide",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_fuzzy_noise",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Impact",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 0,
+   "paletteName": "Default",
+   "speed": 32,
+   "intensity": 85,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Launches",
+     "default": 32,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 85,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Force",
+     "default": 70,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Hardness",
+     "default": 130,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Blur",
+     "default": 0,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "Cylinder",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Walls",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Collide",
+     "default": true
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_impact",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Attractor",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 9,
+   "paletteName": "Ocean",
+   "speed": 100,
+   "intensity": 82,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Mass",
+     "default": 100,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Particles",
+     "default": 82,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Size",
+     "default": 2,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Collide",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Friction",
+     "default": 16,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "AgeColor",
+     "default": false
+    },
+    {
+     "key": "check2",
+     "label": "Move",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Swallow",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_attractor",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Ghost Rider",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 1,
+   "paletteName": "* Random Cycle",
+   "speed": 70,
+   "intensity": 0,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 70,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Spiral",
+     "default": 0,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Blur",
+     "default": 220,
+     "max": 255
+    },
+    {
+     "key": "custom2",
+     "label": "Color Cycle",
+     "default": 30,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Spread",
+     "default": 21,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check1",
+     "label": "AgeColor",
+     "default": true
+    },
+    {
+     "key": "check2",
+     "label": "Walls",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_ghost_rider",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  },
+  {
+   "name": "PS Galaxy",
+   "group": "particle_2d",
+   "family": "Particle",
+   "dims": [
+    "2D"
+   ],
+   "audio": null,
+   "particle": true,
+   "palette": 59,
+   "paletteName": "Fairy Reaf",
+   "speed": 80,
+   "intensity": 128,
+   "m12": 0,
+   "sliders": [
+    {
+     "key": "speed",
+     "label": "Speed",
+     "default": 80,
+     "max": 255
+    },
+    {
+     "key": "intensity",
+     "label": "Intensity",
+     "default": 128,
+     "max": 255
+    },
+    {
+     "key": "custom1",
+     "label": "Size",
+     "default": 1,
+     "max": 255
+    },
+    {
+     "key": "custom3",
+     "label": "Color",
+     "default": 4,
+     "max": 31
+    }
+   ],
+   "checks": [
+    {
+     "key": "check2",
+     "label": "Starfield",
+     "default": false
+    },
+    {
+     "key": "check3",
+     "label": "Trace",
+     "default": false
+    }
+   ],
+   "colors": [],
+   "preview": {
+    "stem": "ps_galaxy",
+    "w": 64,
+    "h": 32,
+    "palette": null,
+    "paletteName": null
+   }
+  }
+ ]
+}

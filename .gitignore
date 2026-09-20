@@ -1,8 +1,11 @@
 # Read-only upstream reference checkouts, never committed
 refs/
 
-# Secrets used by the example configurations
-examples/secrets.yaml
+# Secrets used by the example configurations. ESPHome resolves !secret against
+# the directory of the config being built, so every folder under examples/ ends
+# up with its own secrets.yaml. The ** form covers examples/secrets.yaml too.
+examples/**/secrets.yaml
+secrets.yaml
 
 # ESPHome build output
 .esphome/

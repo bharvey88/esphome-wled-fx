@@ -10,6 +10,7 @@
 //               [--out DIR] [--list] [--list-meta] [--palette N] [--map N]
 //               [--size WxH] [--check1 0|1] [--check2 0|1] [--check3 0|1]
 //               [--checks-on] [--custom1 N] [--custom2 N] [--custom3 N]
+//               [--speed N] [--intensity N] [--text STRING]
 //               [--single-pass] [--anim DIR]
 //
 // With none of the control options, every effect is run twice per geometry: once
@@ -339,6 +340,11 @@ int main(int argc, char **argv) {
   std::vector<Geometry> geometries(GEOMETRIES, GEOMETRIES + sizeof(GEOMETRIES) / sizeof(GEOMETRIES[0]));
   Controls cli;
   bool single_pass = false;
+  // -1 keeps the effect's own metadata default, as the other controls do.
+  int speed = -1;
+  int intensity = -1;
+  // What the text effects render. The hardware test firmwares use this string.
+  std::string text = "WLED FX";
 
   // --check<n> / --custom<n>, handled together because they differ only in range.
   const auto control_arg = [&](const std::string &arg, const char *prefix, int *slots, int hi, int *next) -> int {
@@ -398,6 +404,12 @@ int main(int argc, char **argv) {
       palette = atoi(argv[++i]);
     else if (arg == "--map" && i + 1 < argc)
       map1d2d = atoi(argv[++i]);
+    else if (arg == "--speed" && i + 1 < argc)
+      speed = atoi(argv[++i]);
+    else if (arg == "--intensity" && i + 1 < argc)
+      intensity = atoi(argv[++i]);
+    else if (arg == "--text" && i + 1 < argc)
+      text = argv[++i];
     else if (arg == "--size" && i + 1 < argc) {
       size_label = argv[++i];
       int w = 0, h = 0;
@@ -534,9 +546,13 @@ int main(int argc, char **argv) {
           failures++;
           continue;
         }
-        engine.set_text("WLED FX");
+        engine.set_text(text.c_str());
         if (palette >= 0)
           engine.set_palette(static_cast<uint8_t>(palette));
+        if (speed >= 0)
+          engine.set_speed(static_cast<uint8_t>(speed));
+        if (intensity >= 0)
+          engine.set_intensity(static_cast<uint8_t>(intensity));
         /* m12 is the *1D to 2D* mapping, so it only means anything for an effect
          * that can run in 1D. WLED only offers the "Expand 1D FX" selector on those
          * effects, and forcing a mapping onto a 2D-native effect breaks the same

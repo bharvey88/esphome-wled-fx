@@ -1,3 +1,5 @@
+/* See wf_font.cpp for the WLED attribution and licence notice. */
+
 #include "wf_font.h"
 
 namespace esphome {

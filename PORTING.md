@@ -426,7 +426,7 @@ them, so whatever an effect wrote reaches the next analysis block.
 
 ## 8. Parallel batch workflow
 
-Twelve batches are being ported at the same time, one agent each. `BATCHES.md` is
+Twelve batches are being ported at the same time, one porter each. `BATCHES.md` is
 the assignment; this is the mechanic.
 
 **Set up your worktree.** From the repository, with `<batch>` being your batch name
@@ -444,7 +444,7 @@ A private `wf_effects_<group>.h` beside it is allowed if your file genuinely nee
 one, and nothing else is. Nothing outside your file names your group: both the
 ESPHome codegen and the simulator's CMake discover groups by scanning the effect
 sources for the two lines in section 2, so there is no shared list to update and
-therefore nothing for two agents to collide on.
+therefore nothing for two porters to collide on.
 
 **Check `wf_fx_shared.h` before you write a helper.** The helpers the first wave
 of batches turned out to share were absorbed into the engine after that wave
@@ -492,7 +492,7 @@ Grep for the display name of every effect you added. A missing one means the gro
 object or the guard is spelled wrong, not that the effect is broken.
 
 **Commit on your branch. Do not push, do not merge, do not rebase onto another
-batch.** The orchestrator merges the branches, and because every batch is one new
+batch.** The branches are merged centrally, and because every batch is one new
 file plus nothing else, those merges cannot conflict. Leave the worktree in place
 when you are done.
 
@@ -761,7 +761,7 @@ specified.
 
 18. **`autoResetPeak()` uses a fixed 50 ms.** Upstream takes
     `max(50, strip.getFrameTime())`. There is no strip here, and both front ends
-    default to 33 ms, so the lower bound is always the one that applies.
+    default to 23 ms, so the lower bound is always the one that applies.
 
 19. **`FFT_PREFER_EXACT_PEAKS` is not optional.** Upstream can be built with a
     flat top window instead of Blackman-Harris. This port always uses
@@ -777,6 +777,14 @@ specified.
     unreachable: `seg.audio()` never fails, it falls back to `simulateSound()`.
     PS Attractor, PS Spray and PS Blobs use it and keep both upstream branches.
     See section 7.
+
+    One difference from upstream is worth knowing. Upstream's question is answered
+    at the moment the usermod is registered, so it is effectively a build-time
+    constant. This one is answered by the source, which reports no data until it
+    has analysed its first block, roughly a tenth of a second after boot. So with
+    a microphone wired up, those three effects run their non-audio branch for the
+    first few frames and then switch. The flag only ever goes from false to true,
+    so it cannot oscillate; it is a cosmetic transient at start-up.
 
 21. **PS Sonic Stream clamps a particle index upstream never clamps.**
     `seg.aux1` tracks the last emitted particle across frames and is used to
@@ -799,4 +807,60 @@ specified.
     `updateSystem()` recomputes `PSdataEnd` from the live canvas size on every
     frame while the allocation does not move, so the effect bounds-checks the
     region against `seg.data_size()` and falls back to static rather than writing
-    past it.
+    past it. The check cannot fire today and there is no slack at all in the
+    region, so the comparison is `>` and not `>=`.
+
+    The cost, which upstream does not pay, is about four bytes of particle system
+    memory per particle. On a board short of heap that can push
+    `initParticleSystem1D()`'s retry loop one halving further than upstream would
+    go, and the strip then shows fewer, more widely spaced particles at the same
+    Density setting.
+
+23. **DNA Spiral's step count is `abs()`, not upstream's `abs8()`.** The effect
+    draws a gradient line between two points and sizes the loop with
+    `abs8(x - x1) + 1`, which narrows to `int8_t`. `x` and `x1` each run to
+    `cols - 1`, so on a panel 129 or more pixels wide their difference can be
+    exactly -128; `abs8(-128)` is -128 again, `unsigned steps` becomes
+    4294967169 and the loop runs for four billion iterations. On a device the
+    watchdog fires. WLED never sees it because its matrices are narrower than
+    that, and below 129 columns `abs()` and `abs8()` agree on every input the
+    effect can produce, so this is the same effect everywhere upstream runs and
+    a working one everywhere else.
+
+    The other six `abs8()` call sites in `wf_effects_2d_b.cpp` are left alone:
+    each one stores its result in a `uint8_t` or feeds it into arithmetic, so
+    the same narrowing costs a wrong pixel rather than a hang.
+
+24. **The frame gate accumulates its deadline; upstream's frame clock is the
+    strip's.** ESPHome's main loop ticks about every 16 ms and its scheduler
+    re-arms an interval from the moment the callback ran, so asking for WLED's
+    23 ms FRAMETIME gets 32 ms and every effect runs at 31 fps. The gate in
+    `WledFxController` advances the deadline by one period per frame instead, so
+    the period alternates between one tick and two and the average is the one
+    configured; it resynchronises rather than bursting if the loop stalls. That
+    is also why the display front end is a plain `Component` with a `loop()` and
+    not a `PollingComponent` any more, which supersedes deviation 8.
+
+25. **The effect scratch block grows and is reused; WLED frees it.** WLED's
+    `allocateData()` frees and reallocates on every effect change. On an ESP32
+    with no PSRAM and a long uptime that is a fragmentation source, because the
+    blocks are tens of kilobytes and every effect wants a different size, and
+    ESPHome's own contributor guidance treats allocate and free cycling after
+    setup as a reliability risk. Here `Segment::reset()` marks the block stale
+    rather than freeing it, and `allocate_data()` zeroes and reuses anything
+    already large enough, reallocating only to grow. The trade is idle RAM,
+    bounded by the largest effect the device can run at all, against never
+    fragmenting the heap after setup. `data_size()` still reports what the
+    running effect asked for, not the capacity, so PS Springy's bound check is
+    unchanged. `deallocate_data()` is still a real free, because the particle
+    system uses it to make `data` null when there is no valid system in it.
+
+26. **A 2D-only effect on a 1D strip renders a solid colour, and the config
+    validation says so.** 56 of the 223 effects are 2D only. Every one of them
+    falls back to `FX_FALLBACK_STATIC` on a canvas one pixel high, either from
+    its own `is_2d()` guard or because `initParticleSystem2D()` refuses, which
+    is what upstream does. That is deterministic but never what anyone meant, so
+    naming one of them as the light effect's `effect:` on a geometry the
+    validation can see is one dimensional is a config error instead. The display
+    front end takes its size from the display, which is not knowable at config
+    time, so the check does not apply there.

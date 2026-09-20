@@ -5,7 +5,7 @@ exclusives, is accounted for below: already ported, assigned to exactly one batc
 or excluded with a reason. The count check is at the bottom.
 
 Read `PORTING.md` first, in particular section 2 (the registration convention) and
-section 8 (the parallel batch workflow). One agent owns one batch, which is one
+section 8 (the parallel batch workflow). One porter owns one batch, which is one
 translation unit, and edits nothing else.
 
 ## Batches at a glance

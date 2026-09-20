@@ -9,12 +9,12 @@
  * Adapted from code originally licensed under the MIT license.
  *
  * Per-effect credits are kept on the effect they belong to. GEQ 3D and Paintbrush
- * carry a separate GPLv3 notice upstream; copy it onto those two effects.
+ * carry a separate GPLv3 notice upstream, reproduced above each of them below.
  */
 
 /* MoonModules WLED-MM exclusives. Bodies come from refs/WLED-MM,
- * not refs/WLED, and GEQ 3D and Paintbrush carry their own licence notice which
- * must be copied onto those two effects. See BATCHES.md.
+ * not refs/WLED, and GEQ 3D and Paintbrush carry their own licence notice, which
+ * is reproduced above each of those two effects. See BATCHES.md.
  *
  * Source: WLED-MM branch mdev, commit 272dab5939d6d83a7c9a6e31d0a2a628c2d284e0.
  *

@@ -318,7 +318,8 @@ void mode_particleblobs(Segment &seg) {
 
   /* See the note on mode_particlespray. Upstream has no else branch here: with no
    * microphone the sizes are left to the advanced size control set in the loop
-   * above, so Pulsate becomes a no-op rather than tracking simulated volume. */
+   * above, so Pulsate still pulses the particles on the size controller's own
+   * grow and shrink cycle, it just stops tracking the volume. */
   if (seg.has_real_audio()) {  // get AR data if available, do not use simulated data
     AudioData &audio = seg.audio();
     uint8_t volumeSmth = (uint8_t)audio.volume_smth;
@@ -622,7 +623,12 @@ void mode_particleSpringy(Segment &seg) {
      * for as additional particle system bytes instead and read back from
      * PSdataEnd, which stays 4 byte aligned because numParticles is a multiple of
      * 4. The request uses the pre-retry particle count, an upper bound on what the
-     * system ends up allocating, so the region is always large enough. */
+     * system ends up allocating, so the region is always large enough.
+     *
+     * It costs about 4 bytes per particle that upstream does not spend, so on a
+     * board short of heap the retry loop can halve the particle count one step
+     * further than upstream would, and the strip then shows fewer, more widely
+     * spaced particles at the same Density setting. */
     if (!initParticleSystem1D(seg, PartSys, 1, 128, calculateNumberOfParticles1D(seg, 128, true) * sizeof(int), true)) // init with advanced properties (used for spring forces)
       FX_FALLBACK_STATIC; // allocation failed or is single pixel
     seg.aux0 = seg.aux1 = 0xFFFF; // invalidate settings
@@ -667,6 +673,10 @@ void mode_particleSpringy(Segment &seg) {
    * live canvas size on every frame while the allocation does not move. */
   static_assert(alignof(int) <= 4, "spring forces are carved from a 4 byte aligned region");
   int *springforce = reinterpret_cast<int *>(PartSys->PSdataEnd);
+  /* The region fits exactly, with no slack, so the comparison has to be > and not
+   * >=: one past the end is the correct end of the allocation. Nothing reaches
+   * this today, and an effect cannot log once per frame, so it falls back to a
+   * solid colour rather than say anything. */
   if (reinterpret_cast<uint8_t *>(springforce + PartSys->usedParticles) > seg.data + seg.data_size())
     FX_FALLBACK_STATIC; // spring force region does not fit, do not write past the allocation
   memset(springforce, 0, PartSys->usedParticles * sizeof(int)); // reset spring forces

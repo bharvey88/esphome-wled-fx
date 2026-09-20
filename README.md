@@ -28,8 +28,28 @@ records why.
   ported from WLED's `audioreactive` usermod, with simulated sound as the
   fallback when no microphone is configured
 
-Not here yet: 28 of the particle effects, the 8 audio-reactive particle effects
-and the 9 WLED-MM exclusives. See `BATCHES.md` and `PLAN.md`.
+## Known limitations
+
+* **Nothing here has run on real hardware.** Every effect is verified in a host
+  simulator and every example config is verified by compilation.
+  `HARDWARE-CHECKLIST.md` lists what a real panel or a real microphone would
+  settle, grouped by what you have to flash to check it.
+* **One segment.** WLED's multi-segment model is not ported, so there is one
+  canvas, one effect and one set of controls per front end. Image and Copy
+  Segment are the two upstream effects that need what is missing.
+* **The control entities do not restore across a reboot.** A `select`, `number`
+  or `switch` publishes what the YAML and the effect metadata say, so a change
+  made from Home Assistant is lost on restart. Pin the value in YAML, or set it
+  from an `on_boot` automation.
+* **Panels wider than 180 pixels hit upstream's own arithmetic.** A handful of
+  2D effects hold a coordinate or a scale factor in 8 or 16 bits, which is
+  upstream's code unchanged and is fine to the 256x64 this has been tested at,
+  but 2D Octopus loses its radius scale above 180 and Game Of Life loses
+  spaceship detection above about 16384 pixels with coprime dimensions. Both
+  degrade to a duller animation rather than misbehaving.
+* **No brightness, transition or preset model.** ESPHome owns all three: the
+  light's own brightness and transitions apply on top, and the display front end
+  takes `gamma_correct`.
 
 ## Effects
 
@@ -374,7 +394,7 @@ display:
 wled_fx:
   id: fx
   display_id: matrix
-  update_interval: 33ms
+  update_interval: 23ms
   effect: Fire 2012
 
 select:
@@ -391,7 +411,9 @@ Full configurations are in `examples/`.
 ### `wled_fx:`
 
 Accepts one entry or a list of them. An entry with no `display_id` is just the
-registration stub that makes the light effect available.
+registration stub that makes the light effect available, or the place an `audio:`
+block lives; it never becomes a component, so it takes no control keys. Put those
+on the light effect instead.
 
 | Option | Type | Default | Notes |
 |---|---|---|---|
@@ -399,7 +421,7 @@ registration stub that makes the light effect available.
 | `display_id` | id | none | the display to drive; makes this a display front end |
 | `effects` | list of names | all | compile-time allow-list, see below |
 | `width` / `height` | int | from the display | canvas size override |
-| `update_interval` | time | `33ms` | one rendered frame per interval |
+| `update_interval` | time | `23ms` | one rendered frame per interval, WLED's own 42 fps |
 | `gamma_correct` | float | `1.0` | applied on the way to the display only |
 | `effect` | name | first registered | |
 | `palette` | name | effect default | |
@@ -420,7 +442,7 @@ effects:
       height: 16
       serpentine: true
       use_light_color: true # the light's own colour becomes segment colour 1
-      update_interval: 33ms
+      update_interval: 23ms
       # plus every control key from the table above
 ```
 
@@ -516,8 +538,11 @@ wled_fx:
     - Rainbow
 ```
 
-Names are the WLED display names, case insensitive. A name that matches nothing is
-a configuration error.
+Names are the WLED display names, case insensitive. A name that matches nothing
+is a configuration error, with the nearest registered name suggested. The same
+check applies to `effect:` and `palette:` anywhere they appear, so a typo is
+caught at `esphome config` time rather than silently leaving the device on
+whatever it booted with.
 
 ### Platforms and actions
 
@@ -564,6 +589,17 @@ effects that can run in 1D, because that is the only place the 1D to 2D mapping
 means anything. `-DWLED_FX_SANITIZE=ON` adds ASan and UBSan on toolchains
 that have them.
 
+`--size` is how the geometries the defaults do not cover get run: `1x1`, `1x2`,
+`2x1` and `3x1` for the division-by-a-tiny-length class of bug, and `128x64`,
+`256x64` and `1000x1` for the does-this-index-still-fit class. CI runs the small
+ones next to the sanitizers and the large ones in a second job without them,
+because a 256x64 frame is sixteen times a 64x64 one and the sanitizers cannot
+afford it.
+
+Contact sheets are large, about 726 MB for a full run, so CI only renders and
+uploads them on a manual run or a tag, and keeps them for five days. Every push
+still runs every effect; it just does not draw the pictures.
+
 The same build produces `wled_fx_audio_test`, which feeds synthetic PCM through
 the audio processing core, the same code the firmware runs, and checks the
 answers: a 1 kHz sine lights the right GEQ channel and reports the right
@@ -590,19 +626,24 @@ The effect engine, palettes, colour maths and effect bodies are derived from
 [WLED](https://github.com/wled/WLED) at v16.0.1, which is licensed under the
 EUPL v1.2 or later. EUPL-1.2 Article 5 allows a derivative that is combined with a
 work under a compatible licence to be distributed under that compatible licence,
-and the EUPL Appendix lists GPL-3.0. Every derived file carries its own header
-naming the upstream file and authors.
+and the EUPL Appendix lists GPL-3.0. Every derived file either carries its own
+header naming the upstream file and authors, or points at the sibling header
+that does.
 
-Parts of the scaling, wave and colour container code originate in
-[FastLED](https://github.com/FastLED/FastLED) 3.6.0 and stay under the MIT licence,
-with the notice reproduced in `components/wled_fx/wf_math.h`.
+Parts of the scaling, wave and colour container code, and seven of the palettes,
+originate in [FastLED](https://github.com/FastLED/FastLED) 3.6.0 and stay under
+the MIT licence, with the notice reproduced in
+`components/wled_fx/wf_math.h`.
 
 The bitmap fonts come from WLED's console fonts, credited upstream to
 [raster-fonts](https://github.com/idispatch/raster-fonts). The gradient palettes
 come from [cpt-city](http://seaviewsensing.com/pub/cpt-city).
 
-The Python side of the component is independent work and contains no WLED-derived
-data, which keeps it compatible with ESPHome's MIT-licensed Python tree.
+The Python side of the component is independent work and holds no effect list,
+palette data or parameter tables copied from WLED: it reads what it needs out of
+the C++ sources at config time. Everything WLED-derived is on the C++ side, so
+the Python can be relicensed when it goes upstream into ESPHome's MIT-licensed
+Python tree. As shipped here it is GPL-3.0-or-later like the rest of the repo.
 
 ### WLED-MM derived effects and their licences
 

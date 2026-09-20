@@ -550,15 +550,16 @@ def write_report(results: list[dict], out: Path, ref_only: list[str], port_only:
         "what ESPHome's snapshot display does to the port's. Neither side is "
         "gamma corrected or brightness scaled.",
         "",
-        "Two things about the motion estimate before you trust a direction. It "
-        "reports one of eight compass points, so a reading 45 degrees away can "
-        "be the same motion landing either side of a boundary, and those are "
-        "called out and scored low. And it is a phase correlation, which on a "
-        "periodic pattern cannot tell a shift of d from a shift of -(period - "
-        "d): a tartan, a stripe field or a spiral can be reported as moving "
-        "the opposite way on one side and be doing nothing of the kind. Open "
-        "the side-by-side before believing an \"opposite\" on an effect that "
-        "repeats.",
+        "The motion estimate is phase correlation at frame gaps of 1, 2, 4 and "
+        "up, sub-pixel refined. It refuses to answer rather than guess: a gap "
+        "whose displacement has wrapped past a third of the frame is thrown "
+        "away, the shortest usable gaps have to agree on the velocity, and the "
+        "correlation peak has to be clearly taller than the next peak anywhere "
+        "else, which is what rules out a stripe field or a checkerboard where "
+        "there is no single answer. When any of those fails the direction is "
+        "\"none/unclear\". It still reports one of eight compass points, so a "
+        "reading 45 degrees away can be the same motion landing either side of "
+        "a boundary, and those are called out and scored low.",
         "",
     ]
 

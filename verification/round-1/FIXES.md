@@ -14,12 +14,16 @@ Headline, for a reader in a hurry:
 
 | Measurement | Round 1 | Now |
 |---|---:|---:|
-| Median port-to-reference mean brightness, the 17 particle effects F1 lists | 0.70 | 0.99 |
+| Median port-to-reference mean brightness, the 17 particle effects F1 lists | 0.70 | 0.97 |
 | Same, the 147 non-particle effects bright enough to measure | 1.00 | 1.00 |
 | Fireworks Starburst stars at 64x64 | 34 | 68 |
-| Pride 2015 mean brightness against the device | 73.6 / 124.8 | 113.9 / 103.2 |
+| Fireworks Starburst brightness against the device | 0.54 | 0.96 |
+| Pride 2015 brightness against the device | 0.59 | 1.07 |
 | Puddlepeak mean brightness with no microphone | 0.01 | 0.54 |
-| Non-audio effects flagged by the comparison | 111 | 24 |
+| Non-audio effects flagged by the comparison | 111 | 26 |
+
+The "now" column is the median of three capture runs of the port. One run is
+not a measurement; see T3 and T4 below.
 
 ---
 
@@ -85,32 +89,37 @@ brief asks for. PORTING.md deviation 33 records the split and says that
 light default of 2.8 is not it. No default was changed: an ESPHome light's gamma
 is the user's.
 
-**Evidence it is fixed.** Port against reference, mean brightness, single six
-second capture each side at matched controls:
+**Evidence it is fixed.** Port against reference, mean brightness, matched
+controls both sides. "After" is the median of three capture runs; the last
+column is the range those three covered, which is what says whether a ratio can
+be read to two figures.
 
-| Effect | reference | before | after | before | after |
-|---|---:|---:|---:|---:|---:|
-| PS Blobs | 35.2 | 15.1 | 16.0 | 0.43 | 0.46 |
-| PS Starburst | 8.2 | 3.8 | 4.6 | 0.47 | 0.56 |
-| PS Ballpit | 3.1 | 1.6 | 3.3 | 0.52 | 1.07 |
-| PS Impact | 18.9 | 10.4 | 28.0 | 0.55 | 1.48 |
-| PS Attractor | 4.8 | 2.9 | 5.2 | 0.61 | 1.07 |
-| PS Vortex | 79.2 | 50.1 | 78.1 | 0.63 | 0.99 |
-| PS Spray 1D | 2.2 | 1.5 | 2.2 | 0.65 | 0.99 |
-| PS Waterfall | 63.6 | 43.5 | 61.2 | 0.69 | 0.96 |
-| PS Box | 19.8 | 13.9 | 16.9 | 0.70 | 0.86 |
-| PS Springy | 56.5 | 40.2 | 56.5 | 0.71 | 1.00 |
-| PS Fuzzy Noise | 118.0 | 88.8 | 110.8 | 0.75 | 0.94 |
-| PS GEQ Nova | 34.8 | 26.4 | 42.7 | 0.76 | 1.22 |
-| PS Ghost Rider | 36.4 | 29.3 | 28.3 | 0.80 | 0.78 |
-| PS Fire | 112.0 | 93.3 | 111.6 | 0.83 | 1.00 |
-| PS GEQ 2D | 10.1 | 8.4 | 13.2 | 0.84 | 1.31 |
-| PS Volcano | 6.1 | 5.2 | 5.7 | 0.85 | 0.94 |
-| PS 1D Balance | 46.0 | 41.0 | 46.1 | 0.89 | 1.00 |
+| Effect | reference | before | after | before | after | after spread |
+|---|---:|---:|---:|---:|---:|---:|
+| PS Blobs | 35.2 | 15.1 | 17.8 | 0.43 | 0.50 | 5.8 |
+| PS Starburst | 8.2 | 3.8 | 4.1 | 0.47 | 0.50 | 2.8 |
+| PS Ballpit | 3.1 | 1.6 | 2.5 | 0.52 | 0.81 | 0.4 |
+| PS Impact | 18.9 | 10.4 | 19.0 | 0.55 | 1.00 | 6.5 |
+| PS Attractor | 4.8 | 2.9 | 4.8 | 0.61 | 1.00 | 0.2 |
+| PS Vortex | 79.2 | 50.1 | 78.1 | 0.63 | 0.99 | 0.1 |
+| PS Spray 1D | 2.2 | 1.5 | 2.1 | 0.65 | 0.94 | 0.1 |
+| PS Waterfall | 63.6 | 43.5 | 61.4 | 0.69 | 0.97 | 0.7 |
+| PS Box | 19.8 | 13.9 | 17.4 | 0.70 | 0.88 | 4.7 |
+| PS Springy | 56.5 | 40.2 | 56.5 | 0.71 | 1.00 | 0.1 |
+| PS Fuzzy Noise | 118.0 | 88.8 | 112.2 | 0.75 | 0.95 | 1.7 |
+| PS GEQ Nova | 34.8 | 26.4 | 42.0 | 0.76 | 1.21 | 2.3 |
+| PS Ghost Rider | 36.4 | 29.3 | 32.5 | 0.80 | 0.89 | 10.9 |
+| PS Fire | 112.0 | 93.3 | 110.2 | 0.83 | 0.98 | 1.7 |
+| PS GEQ 2D | 10.1 | 8.4 | 13.1 | 0.84 | 1.30 | 0.5 |
+| PS Volcano | 6.1 | 5.2 | 5.7 | 0.85 | 0.94 | 0.2 |
+| PS 1D Balance | 46.0 | 41.0 | 46.0 | 0.89 | 1.00 | 0.1 |
 
-Median over those seventeen: **0.70 before, 0.99 after**. Median over the 147
+Median over those seventeen: **0.70 before, 0.97 after**. Median over the 147
 non-particle effects with a reference brightness above 5: **1.000 before, 1.000
 after**, so nothing else moved.
+
+Fireworks Starburst, which belongs to F2 rather than F1, moves from 0.54 to
+0.96 on the same measurement.
 
 The critic's own quantile test, which is the sharper one, at the reference's
 32x32 view over lit pixels only:
@@ -132,21 +141,22 @@ The critic's own quantile test, which is the sharper one, at the reference's
 PS Vortex is quantile for quantile identical to the device now. The two control
 effects are unchanged, which is what rules out a global brightness shift.
 
-Four ratios above 1.0 (PS Impact 1.48, PS GEQ 2D 1.31, PS GEQ Nova 1.22, PS
-Ballpit 1.07) are not overshoot. They are one six second window of an effect
-whose events are random: two further captures of PS Impact on this build measure
-16.9 and 18.2 against the device's 19.0 and 18.9, that is 0.89 and 0.96. See the
-run-to-run spread section.
+Two ratios still sit above 1.0. PS GEQ 2D at 1.30 and PS GEQ Nova at 1.21 are
+audio driven, and the device was listening to a quiet room while the port hears
+a synthetic spectrum that never goes quiet; both were marked "expected" in round
+1 for that reason. Everything else is between 0.88 and 1.00 apart from the two
+residuals below. A single run had put PS Impact at 1.48, which is what the
+spread column is for: over three runs it is 1.00.
 
 **Two residuals, both recorded rather than closed.**
 
-* **PS Starburst 0.56.** Four port runs measure 3.78, 3.83, 3.95, 4.60 and 5.40;
-  two device runs measure 7.47 and 8.22. It is consistently about half and it is
+* **PS Starburst 0.50.** Six port runs measure 3.78, 3.83, 3.95, 4.09, 4.60 and
+  5.40; two device runs measure 7.47 and 8.22. It is consistently about half and it is
   not the particle count: `calculateNumberOfParticles1D` and
   `calculateNumberOfSources1D` are statement for statement upstream's, and
   `MAXPARTICLES_1D` and `MAXSOURCES_1D` match. This is the first thing round 2
   should pick up.
-* **PS Blobs 0.46** is expected and was already marked so: the effect branches
+* **PS Blobs 0.50** is expected and was already marked so: the effect branches
   on `has_real_audio()` and the two sides take different branches.
 
 **Regression check.** `c9b945d`, in `wled_fx_effect_test`. Both tables are
@@ -210,8 +220,9 @@ figure as before to within the linker's rounding; see the compile table below.
 **Evidence it is fixed.** `wled_fx_effect_test` prints
 `Fireworks Starburst: 4080 bytes, 68 stars` at 64x64, where it was 2040 bytes
 and 34. Fireworks 1D's spark pool went from 2040 to 4084 bytes. Against the
-device, Fireworks Starburst's mean brightness went from 7.33 to 15.17 against a
-reference of 13.54, that is 0.54 before and 1.12 after.
+device, Fireworks Starburst's mean brightness went from 7.33 to 12.95 against a
+reference of 13.54, that is **0.54 before and 0.96 after**, over a three run
+spread of 2.1.
 
 **Regression check.** `c9b945d`. `strip_active_segments_num() <=
 strip_max_segments() / 4` has to hold, `FAIR_DATA_PER_SEG` has to be derived
@@ -369,10 +380,11 @@ c2=128, c3=16`, factory colours. Mean brightness:
 | device, round 1 capture | 124.8 |
 | device, fresh capture during this work | 103.2 |
 | port before | 73.6 |
-| port after, three runs | 95.8, 113.9, 169.0 |
+| port after, three full runs | 96, 134, 167 |
 
-Before, the port sat below every device reading. After, the device's range
-[103, 125] sits inside the port's [96, 169]. The brightest pixels moved from
+Before, the port sat below every device reading. After, its median of 134
+against the round 1 reference's 124.8 is a ratio of 1.07, and the device's range
+[103, 125] sits inside the port's [96, 167]. The brightest pixels moved from
 (189, 16, 24) to (197, 36, 49) against the device's (215, 58, 54). The residual
 spread is the effect's own: its brightness is driven by
 `beatsin88_t(341, 96, 224)` and three other beats whose periods are longer than
@@ -433,14 +445,15 @@ pins every control the reference recorded, passes the simulator's new
 **Measured.** Three runs of this port, identical build and settings, on the same
 effect:
 
-| Effect | run 1 | run 2 | run 3 | device |
-|---|---:|---:|---:|---:|
-| Tri Wipe | 200 | 242 | 244 | 49 |
-| Pride 2015 | 96 | 114 | 169 | 103, 125 |
-| Colorwaves | 69 | 85 | 118 | 115 |
-| Sweep | 91 | 99 | 158 | 44 |
-| Matrix | 2.1 | 3.6 | 4.0 | 3.6, 4.4 |
-| PS Vortex | 78.1 | 78.2 | 78.2 | 80.0 |
+| Effect | port, three full runs | range | device |
+|---|---|---:|---:|
+| Pride 2015 | 96, 134, 167 | 71 | 103, 125 |
+| Colorwaves | 69, 90, 117 | 48 | 115 |
+| Tri Wipe | 200, 242, 244 | 44 | 49 |
+| PS Ghost Rider | 26, 32, 37 | 11 | 36 |
+| PS Impact | 15, 19, 21 | 6.5 | 19 |
+| Matrix | 2.1, 3.5, 4.0 | 1.9 | 3.6, 4.4 |
+| PS Vortex | 78.1, 78.1, 78.2 | 0.1 | 80.0 |
 
 PS Vortex is what a reproducible effect looks like. The others are what round 1
 ranked. Ten effects moved into or out of the flagged list between two runs of an
@@ -493,11 +506,21 @@ behind the run-spread floor instead, which is the more general answer.
 | round 1's report, round 1's tool, round 1's port capture | 111 |
 | round 1's port capture, this tool | 23 |
 | this port, one capture run, this tool | 29 |
-| this port, three capture runs, this tool | 24 |
+| this port, three capture runs pooled, this tool | 26 |
 
-The tooling alone removes 88 of round 1's 111 flags. The single-run count of 29
-against 23 is not a regression: it is the run-to-run spread above, and pooling
-three runs brings it to 24.
+The tooling alone takes 88 of round 1's 111 flags off the list. The single-run
+count of 29 against 23 is not a regression: ten effects moved into or out of the
+list between two runs of an identical build, and pooling three runs brings it to
+26. The reference side is still one run, so the noise floor is only half built.
+Capturing the device twice is the other half, and it is a round 2 job.
+
+What survives, worst first: Lightning and Perlin Move on the frozen test, Wipe
+Random, Tri Wipe and Color Clouds, then eleven colour flags on effects whose
+colours are random draws (Sweep Random, TV Simulator, Random Colors, Chase
+Random, Blobs, Game Of Life, Aurora, Theater Rainbow, Blink Rainbow, Slow
+Transition, Plasma Ball), four "one side moves and the other is still" on sparse
+effects, and four speed ratios. Color Clouds is deviation 28 and the report now
+says so. None of them is a new flag caused by this release.
 
 ---
 
@@ -520,6 +543,54 @@ three runs brings it to 24.
 7. **F4 named four effects.** There are nine.
 
 Everything else in `FINDINGS.md`, `VERDICTS.md` and `TOOLING.md` held up.
+
+---
+
+## Builds and sizes
+
+All eight configurations validate and compile on Windows against the ESPHome in
+`C:\Users\bharv\esphome-venv`. The four hardware test firmwares were rebuilt in
+`C:\tmp\wfx-flash` from the repository copies with `external_components`
+repointed at the working tree, as before, and `.esphome` left alone.
+
+The baseline is v0.3.0 compiled on the same machine with the same toolchain in a
+worktree, not the figures recorded in PLAN.md, which were taken against an older
+ESPHome and are 50 KB away for reasons that have nothing to do with this
+release.
+
+| Config | Flash v0.3.0 | Flash v0.3.1 | Flash delta | RAM v0.3.0 | RAM v0.3.1 | RAM delta |
+|---|---:|---:|---:|---:|---:|---:|
+| `strip-esp32.yaml` | 887,339 | 888,079 | +740 | 46,820 | 46,836 | +16 |
+| `m1-hub75.yaml` | 882,223 | 882,827 | +604 | 110,019 | 110,019 | 0 |
+| `m1-hub75-audio.yaml` | 936,311 | 936,915 | +604 | 118,931 | 118,931 | 0 |
+| `strip-esp32-arduino.yaml` | 974,919 | 975,459 | +540 | 47,900 | 47,900 | 0 |
+
+The four hardware test firmwares, which carry the tour harness and the
+diagnostics on top of the engine, compile at:
+
+| Config | Flash | RAM |
+|---|---:|---:|
+| `m1-test.yaml` | 1,035,679 | 113,567 |
+| `m1-test-audio.yaml` | 1,095,703 | 123,855 |
+| `matrix-test.yaml` | 1,023,531 | 50,220 |
+| `strip-test.yaml` | 977,215 | 50,220 |
+
+The 540 to 740 bytes are the two 256 byte gamma tables and the code around them.
+RAM is unchanged everywhere except 16 bytes on the plain strip build, which is
+the F2 memory claim measured rather than argued: the bigger scratch budget costs
+nothing, because the scratch block's high-water mark is set by the particle
+system at about 24 KB and not by an 8 KB star pool.
+
+The sweep is green under ASan and UBSan: 223 effects at six geometries in both
+control passes, the four smallest geometries, all five 1D-to-2D mapping modes,
+the audio and behaviour tests, the large geometries without the sanitizers, and
+the two Python checks. One entry had to be added to the simulator's
+`BLACK_ALLOWED` table on the way, and the reason is in `becb81e`: Fw Starburst
+audio has exactly one star below four pixels and a birth rate of up to one in
+144 a frame, so whether it lights up inside a 300 frame run at three pixels is a
+coin toss, and it had been on the winning side of that toss until the simulated
+sound stopped drawing a random number every frame. It lights up at three pixels
+with 900 frames and at four pixels with 300.
 
 ---
 

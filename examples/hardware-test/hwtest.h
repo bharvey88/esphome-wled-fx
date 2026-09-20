@@ -14,6 +14,7 @@
  *       - hwtest.h
  */
 
+#include <cinttypes>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -25,6 +26,7 @@
 
 #include "esphome/components/wled_fx/wf_audio.h"
 #include "esphome/components/wled_fx/wf_registry.h"
+#include "esphome/components/wled_fx/wled_fx.h"
 
 namespace wledfx_hwtest {
 
@@ -167,6 +169,57 @@ inline size_t first(int filter, size_t from) {
 
 // Zero on a board with no PSRAM, which is the honest answer rather than an error.
 inline size_t psram_free() { return heap_caps_get_free_size(MALLOC_CAP_SPIRAM); }
+
+/* --- tour dwell ------------------------------------------------------------
+ *
+ * The same two effects the simulator's PACING table gives extra time to, for
+ * the same reason: they are paced so slowly that the dwell a profiling run
+ * wants, five seconds, never reaches the part worth looking at. Sunrise spends
+ * the first quarter of an hour-long sunrise black, and PS Galaxy needs several
+ * hundred frames before the arms appear. A multiplier rather than a fixed
+ * dwell, so turning the dwell up still turns these up with it. */
+struct PacedEffect {
+  const char *effect;
+  uint8_t dwell_multiplier;
+};
+
+inline const PacedEffect PACED[] = {
+    {"Sunrise", 6},
+    {"PS Galaxy", 6},
+};
+
+inline uint8_t dwell_multiplier(size_t index) {
+  const EffectInfo *info = EffectRegistry::at(index);
+  if (info == nullptr)
+    return 1;
+  for (const PacedEffect &paced : PACED) {
+    if (esphome::wled_fx::effect_name_equals(*info, paced.effect))
+      return paced.dwell_multiplier;
+  }
+  return 1;
+}
+
+/* --- profiling -------------------------------------------------------------
+ *
+ * One line per effect, written when the tour leaves it, in a shape a script can
+ * read back: tools/parse_profile_log.py turns a captured log into a table. The
+ * whole line is built once every dwell, never per frame. */
+inline std::string result_line(esphome::wled_fx::WledFxController *ctrl, size_t index, unsigned tour_index) {
+  const auto &stats = ctrl->profile();
+  const std::string name = ctrl->current_effect_name();
+  const uint32_t fps10 = stats.fps_x10();
+  char line[320];
+  snprintf(line, sizeof(line),
+           "[tour] RESULT idx=%u name=\"%s\" group=%s frames=%" PRIu32 " fps=%" PRIu32 ".%" PRIu32
+           " render_us=%" PRIu32 "/%" PRIu32 "/%" PRIu32 " out_us=%" PRIu32 "/%" PRIu32 "/%" PRIu32
+           " heap=%u largest=%u psram=%u data_bytes=%u",
+           tour_index, name.c_str(), group_of(index), stats.frames, fps10 / 10, fps10 % 10, stats.render_avg_us(),
+           stats.render_min_us, stats.render_max_us, stats.output_avg_us(), stats.output_min_us, stats.output_max_us,
+           (unsigned) heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+           (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL), (unsigned) psram_free(),
+           (unsigned) ctrl->engine().segment().data_size());
+  return line;
+}
 
 /* Nothing here wraps the controller any more. The component owns all three of
  * the things this file used to work around, and the YAML calls them directly:

@@ -23,6 +23,7 @@ esphome:
         - script.execute:
             id: tour_goto
             delta: 0
+            to: -1
 
 globals:
   # Index into the "Tour group" select's options. See Filter in hwtest.h.
@@ -35,22 +36,53 @@ globals:
     type: uint32_t
     restore_value: false
     initial_value: "0"
+  # True between "Profile run" and the RESULT line of the last effect.
+  - id: tour_profile
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  # Where the profile run has got to in the filtered list, so that coming back
+  # to the start is what ends it.
+  - id: tour_profile_last
+    type: int
+    restore_value: false
+    initial_value: "0"
 
 script:
   # delta 1 steps forward, -1 steps back, 0 stays put and only re-publishes.
+  # `to` 0 or more jumps straight to that registry index instead, and does not
+  # log a result for the effect it leaves, which is how a profile run starts
+  # without an entry for whatever happened to be on screen.
+  #
   # Everything that changes the effect goes through here, so there is exactly
   # one place that logs the change and one place that resets the dwell timer.
   - id: tour_goto
     mode: single
     parameters:
       delta: int
+      to: int
     then:
       - lambda: |-
           auto *ctrl = id(fx);
           const int filter = id(tour_filter);
           const size_t current = ctrl->engine().effect_index();
-          const size_t index = delta == 0 ? wledfx_hwtest::first(filter, current)
-                                          : wledfx_hwtest::step(filter, current, delta);
+
+          // One machine readable line for the effect being left, with the
+          // timings it collected while it was on screen.
+          if (delta != 0 && to < 0) {
+            ESP_LOGI("tour", "%s",
+                     wledfx_hwtest::result_line(
+                         ctrl, current, (unsigned) wledfx_hwtest::position(filter, current)).c_str());
+          }
+
+          size_t index;
+          if (to >= 0) {
+            index = wledfx_hwtest::first(filter, (size_t) to);
+          } else if (delta == 0) {
+            index = wledfx_hwtest::first(filter, current);
+          } else {
+            index = wledfx_hwtest::step(filter, current, delta);
+          }
           ctrl->engine().set_effect_index(index);
           // The engine was moved behind the platforms' backs, so ask the
           // select, number and switch entities to republish. They follow the
@@ -59,13 +91,26 @@ script:
 
           const std::string name = ctrl->current_effect_name();
           const char *group = wledfx_hwtest::group_of(index);
+          const unsigned position = (unsigned) wledfx_hwtest::position(filter, index);
           ESP_LOGI("tour", "[tour] %u/%u \"%s\" group=%s",
-                   (unsigned) wledfx_hwtest::position(filter, index),
-                   (unsigned) wledfx_hwtest::count(filter), name.c_str(), group);
+                   position, (unsigned) wledfx_hwtest::count(filter), name.c_str(), group);
           id(tour_effect).publish_state(name);
           id(tour_group).publish_state(group);
 
-          id(tour_next_ms) = millis() + (uint32_t) (id(tour_dwell).state * 1000.0f);
+          // A profile run is over when the tour comes back round to where it
+          // started, which is the first position the filter accepts.
+          if (id(tour_profile) && to < 0 && position <= (unsigned) id(tour_profile_last)) {
+            ESP_LOGI("tour", "[tour] PROFILE DONE");
+            id(tour_profile) = false;
+            id(tour_auto).turn_off();
+          }
+          id(tour_profile_last) = (int) position;
+
+          // Two effects are paced so slowly that a short dwell never reaches
+          // anything worth looking at. See PACED in hwtest.h.
+          const uint32_t dwell_ms = (uint32_t) (id(tour_dwell).state * 1000.0f)
+                                    * wledfx_hwtest::dwell_multiplier(index);
+          id(tour_next_ms) = millis() + dwell_ms;
 
 interval:
   # 200 ms is fine grained enough for a one second dwell and costs nothing.
@@ -80,6 +125,7 @@ interval:
             - script.execute:
                 id: tour_goto
                 delta: 1
+                to: -1
 
 switch:
   # Off pauses the tour and leaves the current effect on screen.
@@ -91,6 +137,27 @@ switch:
     icon: mdi:play-pause
     on_turn_on:
       - lambda: "id(tour_next_ms) = millis() + (uint32_t) (id(tour_dwell).state * 1000.0f);"
+
+  # Off, the default, means a control belongs to the effect you set it on: the
+  # next effect refills every control from its own WLED defaults. On is the
+  # component's own behaviour, where a control you move follows you into every
+  # effect after it. That is useful when you are comparing one setting across
+  # effects and baffling when you have forgotten you did it, which is why it is
+  # a switch you can see rather than something implied.
+  #
+  # Turning this off does not unpin what is already pinned, including anything
+  # the YAML set. "Unpin controls" does that.
+  - platform: template
+    id: tour_pin
+    name: Pin controls
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    icon: mdi:pin
+    entity_category: config
+    on_turn_on:
+      - lambda: "id(fx)->engine().set_sticky_controls(true);"
+    on_turn_off:
+      - lambda: "id(fx)->engine().set_sticky_controls(false);"
 
   - platform: wled_fx
     wled_fx_id: fx
@@ -134,10 +201,31 @@ number:
     wled_fx_id: fx
     type: custom2
     name: Custom 2
+  # custom3 is a five bit control in WLED, 0 to 31, and the effects divide it
+  # down as one. The platform gives it that range; a 0 to 255 slider here would
+  # silently rotate Scrolling Text and re-tune a dozen other effects.
   - platform: wled_fx
     wled_fx_id: fx
     type: custom3
     name: Custom 3
+
+# The three WLED colour slots. Which of them the running effect uses, and what
+# it calls them, is on the "Effect colours" sensor below. Colour 1 is also the
+# panel master: its brightness dims the whole frame and turning it off blanks
+# the panel, as WLED's own power button does.
+light:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: color1
+    name: Color 1
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: color2
+    name: Color 2
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: color3
+    name: Color 3
 
 select:
   # Narrows the tour to one part of the port. "Checklist" is the effects
@@ -164,6 +252,7 @@ select:
       - script.execute:
           id: tour_goto
           delta: 0
+          to: -1
 
   - platform: wled_fx
     wled_fx_id: fx
@@ -182,6 +271,7 @@ button:
       - script.execute:
           id: tour_goto
           delta: 1
+          to: -1
 
   - platform: template
     name: Previous effect
@@ -190,6 +280,7 @@ button:
       - script.execute:
           id: tour_goto
           delta: -1
+          to: -1
 
   # The engine's own restart: the segment goes back to frame zero and the
   # scratch block is marked stale so the effect reinitialises into it. No
@@ -200,11 +291,10 @@ button:
     on_press:
       - lambda: "id(fx)->engine().restart_effect();"
 
-  # Moving Speed, Intensity, Custom or Check pins that value for every effect
-  # that follows, which is the engine's override model and is easy to forget
-  # halfway through a tour. This puts every control back on the effect's own
-  # metadata defaults. Clearing the pins is not enough on its own: the defaults
-  # are refilled on an effect change, so this reselects the current index.
+  # Puts every control back on the effect's own metadata defaults, including
+  # anything the YAML pinned and anything pinned while "Pin controls" was on.
+  # Clearing the pins is not enough on its own: the defaults are refilled on an
+  # effect change, so this reselects the current index.
   - platform: template
     name: Unpin controls
     icon: mdi:pin-off
@@ -215,6 +305,34 @@ button:
           ctrl->engine().set_effect_index(ctrl->engine().effect_index());
           ctrl->notify_state_change();
 
+  # One unattended pass over every effect at a five second dwell, logging one
+  # RESULT line per effect. tools/parse_profile_log.py turns the captured log
+  # into a table. docs/HARDWARE-TESTING.md has the commands.
+  - platform: template
+    name: Profile run
+    icon: mdi:timer-play
+    on_press:
+      - number.set:
+          id: tour_dwell
+          value: 5
+      - select.set:
+          id: tour_group_filter
+          option: All
+      - lambda: |-
+          auto *ctrl = id(fx);
+          // Start from a clean slate: anything pinned earlier would profile a
+          // setting nobody will be running.
+          ctrl->engine().clear_override(0xFFFF);
+          id(tour_profile) = true;
+          id(tour_profile_last) = 0;
+          ESP_LOGI("tour", "[tour] PROFILE START effects=%u dwell=5s",
+                   (unsigned) wledfx_hwtest::count(id(tour_filter)));
+      - script.execute:
+          id: tour_goto
+          delta: 0
+          to: 0
+      - switch.turn_on: tour_auto
+
 text_sensor:
   - platform: template
     id: tour_effect
@@ -224,6 +342,18 @@ text_sensor:
     id: tour_group
     name: Effect group
     update_interval: never
+
+  # What the generic Speed, Intensity, Custom and Check entities above actually
+  # do in the effect that is running, in WLED's own words, read out of the
+  # effect's metadata. Controls the effect does not use are left out.
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: controls
+    name: Effect controls
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: colors
+    name: Effect colours
 
 debug:
   update_interval: 10s
@@ -260,6 +390,18 @@ sensor:
       if (first || straddled || elapsed == 0)
         return {};
       return 1000.0f * frames / elapsed;
+
+  # The two halves of a frame. Render time is the effect function, output time
+  # is the canvas to the panel, both averaged over the time the current effect
+  # has been up, with its first second left out.
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: render_time
+    name: Effect render time
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: output_time
+    name: Frame output time
 
   # Segment::data_size() is the scratch block the running effect asked for. For
   # the 31 particle effects that is the particle system allocation: the particle

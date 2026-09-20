@@ -72,3 +72,9 @@ light:
           height: ${matrix_height}
           serpentine: true
           update_interval: 23ms
+          # Colour 1 comes from the "Color 1" entity the harness adds, the
+          # same as it does on the panel builds, rather than from this
+          # light's own colour. Leave it true and the engine is handed the
+          # light colour again on every frame, so the colour slot could
+          # never be set to anything else.
+          use_light_color: false

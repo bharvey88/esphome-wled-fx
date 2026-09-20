@@ -1,8 +1,9 @@
 """WLED effect engine for ESPHome.
 
-This file is independent work. It contains no effect names, palette data,
-parameter tables or other material copied from WLED: everything derived from WLED
-lives in the C++ sources, which are GPLv3. See PORTING.md.
+This file is independent work. It holds no effect list, palette data or parameter
+tables copied from WLED: the names it validates against are read out of the C++
+sources at config time, and everything derived from WLED lives there, under
+GPLv3. See PORTING.md.
 """
 
 from pathlib import Path
@@ -27,6 +28,8 @@ from esphome.const import (
     PLATFORM_ESP32,
 )
 import esphome.final_validate as fv
+
+from .effect_index import effect_macro, effect_names, palette_names, suggestion
 
 CODEOWNERS = ["@bharvey88"]
 DOMAIN = "wled_fx"
@@ -65,6 +68,11 @@ CONF_TASK_IN_PSRAM = "task_in_psram"
 # update_interval: never is stored as uint32_t max.
 UPDATE_INTERVAL_NEVER = 4294967295
 
+# WLED's FRAMETIME at its default WLED_FPS of 42, which is the frame period the
+# effect bodies were written against. Kept in step with FRAMETIME in
+# wf_segment.h and with frame_interval_ in wled_fx_light.h.
+FRAMETIME = "23ms"
+
 wled_fx_ns = cg.esphome_ns.namespace("wled_fx")
 WledFxController = wled_fx_ns.class_("WledFxController")
 WledFxDisplay = wled_fx_ns.class_(
@@ -98,29 +106,38 @@ CHECKS = {
 }
 
 
-# Punctuation that carries meaning in an effect name and so has to survive into
-# the derived identifier. Collapsing it to "_" made "Sparkle" and "Sparkle+" the
-# same macro, so naming one in YAML silently pulled in both. Keep this table in
-# step with effect_macro_token() in tools/sim/main.cpp.
-_NAME_TOKENS = {
-    "+": "_PLUS",
-    "&": "_AND",
-    "/": "_SLASH",
-    "#": "_HASH",
-    "%": "_PCT",
-    "*": "_STAR",
-}
+def _known_effect(value):
+    """An effect name that the C++ sources actually register.
+
+    Without this a typo is accepted, `set_effect_by_name()` returns false at
+    boot and the device quietly runs whatever effect it started with.
+    """
+    value = cv.string(value)
+    names = effect_names()
+    if any(value.casefold() == name.casefold() for name in names):
+        return value
+    raise cv.Invalid(
+        f'"{value}" is not a WLED FX effect.{suggestion(value, names)} '
+        "The full list is in README.md; names are the WLED display names, "
+        'for example "Fire 2012".'
+    )
 
 
-def effect_macro(name: str) -> str:
-    """Turns an effect name from YAML into the macro the C++ guard tests."""
-    expanded = "".join(_NAME_TOKENS.get(c, c) for c in name.upper())
-    return "WLED_FX_FX_" + re.sub(r"[^A-Z0-9]+", "_", expanded).strip("_")
+def _known_palette(value):
+    """A palette name that the C++ sources actually register."""
+    value = cv.string(value)
+    names = palette_names()
+    if any(value.casefold() == name.casefold() for name in names):
+        return value
+    raise cv.Invalid(
+        f'"{value}" is not a WLED FX palette.{suggestion(value, names)} '
+        "The full list is in README.md."
+    )
 
 
 CONTROL_SCHEMA = {
-    cv.Optional(CONF_EFFECT): cv.string,
-    cv.Optional(CONF_PALETTE): cv.string,
+    cv.Optional(CONF_EFFECT): _known_effect,
+    cv.Optional(CONF_PALETTE): _known_palette,
     cv.Optional(CONF_SPEED): cv.int_range(min=0, max=255),
     cv.Optional(CONF_INTENSITY): cv.int_range(min=0, max=255),
     cv.Optional(CONF_CUSTOM1): cv.int_range(min=0, max=255),
@@ -131,6 +148,22 @@ CONTROL_SCHEMA = {
     cv.Optional(CONF_CHECK3): cv.boolean,
     cv.Optional(CONF_TEXT): cv.string,
 }
+
+# The same keys as plain strings, for the checks that look inside a validated
+# config rather than build a schema out of them.
+_CONTROL_KEYS = (
+    CONF_EFFECT,
+    CONF_PALETTE,
+    CONF_SPEED,
+    CONF_INTENSITY,
+    CONF_CUSTOM1,
+    CONF_CUSTOM2,
+    CONF_CUSTOM3,
+    CONF_CHECK1,
+    CONF_CHECK2,
+    CONF_CHECK3,
+    CONF_TEXT,
+)
 
 # --- audio -----------------------------------------------------------------
 #
@@ -186,24 +219,29 @@ _ENTRY_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.declare_id(WledFxDisplay),
         cv.Optional(CONF_DISPLAY_ID): cv.use_id(display.Display),
-        cv.Optional(CONF_EFFECTS): cv.ensure_list(cv.string),
+        cv.Optional(CONF_EFFECTS): cv.ensure_list(_known_effect),
         cv.Optional(CONF_WIDTH): cv.positive_not_null_int,
         cv.Optional(CONF_HEIGHT): cv.positive_not_null_int,
         cv.Optional(CONF_GAMMA_CORRECT, default=1.0): cv.positive_float,
         cv.Optional(CONF_AUDIO): AUDIO_SCHEMA,
         **CONTROL_SCHEMA,
     }
-).extend(cv.polling_component_schema("33ms"))
+).extend(cv.polling_component_schema(FRAMETIME))
 
 
 def _validate_entry(config):
-    if CONF_DISPLAY_ID not in config:
-        for key in (CONF_WIDTH, CONF_HEIGHT):
-            if key in config:
-                raise cv.Invalid(
-                    f"'{key}' only applies to a wled_fx entry that drives a display",
-                    path=[key],
-                )
+    if CONF_DISPLAY_ID in config:
+        return config
+    # An entry with no display never becomes a component, so anything that would
+    # be applied to one would be silently dropped. Say so instead.
+    for key in (CONF_WIDTH, CONF_HEIGHT, *_CONTROL_KEYS):
+        if key in config:
+            raise cv.Invalid(
+                f"'{key}' only applies to a wled_fx entry that drives a display. "
+                "The light front end takes the same keys under the 'wled_fx' "
+                "effect in the light's 'effects:' list.",
+                path=[key],
+            )
     return config
 
 
@@ -301,15 +339,27 @@ def _add_effect_selection(config):
         for macro in sorted(macros):
             cg.add_build_flag(f"-D{macro}=1")
 
+    groups = _discover_effect_groups()
+    provided = set().union(*groups.values()) if groups else set()
+    # The name was checked against the registry, so a macro with no group behind
+    # it means a group guard line in a wf_effects_*.cpp forgot to list it, and
+    # that effect would silently not be compiled in.
+    missing = sorted(macros - provided)
+    if missing:
+        raise cv.Invalid(
+            "These effects are registered but no effect group's "
+            f"WLED_FX_GROUP_* guard names them, so an allow-list cannot pull "
+            f"them in: {', '.join(missing)}. This is a bug in the component."
+        )
+
     linked = [
         symbol
-        for symbol, provides in sorted(_discover_effect_groups().items())
+        for symbol, provides in sorted(groups.items())
         if all_effects or (provides & macros)
     ]
     if not linked:
         raise cv.Invalid(
-            "The 'effects' list selected no effect that exists. "
-            "Effect names are the WLED display names, for example 'Fire 2012'."
+            "No effect group was selected, so no effect would be compiled in."
         )
     declarations = "".join(f"extern const EffectGroup {s};" for s in linked)
     references = ", ".join(f"&{s}" for s in linked)
@@ -416,7 +466,7 @@ LIGHT_EFFECT_SCHEMA = {
     cv.Optional(CONF_SERPENTINE, default=False): cv.boolean,
     cv.Optional(CONF_USE_LIGHT_COLOR, default=True): cv.boolean,
     cv.Optional(
-        CONF_UPDATE_INTERVAL, default="33ms"
+        CONF_UPDATE_INTERVAL, default=FRAMETIME
     ): cv.positive_time_period_milliseconds,
     **CONTROL_SCHEMA,
 }

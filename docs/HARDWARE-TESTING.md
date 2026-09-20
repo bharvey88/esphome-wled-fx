@@ -11,20 +11,65 @@ This document is how to answer them in one sitting.
 Everything here is reachable from a browser on the LAN. Home Assistant is
 optional and nothing in the session needs it.
 
+## The first ten minutes
+
+Flash [examples/hardware-test/m1-test.yaml](../examples/hardware-test/m1-test.yaml).
+It is the 64x64 HUB75 build with all 223 effects, the tour and the diagnostic
+sensors, and nothing else in the session means much until the panel and the
+frame clock are known good.
+
+Copy `secrets.yaml.example` to `secrets.yaml` in that folder first, fill it in,
+then run this yourself from a PowerShell prompt with the ESPHome virtual
+environment active, with the M-1 on USB:
+
+```
+esphome run m1-test.yaml
+```
+
+A healthy boot looks like this. The canvas is the panel size, the frame
+interval is 23 ms, the effect count is the whole port, and the tour publishes
+its first line at the end of setup:
+
+```
+[C][wled_fx:139]: WLED FX display:
+[C][wled_fx:139]:   Canvas: 64x64
+[C][wled_fx:139]:   Frame interval: 23 ms
+[C][wled_fx:139]:   Effects compiled in: 223
+[C][wled_fx:139]:   Effect: Fire 2012
+[C][wled_fx:139]:   Palette: Fire
+[I][tour:049]: [tour] 12/223 "Fire 2012" group=1d_a
+[D][sensor:094]: 'Effect frame rate': Sending state 43.2 fps
+```
+
+A canvas that is not 64x64 means the display size is not reaching the engine,
+and that is a stop-and-fix before anything else.
+
+Three numbers to write down before you go any further, all of them on the web
+interface at `http://wled-fx-m1-test.local/` and all of them in the log:
+
+1. **Effect frame rate** on the starting effect, once it has settled. This is
+   the baseline every later reading is compared against.
+2. **Heap free** at boot, before you start the tour.
+3. **Effect frame rate** on `PS Galaxy`, which is the heaviest thing in the
+   port. Set **Tour group** to `Particle 2D` and step to it, or pick it from
+   the Effect select.
+
+If the first and the third are both near 43, the frame clock is right and the
+panel is keeping up, and the rest of the session is about how things look
+rather than whether they run.
+
 ## Before you start
 
 The configs live in [examples/hardware-test](../examples/hardware-test).
 
 1. Copy `secrets.yaml.example` to `secrets.yaml` **in that folder** and fill it
    in. ESPHome looks for secrets beside the config being built, so the one in
-   `examples/` does not cover these.
-2. Add `examples/hardware-test/secrets.yaml` to `.gitignore`. Only
-   `examples/secrets.yaml` is ignored today, so without that line your wifi
-   password shows up in `git status` waiting to be committed by accident.
-3. Activate your ESPHome virtual environment. On Windows, do it from PowerShell
+   `examples/` does not cover these. Every `secrets.yaml` in the tree is
+   gitignored, so the file you just made cannot be committed by accident.
+2. Activate your ESPHome virtual environment. On Windows, do it from PowerShell
    and not from Git Bash: the ESP-IDF toolchain installer refuses to run under
    MSys.
-4. On Windows, if a build dies on a path length, copy the `hardware-test`
+3. On Windows, if a build dies on a path length, copy the `hardware-test`
    folder somewhere short such as `C:\tmp\wfx-hw`, change `external_components`
    to an absolute path to the repository's `components` directory, and build
    there instead.
@@ -97,7 +142,7 @@ filter, so with **Tour group** set to `All` they count to 223.
 | Next effect / Previous effect | Step by hand. Both respect the group filter. |
 | Restart effect | Back to frame zero without changing effect. This is the one to use on the startup transient questions, PS Galaxy and Blobs. |
 | Unpin controls | Puts Speed, Intensity, Custom and Check back on the effect's own defaults. |
-| Effect / Palette | The component's own selects, all 223 and all 72. Depending on the component version these do not follow the tour, so treat **Effect name** as the authority for what is on screen. |
+| Effect / Palette | The component's own selects, all 223 and all 72. They follow the engine, so they track the tour as it moves. |
 | Speed, Intensity, Custom 1 to 3 | The component's numbers. |
 | Check 1 to 3 | The component's switches. |
 | Panel brightness | hub75 brightness, panel builds only. On the strip builds this is the light entity's own slider. |
@@ -124,11 +169,22 @@ Two behaviours that will otherwise confuse you:
   canvas is not 64x64 then the display size is not reaching the engine.
 * `Effect frame rate`. Published every two seconds. It counts frames the engine
   really rendered, not the interval it was asked for. At the default 23 ms
-  interval the ceiling is about 43. ESPHome's main loop ticks about every 16 ms,
-  so a light effect sitting near 31 on everything, heavy and light alike, is the
-  frame clock being re-armed by the scheduler rather than the effect being slow.
-  Write the number down either way; that distinction is exactly what a real
-  measurement settles.
+  interval the ceiling is about 43, on both front ends, and a light effect
+  should read the same as the panel does.
+
+  The review changed how that works, which matters for reading the number. The
+  frame gate used to re-arm from the moment the frame ran, and with ESPHome's
+  main loop ticking about every 16 ms a 23 ms request became 32 ms and
+  everything ran at 31 fps regardless of how heavy it was. The gate accumulates
+  its deadline now: the period alternates between one tick and two and the
+  average comes out at 23 ms. So a reading near 31 is no longer the scheduler,
+  it is the effect genuinely needing two main loop ticks per frame.
+
+  The sensor publishes nothing for a window in which the effect changed, so
+  during a fast tour it reports less often. That is deliberate: the frame
+  counter restarts at zero on every effect change, and a part window divided by
+  a whole window is a low number for the wrong reason. Pause the tour before
+  you write a figure down.
 * `Loop time`. If this climbs while frame rate falls, something is blocking the
   main loop rather than the effect being slow.
 * `Heap free` and `Heap largest free block`, every ten seconds. Free heap
@@ -140,6 +196,31 @@ Two behaviours that will otherwise confuse you:
   first arrives:
   `[D][wled_fx.audio]: Analysis costs 1234 us per 512 sample block, 5.3% of one core`.
   It is logged once. To see it again, restart the device.
+
+## The four things most likely to need a decision
+
+Everything below is a measurement. These four are the ones where the answer is
+probably "change something", so they are worth doing before the long tours.
+
+1. **Microphone gain and squelch.** `gain: 60` and `squelch: 10` are WLED's
+   numbers for WLED's input path, not for an INMP441 on an ESP32-S3 through
+   ESPHome's I2S. Both are compile time, so tuning them means editing
+   `m1-test-audio.yaml` and reflashing, which is why the level instrumentation
+   exists: get the readings first, change once. Item 3.1 in the table below.
+2. **Whether a 64x64 panel finishes a frame inside 23 ms.** The frame gate now
+   really does ask for 23 ms, which it never did before the review, and nothing
+   has measured what a full 4096 pixel canvas plus a hub75 blit and flip
+   actually costs on the heavy effects. The frame rate table is this question.
+3. **Heap behaviour over days.** The effect scratch block grows and is reused
+   rather than being freed on every effect change, which is a deliberate
+   divergence from WLED aimed at fragmentation on a board with no PSRAM. Three
+   tours is enough to catch a leak. It is not enough to know whether the
+   grow-and-reuse policy settles or creeps, and that needs a device left
+   cycling for a few days.
+4. **The FFT task beside a live render loop.** The analysis runs on its own
+   task while hub75 is driving the panel from an interrupt and the main loop is
+   rendering. The failure modes are tearing, dropped frames and a watchdog
+   reset, none of which a simulator can show. Item 3.9.
 
 ## Numbers to write down
 
@@ -168,6 +249,15 @@ systems, the per pixel noise fields and the cellular ones.
 Anything below about 25 fps is worth a note. Anything below 15 is worth an
 issue.
 
+If the panel cannot hold 23 ms on the effects you care about, `update_interval`
+on the `wled_fx:` block is the lever. Raising it to `33ms` asks for 30 fps and
+gives the loop a third more time per frame. It is not free: effects that pace
+themselves against `seg.now`, which is most of them, still look right, and the
+ones that count frames run slow in proportion. Change it in one place, reflash,
+and put the new number in the result column beside the old one rather than
+replacing it. The same key exists on the light effect, under the `wled_fx`
+entry in the light's `effects:` list.
+
 ### Heap across a full tour
 
 Set **Tour dwell** to 5 seconds and **Tour group** to `All`, which is about 19
@@ -183,7 +273,16 @@ minutes per pass. Read `Heap free` and `Heap largest free block` at each point.
 One tour catches a leak big enough to matter. Three catch the slow ones and show
 whether the largest free block keeps shrinking while free heap holds steady,
 which is fragmentation rather than a leak. If free heap is flat across all three
-readings, the allocation story is fine and you can stop.
+readings, the allocation story is fine for a session.
+
+Three tours does not settle the grow-and-reuse policy, though. The scratch
+block is kept across an effect change and only reallocated when a bigger one is
+asked for, so the interesting number is where it stops growing and whether the
+largest free block is still falling once it has. That takes a device left
+running with **Tour auto advance** on for a few days. Read the same four
+columns once a day and add a row. It is worth doing on the M-1, which has
+PSRAM, and on the plain ESP32 running `strip-test.yaml`, which does not, since
+avoiding fragmentation without PSRAM is the reason the policy exists.
 
 ### Audio levels
 
@@ -244,10 +343,24 @@ question means is in the checklist itself; this is the tracking sheet.
 | 2.12 | PS Attractor | Clumpy and off centre: the effect or the port | |
 | 2.13 | Paintbrush | Strokes spread across the panel rather than converging | |
 | 2.14 | PS Pinball | Rolling and collide modes, both behind check marks, both watchable | |
+| 2.15 | Octopus | Above 180 pixels wide the radius scale floors to zero and the effect goes flat. Acceptable, or worth diverging from upstream | |
+| 2.16 | Game Of Life | Above about 16384 pixels with coprime dimensions the spaceship check stops firing, so a stable glider is never reset | |
 
 Tetrix and Rolling Balls want a non-square panel. If you only have the 64x64,
 set `panel_height: 32` in `m1-test.yaml` and reflash rather than skipping them,
 and say in the result which geometry you used.
+
+2.15 and 2.16 are the extreme geometry pair, and a 64x64 panel cannot show
+either one: both need a canvas wider than 180 pixels. If you have a chain of
+panels, set `panel_width` and the chain keys in `m1-test.yaml` to something
+past 180 and look at them there. If you do not, say so in the result rather
+than leaving it blank, because "not reproducible on the hardware available" is
+a real answer and stops the next person looking for a panel. Both are
+upstream's arithmetic unchanged and both degrade to a duller animation rather
+than crashing, so neither blocks anything.
+
+Both are in the `Checklist` tour filter, so a pass of that group visits them
+along with everything else.
 
 PS Pinball's modes are Check 1 to Check 3. Turn them on one at a time and press
 **Restart effect** after each.
@@ -275,27 +388,41 @@ For 3.9, watch `Effect frame rate` and `Loop time` with audio enabled against
 the same effect on `m1-test.yaml`. A drop of a few frames is expected; tearing,
 a stall or a reboot is not.
 
-### Section 4, build configurations
+### Section 4, frame rate
+
+The frame rate table under "Numbers to write down" is this section. Fill that
+in and the section is answered. The one extra thing it asks for, which the
+table does not have a column for, is whether the light front end starves the
+rest of the loop on a long strip: watch `Loop time` on `strip-test.yaml` with a
+heavy effect running and compare it against the same effect on the panel.
+
+### Section 5, build configurations
 
 These two are not covered by the hardware-test configs. They use the existing
 examples and are only worth doing if the hardware is free.
 
 | # | Item | Result |
 |---|---|---|
-| 4.1 | `examples/strip-esp32-arduino.yaml`, esp-dsp under the Arduino framework | |
-| 4.2 | `examples/host.yaml`, which does not build on Windows | |
+| 5.1 | `examples/strip-esp32-arduino.yaml`, esp-dsp under the Arduino framework | |
+| 5.2 | `examples/host.yaml`, which does not build on Windows | |
+
+### Section 6, memory over a long uptime
+
+The multi-day rows under "Heap across a full tour" are this section. It is the
+one item that cannot be finished in a single sitting, so start the device
+cycling at the beginning of the session and come back to it.
 
 ### Light front end on a 2D canvas (`matrix-test.yaml`)
 
-Not in the checklist, but it is a separate code path from the panel and nobody
-has watched it either.
+Not in the checklist, so these are lettered rather than numbered, but it is a
+separate code path from the panel and nobody has watched it either.
 
 | # | Item | Result |
 |---|---|---|
-| 5.1 | Scrolling Text reads left to right with no row mirroring | |
-| 5.2 | Matrix falls downwards, not sideways | |
-| 5.3 | A 1D effect expanded onto the 16x16 canvas looks like it does on the strip | |
-| 5.4 | Frame rate at 16x16 on the heaviest particle effects | |
+| L1 | Scrolling Text reads left to right with no row mirroring | |
+| L2 | Matrix falls downwards, not sideways | |
+| L3 | A 1D effect expanded onto the 16x16 canvas looks like it does on the strip | |
+| L4 | Frame rate at 16x16 on the heaviest particle effects | |
 
 ## Reporting a broken effect
 

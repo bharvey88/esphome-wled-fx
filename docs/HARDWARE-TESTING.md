@@ -198,24 +198,119 @@ filter, so with **Tour group** set to `All` they count to 223.
 | Tour group | `All`, `1D`, `2D`, `Particle 2D`, `Particle 1D`, `Audio`, `MM`, `Checklist`. |
 | Next effect / Previous effect | Step by hand. Both respect the group filter. |
 | Restart effect | Back to frame zero without changing effect. This is the one to use on the startup transient questions, PS Galaxy and Blobs. |
-| Unpin controls | Puts Speed, Intensity, Custom and Check back on the effect's own defaults. |
+| Pin controls | Off by default. See [Controls](#controls). |
+| Unpin controls | Puts Speed, Intensity, Custom and Check back on the effect's own defaults, including anything the YAML pinned. |
+| Profile run | One unattended timed pass over every effect. See [Profile run](#profile-run). |
 | Effect / Palette | The component's own selects, all 223 and all 72. They follow the engine, so they track the tour as it moves. |
 | Speed, Intensity, Custom 1 to 3 | The component's numbers. |
 | Check 1 to 3 | The component's switches. |
+| Color 1, Color 2, Color 3 | The three WLED colour slots, one colour picker each. |
+| Effect controls / Effect colours | Text sensors naming what the controls above do in the running effect. |
 | Panel brightness | hub75 brightness, panel builds only. On the strip builds this is the light entity's own slider. |
 | Effect name / Effect group | Text sensors mirroring the current effect. |
+| Effect render time / Frame output time | Microseconds per frame. See [Profile run](#profile-run). |
 
 `Checklist` is the group worth knowing about: it filters the tour down to the 30
 effects [HARDWARE-CHECKLIST.md](../HARDWARE-CHECKLIST.md) actually asks about.
 One pass of that with a long dwell is the fastest route through the table below.
 
-Two behaviours that will otherwise confuse you:
+None of the control entities survive a reboot. A reflash puts everything back to
+what the YAML says.
 
-* Moving Speed, Intensity, Custom or Check **pins** that value, and it then
-  applies to every effect the tour visits afterwards. That is the engine's
-  override model, not a bug. Press **Unpin controls** when you are done poking.
-* None of the control entities survive a reboot. A reflash puts everything back
-  to what the YAML says.
+## Controls
+
+WLED gives every effect the same eight controls and then relabels them per
+effect, so "Custom 1" is Trail on Matrix, Fuse on PS Fireworks and nothing at
+all on Metaballs. The page cannot rename its own entities, so it publishes the
+labels instead, in two text sensors that change every time the effect changes.
+
+**Effect controls** names the controls the running effect actually uses, in
+WLED's own words. For Matrix:
+
+```
+Speed · Intensity: Spawning rate · Custom 1: Trail · Check 1: Custom color
+```
+
+Read it as: Speed does what Speed always does, the Intensity slider is the
+spawning rate, Custom 1 is the trail length, Check 1 turns the custom colour on.
+Custom 2, Custom 3, Check 2 and Check 3 are not listed, so on this effect they
+do nothing at all. For Fire 2012 the same sensor reads
+`Speed: Cooling · Intensity: Spark rate · Custom 2: 2D Blur · Custom 3: Boost`,
+and for PS Fireworks it names all eight.
+
+**Effect colours** does the same for the palette and the three colour slots.
+For Matrix:
+
+```
+Color 1: Spawn · Color 2: Trail
+```
+
+Matrix does not use the palette, so the palette is not mentioned, and it has no
+third colour. An effect that does use the palette says so first, and a slot the
+effect did not name falls back to WLED's own words for it: `Fx` for the effect
+colour, `Bg` for the background, `Cs` for the custom one.
+
+The controls themselves:
+
+| Control | Range | Notes |
+|---|---|---|
+| Speed | 0 to 255 | |
+| Intensity | 0 to 255 | |
+| Custom 1, Custom 2 | 0 to 255 | |
+| Custom 3 | **0 to 31** | Five bits in WLED, and the effects divide it down as one. On Scrolling Text it is the glyph rotation and 16, the default, is upright. |
+| Check 1 to 3 | on / off | |
+| Color 1, Color 2, Color 3 | colour picker | |
+
+### The colour inputs
+
+The three colour slots are three ESPHome lights, because a light is the only
+entity type that both web_server and Home Assistant render as a colour picker.
+
+* **Color 1** is the effect colour and also the panel master, as it is in WLED:
+  its brightness slider dims the whole finished frame and turning it off blanks
+  the panel. The colour it holds is taken at full brightness, so a dim panel is
+  not also a washed out colour 1. It comes up on at WLED's own default primary,
+  so adding it changes nothing about how any effect looks.
+* **Color 2** and **Color 3** are plain colour slots. Their brightness dims that
+  colour and turning one off makes it black, which is how you tell an effect it
+  has no background or no custom colour. Both come up off, which is what the
+  engine starts with anyway.
+
+On the two strip builds the light front end takes colour 1 from the same entity
+rather than from the strip light's own colour, so the harness behaves the same
+everywhere. The strip light's own on/off and brightness still work, so Color 1's
+on/off is ignored there.
+
+In YAML the same three slots are the `wled_fx.set_color` action:
+
+```yaml
+- wled_fx.set_color:
+    id: fx
+    color: 2      # 1, 2 or 3
+    red: 255
+    green: 170
+    blue: 0
+```
+
+### Pin controls
+
+Off, which is the default, a control belongs to the effect you set it on: the
+next effect change refills every control from that effect's own WLED defaults
+and republishes them, so each effect starts the way its author meant.
+
+On, a control you move follows you into every effect afterwards. That is the
+component's own behaviour and what a `speed:` in YAML does. It is useful when
+you are deliberately comparing one setting across effects and baffling when you
+have forgotten you left it on, which is why it is a switch you can see.
+
+Turning the switch off does not unpin what is already pinned, including anything
+the YAML set. **Unpin controls** does that, and also puts the running effect
+back on its own defaults.
+
+This matters more than it sounds. Scrolling Text reads Intensity as a Y offset,
+and at exactly 0 or 255 it stops scrolling across the panel and sweeps up or
+down it instead. An Intensity of 255 left over from an earlier effect is enough
+to make it look broken.
 
 ## What to watch in the logs
 
@@ -283,9 +378,11 @@ probably "change something", so they are worth doing before the long tours.
 
 ### Frame rate at 64x64
 
-Pause the tour on each of these, let it settle for ten seconds, then read
-`Effect frame rate`. These are the heaviest things in the port: the particle
-systems, the per pixel noise fields and the cellular ones.
+A [profile run](#profile-run) measures all 223 of these in one unattended pass
+and is the better way to fill this table in. Doing it by hand: pause the tour on
+each of these, let it settle for ten seconds, then read `Effect frame rate`.
+These are the heaviest things in the port: the particle systems, the per pixel
+noise fields and the cellular ones.
 
 | Effect | Group | fps | Loop time |
 |---|---|---|---|
@@ -314,6 +411,57 @@ ones that count frames run slow in proportion. Change it in one place, reflash,
 and put the new number in the result column beside the old one rather than
 replacing it. The same key exists on the light effect, under the `wled_fx`
 entry in the light's `effects:` list.
+
+### Profile run
+
+One button, one unattended pass, one line per effect. **Profile run** sets the
+dwell to 5 seconds, the group to `All`, goes to the first effect, turns auto
+advance on and logs `[tour] PROFILE START`. Every time it moves on it writes the
+timings for the effect it is leaving, and when it comes back round to the first
+effect it logs `[tour] PROFILE DONE` and stops. All 223 effects at 5 seconds
+each is about twenty minutes, a little more because two slow-paced effects,
+Sunrise and PS Galaxy, are given six times the dwell.
+
+Each line looks like this:
+
+```
+[tour] RESULT idx=12 name="Fire 2012" group=1d_a frames=172 fps=43.5 render_us=4210/3980/9600 out_us=1480/1400/2900 heap=201344 largest=110592 psram=4063232 data_bytes=4096
+```
+
+`render_us` and `out_us` are average, minimum and maximum microseconds, over
+the time that effect was on screen with its first second dropped. The first
+second is allocation and the first pass of a noise field, not the steady state.
+Render time is the effect function; output time is everything from the canvas to
+the panel. Solid at 43.5 fps with a low render time means the frame clock and
+the panel are fine and any slow effect is slow in the effect.
+
+The same two numbers are live on the page the whole time, as **Effect render
+time** and **Frame output time**, if you would rather watch than capture.
+
+Capture it from PowerShell, over wifi, with no serial port involved:
+
+```
+cd examples\hardware-test
+C:\Users\bharv\esphome-venv\Scripts\esphome.exe logs m1-test.yaml --device wled-fx-m1-test.local | Out-File -Encoding utf8 C:\tmp\wfx-flash\profile-m1.log
+```
+
+Press **Profile run** on the web page once the log is streaming, leave it, and
+press Ctrl+C after `PROFILE DONE`. Use `| Out-File -Encoding utf8` rather than
+`*>` or `>`: Windows PowerShell 5.1 writes UTF-16 when it redirects, which most
+tools then read as a wall of NUL bytes. The parser below copes with either, so
+a log captured the other way is not wasted.
+
+Then turn the log into a table:
+
+```
+cd C:\Users\bharv\development\esphome-wled-fx
+python tools\parse_profile_log.py C:\tmp\wfx-flash\profile-m1.log --csv C:\tmp\wfx-flash\profile-m1.csv
+```
+
+It prints markdown, slowest first, with a `Slow` column marking anything under
+40 fps, and writes the same rows to CSV. `--slow-only` drops everything that is
+already fast. Unrelated log lines and the console colour codes are ignored, so
+the whole session log can go in as it is.
 
 ### Heap across a full tour
 

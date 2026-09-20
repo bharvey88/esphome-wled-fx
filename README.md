@@ -605,11 +605,55 @@ switch:
     wled_fx_id: fx
     type: check1      # check2, check3
     name: Check 1
+
+# The three WLED colour slots. A light is the only ESPHome entity that renders
+# as a colour picker, in web_server and in Home Assistant both.
+light:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: color1      # color2, color3
+    name: Color 1
+
+# What those generic controls are called in the effect that is running, read
+# out of its WLED metadata and republished on every effect change. Controls the
+# effect does not use are left out.
+#   Speed · Intensity: Spawning rate · Custom 1: Trail · Check 1: Custom color
+#   Color 1: Spawn · Color 2: Trail
+text_sensor:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: controls    # or colors
+    name: Effect controls
+
+# Microseconds per frame, averaged over the time the current effect has been
+# running, with its first second left out.
+sensor:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: render_time  # or output_time
+    name: Effect render time
 ```
+
+Colour 1 is also the master, as it is in WLED: its brightness scales the whole
+finished frame and turning it off blanks a panel driven by the display front
+end. Colour 2 and colour 3 are plain slots, so their brightness dims that
+colour and off makes it black. On the light front end set `use_light_color:
+false` if you want colour 1 to come from this entity rather than from the
+light's own colour.
 
 Actions: `wled_fx.set_effect`, `wled_fx.next_effect`, `wled_fx.set_palette`,
 `wled_fx.set_text`, `wled_fx.set_speed`, `wled_fx.set_intensity`,
-`wled_fx.set_custom1` to `set_custom3`, `wled_fx.set_check1` to `set_check3`.
+`wled_fx.set_custom1` to `set_custom3`, `wled_fx.set_check1` to `set_check3`,
+`wled_fx.set_color`.
+
+```yaml
+- wled_fx.set_color:
+    id: fx
+    color: 2      # 1, 2 or 3
+    red: 255
+    green: 170
+    blue: 0
+```
 
 ## Host simulator
 
@@ -625,7 +669,11 @@ tools/sim/build/wled_fx_sim --out tools/sim/out
 ```
 
 `--effect NAME`, `--group NAME`, `--palette N`, `--frames N`, `--size WxH`,
-`--map N`, `--no-images` and `--list` narrow it down. `--map` only applies to
+`--map N`, `--speed N`, `--intensity N`, `--text STRING`, `--no-images` and
+`--list` narrow it down. `--speed`, `--intensity` and the `--custom` and
+`--check` options are how a state seen on hardware gets reproduced here, since
+a control left over from a previous effect is what most "this effect is broken"
+reports turn out to be. `--map` only applies to
 effects that can run in 1D, because that is the only place the 1D to 2D mapping
 means anything. `-DWLED_FX_SANITIZE=ON` adds ASan and UBSan on toolchains
 that have them.
@@ -648,6 +696,13 @@ frequency, a sweep walks up the channels, a kick drum pulse train fires the beat
 flag, silence and anything under the squelch stay dark, the AGC presets wind the
 gain up and down, and the bin mapping still works at 16000, 32000 and 44100 Hz.
 Add `--verbose` to see every band.
+
+It also produces `wled_fx_effect_test`, which answers the questions a still
+image cannot: which way Scrolling Text moves across a 64x64 panel and that its
+glyphs are upright at the metadata defaults, that a control set with sticky
+controls off does not follow you into the next effect, that `custom3` is five
+bits everywhere, and that every effect's control labels parse to something
+readable that fits in a Home Assistant state.
 
 ## Contributing an effect
 

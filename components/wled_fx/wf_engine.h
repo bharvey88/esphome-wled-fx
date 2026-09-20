@@ -61,6 +61,12 @@ class Engine {
   void set_tertiary_color(uint32_t c) { this->seg_.colors[2] = c; }
   void set_text(const char *text) { this->seg_.text = text != nullptr ? text : ""; }
 
+  /* Puts the current effect back to frame zero, the way selecting it again
+   * would: the scratch block is kept but marked stale, so the effect reinitialises
+   * into it. The light front end calls this when the effect is stopped, so turning
+   * the light on starts the animation rather than resuming it mid stride. */
+  void restart_effect() { this->seg_.reset(); }
+
   // Runs one frame at timestamp now (milliseconds).
   void render(uint32_t now);
 

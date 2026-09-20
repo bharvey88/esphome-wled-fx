@@ -25,9 +25,16 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "components" / "wled_fx"))
 
-from effect_index import effect_macro, effect_names, palette_names  # noqa: E402
+from effect_index import (  # noqa: E402
+    effect_macro,
+    effect_names,
+    palette_names,
+    two_dimensional_only,
+)
 
-LINE = re.compile(r"^(\S+)\s+(.+?)\s+flags=0x[0-9A-Fa-f]{2}\s")
+LINE = re.compile(r"^(\S+)\s+(.+?)\s+flags=0x([0-9A-Fa-f]{2})\s")
+FLAG_1D = 1 << 1
+FLAG_0D = 1 << 0
 GUARD = re.compile(r"#define\s+WLED_FX_GROUP_\w+\s*((?:[^\n\\]*\\\s*\n)*[^\n]*)")
 FX_MACRO = re.compile(r"WLED_FX_FX_\w+")
 
@@ -40,16 +47,16 @@ def find_sim() -> pathlib.Path:
     sys.exit("build the simulator first: cmake --build tools/sim/build")
 
 
-def registered_names() -> list[str]:
+def registered() -> list[tuple[str, int]]:
     out = subprocess.run(
         [str(find_sim()), "--list"], capture_output=True, text=True, check=True
     ).stdout
-    names = []
+    entries = []
     for line in out.splitlines():
         match = LINE.match(line)
         if match is not None:
-            names.append(match.group(2).strip())
-    return names
+            entries.append((match.group(2).strip(), int(match.group(3), 16)))
+    return entries
 
 
 def guarded_macros() -> set[str]:
@@ -63,7 +70,8 @@ def guarded_macros() -> set[str]:
 def main() -> int:
     problems = []
 
-    registry = registered_names()
+    entries = registered()
+    registry = [name for name, _ in entries]
     scanned = effect_names()
     if not registry:
         sys.exit("the simulator reported no effects")
@@ -88,6 +96,20 @@ def main() -> int:
         problems.append(
             "these effects are registered but no WLED_FX_GROUP_* guard names "
             f"them, so an 'effects:' allow-list cannot select them: {unguarded}"
+        )
+
+    # The config validation refuses a 2D-only effect on a light it can see is
+    # one pixel high, so its idea of which effects those are has to match the
+    # flags the registry parses out of the same metadata.
+    registry_2d_only = {
+        name for name, flags in entries if not flags & (FLAG_1D | FLAG_0D)
+    }
+    scanned_2d_only = two_dimensional_only()
+    if registry_2d_only != scanned_2d_only:
+        problems.append(
+            "the scanner and the registry disagree about which effects are 2D "
+            f"only: registry only {sorted(registry_2d_only - scanned_2d_only)}, "
+            f"scanner only {sorted(scanned_2d_only - registry_2d_only)}"
         )
 
     palettes = palette_names()

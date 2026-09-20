@@ -392,7 +392,7 @@ void AudioProcessor::detect_sample_peak_(uint32_t now_ms) {
 
 void AudioProcessor::auto_reset_peak_(uint32_t now_ms) {
   /* Upstream uses max(50, strip.getFrameTime()). There is no strip here and the
-   * front ends run at 33 ms, so the lower bound is always the one that applies. */
+   * front ends run at 23 ms, so the lower bound is always the one that applies. */
   constexpr uint32_t PEAK_DELAY = 50;
   if (now_ms - this->time_of_peak_ > PEAK_DELAY)
     this->sample_peak_ = false;

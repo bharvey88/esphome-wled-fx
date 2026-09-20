@@ -34,7 +34,7 @@ enum Mapping1D2D : uint8_t {
   M12_S_PINWHEEL = 4,
 };
 
-// WLED's nominal frame period at its default 24 fps target.
+// WLED's nominal frame period at its default WLED_FPS of 42.
 inline constexpr uint32_t FRAMETIME = 1000 / 42;
 
 // WLED FX.h's FRAMETIME_FIXED, the frame period at WLED_FPS regardless of what the
@@ -85,9 +85,15 @@ class Segment {
 
   // Frame timestamp in milliseconds. Every effect in a frame sees the same value.
   uint32_t now{0};
-  // The same instant in microseconds, for the handful of upstream effects that
-  // call micros() for sub-millisecond pacing. Derived from `now`, so it steps in
-  // 1000 microsecond jumps and the host simulator stays reproducible.
+  /* The same instant in microseconds, for the handful of upstream effects that
+   * call micros() for sub-millisecond pacing. Derived from `now`, so it steps in
+   * 1000 microsecond jumps and the host simulator stays reproducible.
+   *
+   * 32 bits of microseconds wraps every 71.6 minutes, exactly as upstream's
+   * micros() does on an ESP32. All seven effects that read this divide it down
+   * to a counter and compare the counter to the previous frame's; none of them
+   * subtracts two timestamps. A wrap therefore costs one glitched frame every
+   * 71.6 minutes and nothing else, which is upstream's behaviour too. */
   uint32_t now_us{0};
 
   // Text for the text effects. Never null; empty string when unset.
@@ -153,11 +159,25 @@ class Segment {
     return src != nullptr && src->has_data();
   }
 
-  // --- effect scratch data -------------------------------------------------------
-  // Allocated on effect start only, never per frame. Zero filled. A repeat call
-  // with the same length is a no-op, matching WLED.
+  /* --- effect scratch data --------------------------------------------------
+   *
+   * Allocated on effect start only, never per frame. Zero filled. A repeat call
+   * with the same length is a no-op, matching WLED.
+   *
+   * Unlike WLED this block grows and is then reused: changing the effect marks
+   * it stale rather than freeing it, and the next effect gets the same memory
+   * zeroed, reallocating only when it needs more. WLED frees and reallocates on
+   * every effect change, which on an ESP32 with no PSRAM and a long uptime is a
+   * fragmentation source: the blocks are tens of kilobytes and every size is
+   * different. Keeping the high water mark trades a little idle RAM, bounded by
+   * the largest effect the device can run at all, for never fragmenting the
+   * heap after setup. See PORTING.md.
+   *
+   * deallocate_data() is still a real free, because the particle system uses it
+   * to make `data` null when there is no valid system in it. */
   bool allocate_data(size_t len);
   void deallocate_data();
+  // The length the running effect asked for, not the capacity held.
   size_t data_size() const { return this->data_len_; }
 
   // --- raw pixel access ----------------------------------------------------------
@@ -269,7 +289,8 @@ class Segment {
 
   Canvas *canvas_{nullptr};
   CRGBPalette16 current_palette_{};
-  size_t data_len_{0};
+  size_t data_len_{0};  // what the running effect asked for
+  size_t data_cap_{0};  // what is actually allocated, never smaller
   uint32_t *scratch_{nullptr};  // one row or column, for move_x / move_y
   // Bresenham coordinates for the two rays of the pinwheel mapping. Upstream puts
   // these on the stack as variable length arrays, which this port does not allow,

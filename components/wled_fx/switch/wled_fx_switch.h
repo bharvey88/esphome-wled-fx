@@ -24,6 +24,8 @@ class WledFxSwitch : public switch_::Switch, public Component, public Parented<W
 
  protected:
   void write_state(bool state) override;
+  // Publishes whatever the engine currently has.
+  void publish_current_();
 
   WledFxSwitchType type_;
 };

@@ -25,6 +25,8 @@ class WledFxSelect : public select::Select, public Component, public Parented<Wl
 
  protected:
   void control(const std::string &value) override;
+  // Publishes whatever the engine currently has, if it is not already published.
+  void publish_current_();
 
   WledFxSelectType type_;
   char *name_arena_{nullptr};  // holds the effect names the option list points at

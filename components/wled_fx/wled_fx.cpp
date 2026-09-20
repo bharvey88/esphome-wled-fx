@@ -1,5 +1,6 @@
 #include "wled_fx.h"
 
+#include <cinttypes>
 #include <cmath>
 
 #include "esphome/core/application.h"
@@ -10,10 +11,19 @@ namespace wled_fx {
 
 static const char *const TAG = "wled_fx";
 
-bool WledFxController::set_effect_by_name(const std::string &name) { return this->engine_.set_effect(name.c_str()); }
+bool WledFxController::set_effect_by_name(const std::string &name) {
+  if (!this->engine_.set_effect(name.c_str()))
+    return false;
+  // The new effect's metadata just refilled every unpinned control.
+  this->notify_state_change();
+  return true;
+}
 
 bool WledFxController::set_palette_by_name(const std::string &name) {
-  return this->engine_.set_palette_by_name(name.c_str());
+  if (!this->engine_.set_palette_by_name(name.c_str()))
+    return false;
+  this->notify_state_change();
+  return true;
 }
 
 void WledFxController::next_effect() {
@@ -21,6 +31,7 @@ void WledFxController::next_effect() {
   if (total == 0)
     return;
   this->engine_.set_effect_index((this->engine_.effect_index() + 1) % total);
+  this->notify_state_change();
 }
 
 std::string WledFxController::current_effect_name() const {
@@ -37,6 +48,23 @@ std::string WledFxController::current_palette_name() const {
   if (id >= palette_count())
     return "";
   return PALETTE_NAMES[id];
+}
+
+bool WledFxController::frame_due_(uint32_t now) {
+  if (!this->have_deadline_) {
+    this->have_deadline_ = true;
+    this->next_frame_ = now + this->frame_interval_;
+    return true;  // first frame after a start, draw something straight away
+  }
+  // Signed comparison, so this stays right across the millis() wrap.
+  if (static_cast<int32_t>(now - this->next_frame_) < 0)
+    return false;
+  this->next_frame_ += this->frame_interval_;
+  // More than a whole period behind: the loop stalled, so start again from here
+  // rather than render a burst of frames to catch up.
+  if (static_cast<int32_t>(now - this->next_frame_) >= 0)
+    this->next_frame_ = now + this->frame_interval_;
+  return true;
 }
 
 void WledFxController::set_text_value(const std::string &text) {
@@ -84,10 +112,13 @@ void WledFxDisplay::setup() {
   this->engine_.set_text(this->text_.c_str());
 }
 
-void WledFxDisplay::update() {
+void WledFxDisplay::loop() {
   if (!this->enabled_ || this->frame_ == nullptr)
     return;
-  this->engine_.render(App.get_loop_component_start_time());
+  const uint32_t now = App.get_loop_component_start_time();
+  if (!this->frame_due_(now))
+    return;
+  this->engine_.render(now);
 
   const Canvas &canvas = this->engine_.canvas();
   const size_t pixels = canvas.size();
@@ -109,13 +140,14 @@ void WledFxDisplay::dump_config() {
   ESP_LOGCONFIG(TAG,
                 "WLED FX display:\n"
                 "  Canvas: %dx%d\n"
+                "  Frame interval: %" PRIu32 " ms\n"
                 "  Gamma: %.2f\n"
                 "  Effects compiled in: %u\n"
                 "  Effect: %s\n"
                 "  Palette: %s",
-                this->width_, this->height_, this->gamma_, static_cast<unsigned>(EffectRegistry::count()),
-                this->current_effect_name().c_str(), this->current_palette_name().c_str());
-  LOG_UPDATE_INTERVAL(this);
+                this->width_, this->height_, this->frame_interval(), this->gamma_,
+                static_cast<unsigned>(EffectRegistry::count()), this->current_effect_name().c_str(),
+                this->current_palette_name().c_str());
 }
 
 #endif  // USE_DISPLAY

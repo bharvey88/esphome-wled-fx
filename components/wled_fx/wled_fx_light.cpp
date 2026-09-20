@@ -43,21 +43,26 @@ void WledFxLightEffect::start() {
   this->width_ = width;
   this->height_ = height;
   this->ready_ = true;
-  this->last_frame_ = 0;
+  this->reset_frame_clock();
 }
 
 void WledFxLightEffect::stop() {
   light::AddressableLightEffect::stop();
   this->ready_ = false;
+  /* Puts the effect back to frame zero, so turning the light on starts the
+   * animation rather than resuming it mid stride, which is what WLED does on a
+   * segment change. The canvas and the effect's scratch block are both kept:
+   * see the note on Segment::allocate_data() for why nothing is handed back to
+   * the heap after setup. */
+  this->engine_.restart_effect();
 }
 
 void WledFxLightEffect::apply(light::AddressableLight &it, const Color &current_color) {
   if (!this->ready_)
     return;
   const uint32_t now = App.get_loop_component_start_time();
-  if (this->last_frame_ != 0 && now - this->last_frame_ < this->frame_interval_)
+  if (!this->frame_due_(now))
     return;
-  this->last_frame_ = now;
 
   if (this->use_light_color_) {
     this->engine_.set_primary_color(RGBW32(current_color.r, current_color.g, current_color.b, current_color.w));

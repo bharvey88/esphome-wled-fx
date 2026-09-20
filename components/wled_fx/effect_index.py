@@ -52,18 +52,47 @@ def effect_macro(name: str) -> str:
     return "WLED_FX_FX_" + re.sub(r"[^A-Z0-9]+", "_", expanded).strip("_")
 
 
-def effect_names(component_dir: Path | None = None) -> list[str]:
-    """Every effect display name in registration order."""
+def effect_metadata(component_dir: Path | None = None) -> list[str]:
+    """Every effect's WLED metadata string, in registration order."""
     directory = component_dir or COMPONENT_DIR
-    names: list[str] = []
+    metadata: list[str] = []
     for path in sorted(directory.glob("wf_effects_*.cpp")):
         block = _ENTRIES_BLOCK_RE.search(path.read_text(encoding="utf-8"))
         if block is None:
             continue
         for literals in _ENTRY_RE.findall(block.group(1)):
-            metadata = "".join(_LITERAL_RE.findall(literals))
-            names.append(metadata.split("@", 1)[0])
-    return names
+            metadata.append("".join(_LITERAL_RE.findall(literals)))
+    return metadata
+
+
+def effect_names(component_dir: Path | None = None) -> list[str]:
+    """Every effect display name in registration order."""
+    return [entry.split("@", 1)[0] for entry in effect_metadata(component_dir)]
+
+
+def runs_in_1d(metadata: str) -> bool:
+    """True unless the effect's metadata says it is 2D only.
+
+    The fourth ';' group of a WLED metadata string is the dimensionality set:
+    '1' for 1D, '2' for 2D, and an empty or missing group means 1D. Matches
+    effect_defaults() in wf_registry.cpp, which reads the same group.
+    """
+    groups = metadata.split("@", 1)[-1].split(";")
+    if len(groups) < 4:
+        return True
+    dimensions = groups[3].strip()
+    if not dimensions:
+        return True
+    return "1" in dimensions or "0" in dimensions
+
+
+def two_dimensional_only(component_dir: Path | None = None) -> set[str]:
+    """The effects that render nothing but a solid fill on a 1D canvas."""
+    return {
+        entry.split("@", 1)[0]
+        for entry in effect_metadata(component_dir)
+        if not runs_in_1d(entry)
+    }
 
 
 def palette_names(component_dir: Path | None = None) -> list[str]:

@@ -29,7 +29,13 @@ from esphome.const import (
 )
 import esphome.final_validate as fv
 
-from .effect_index import effect_macro, effect_names, palette_names, suggestion
+from .effect_index import (
+    effect_macro,
+    effect_names,
+    palette_names,
+    suggestion,
+    two_dimensional_only,
+)
 
 CODEOWNERS = ["@bharvey88"]
 DOMAIN = "wled_fx"
@@ -75,9 +81,7 @@ FRAMETIME = "23ms"
 
 wled_fx_ns = cg.esphome_ns.namespace("wled_fx")
 WledFxController = wled_fx_ns.class_("WledFxController")
-WledFxDisplay = wled_fx_ns.class_(
-    "WledFxDisplay", cg.PollingComponent, WledFxController
-)
+WledFxDisplay = wled_fx_ns.class_("WledFxDisplay", cg.Component, WledFxController)
 WledFxLightEffect = wled_fx_ns.class_(
     "WledFxLightEffect", AddressableLightEffect, WledFxController
 )
@@ -224,9 +228,12 @@ _ENTRY_SCHEMA = cv.Schema(
         cv.Optional(CONF_HEIGHT): cv.positive_not_null_int,
         cv.Optional(CONF_GAMMA_CORRECT, default=1.0): cv.positive_float,
         cv.Optional(CONF_AUDIO): AUDIO_SCHEMA,
+        cv.Optional(
+            CONF_UPDATE_INTERVAL, default=FRAMETIME
+        ): cv.positive_time_period_milliseconds,
         **CONTROL_SCHEMA,
     }
-).extend(cv.polling_component_schema(FRAMETIME))
+).extend(cv.COMPONENT_SCHEMA)
 
 
 def _validate_entry(config):
@@ -456,20 +463,50 @@ async def to_code(config):
             var.set_dimensions(entry.get(CONF_WIDTH, 0), entry.get(CONF_HEIGHT, 0))
         )
         cg.add(var.set_gamma(entry[CONF_GAMMA_CORRECT]))
+        cg.add(var.set_frame_interval(entry[CONF_UPDATE_INTERVAL]))
         await apply_controls(var, entry)
 
 
-LIGHT_EFFECT_SCHEMA = {
-    cv.Optional(CONF_ID): cv.declare_id(WledFxLightEffect),
-    cv.Optional(CONF_WIDTH): cv.positive_not_null_int,
-    cv.Optional(CONF_HEIGHT): cv.positive_not_null_int,
-    cv.Optional(CONF_SERPENTINE, default=False): cv.boolean,
-    cv.Optional(CONF_USE_LIGHT_COLOR, default=True): cv.boolean,
-    cv.Optional(
-        CONF_UPDATE_INTERVAL, default=FRAMETIME
-    ): cv.positive_time_period_milliseconds,
-    **CONTROL_SCHEMA,
-}
+LIGHT_EFFECT_SCHEMA = cv.Schema(
+    {
+        cv.Optional(CONF_ID): cv.declare_id(WledFxLightEffect),
+        cv.Optional(CONF_WIDTH): cv.positive_not_null_int,
+        cv.Optional(CONF_HEIGHT): cv.positive_not_null_int,
+        cv.Optional(CONF_SERPENTINE, default=False): cv.boolean,
+        cv.Optional(CONF_USE_LIGHT_COLOR, default=True): cv.boolean,
+        cv.Optional(
+            CONF_UPDATE_INTERVAL, default=FRAMETIME
+        ): cv.positive_time_period_milliseconds,
+        **CONTROL_SCHEMA,
+    }
+)
+
+
+def _validate_light_effect(config):
+    """A 2D-only effect on a strip renders a solid colour and nothing else.
+
+    56 of the 223 effects say in their metadata that they only run on a matrix,
+    and every one of them falls back to a solid fill on a one pixel high canvas,
+    which is what WLED does too. That is deterministic but it is never what
+    somebody meant, so say so at config time when the geometry is knowable. The
+    display front end takes its size from the display, which is not knowable
+    here, so this check only covers the light effect.
+    """
+    height = config.get(CONF_HEIGHT)
+    width = config.get(CONF_WIDTH)
+    is_1d = height == 1 or (height is None and width is None)
+    effect = config.get(CONF_EFFECT)
+    if is_1d and effect is not None:
+        matrix_only = {name.casefold() for name in two_dimensional_only()}
+        if effect.casefold() in matrix_only:
+            raise cv.Invalid(
+                f'"{effect}" only runs on a matrix. On a one dimensional strip '
+                "it renders a solid colour and nothing else. Give this effect "
+                "'width' and 'height' for a matrix wired as one strip, or pick "
+                "a 1D effect.",
+                path=[CONF_EFFECT],
+            )
+    return config
 
 
 # --- actions -----------------------------------------------------------------
@@ -578,6 +615,7 @@ for _key, _enum in CHECKS.items():
     WledFxLightEffect,
     "WLED FX",
     LIGHT_EFFECT_SCHEMA,
+    _validate_light_effect,
 )
 async def wled_fx_light_effect_to_code(config, effect_id):
     var = cg.new_Pvariable(config.get(CONF_ID, effect_id), config[CONF_NAME])

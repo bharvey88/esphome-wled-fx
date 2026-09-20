@@ -24,7 +24,6 @@ class WledFxLightEffect : public light::AddressableLightEffect, public WledFxCon
     this->height_ = height;
   }
   void set_serpentine(bool serpentine) { this->serpentine_ = serpentine; }
-  void set_frame_interval(uint32_t interval_ms) { this->frame_interval_ = interval_ms; }
   void set_use_light_color(bool use) { this->use_light_color_ = use; }
 
   void start() override;
@@ -36,8 +35,6 @@ class WledFxLightEffect : public light::AddressableLightEffect, public WledFxCon
   int height_{0};
   bool serpentine_{false};
   bool use_light_color_{true};
-  uint32_t frame_interval_{33};
-  uint32_t last_frame_{0};
   bool ready_{false};
 };
 

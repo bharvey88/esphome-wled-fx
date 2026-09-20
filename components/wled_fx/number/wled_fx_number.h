@@ -27,6 +27,8 @@ class WledFxNumber : public number::Number, public Component, public Parented<Wl
  protected:
   void control(float value) override;
   uint8_t read_current_() const;
+  // Publishes whatever the engine currently has, if it is not already published.
+  void publish_current_();
 
   WledFxNumberType type_;
 };

@@ -61,6 +61,7 @@ template<typename... Ts> class SetSliderAction : public Action<Ts...>, public Pa
         this->parent_->engine().set_custom3(v);
         break;
     }
+    this->parent_->notify_state_change();
   }
 
  protected:
@@ -90,6 +91,7 @@ template<typename... Ts> class SetCheckAction : public Action<Ts...>, public Par
         this->parent_->engine().set_check3(v);
         break;
     }
+    this->parent_->notify_state_change();
   }
 
  protected:

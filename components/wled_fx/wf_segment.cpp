@@ -78,7 +78,11 @@ void Segment::reset() {
   this->aux1 = 0;
   this->prev_rays_[0] = 0x7FFFFFFF;
   this->prev_rays_[1] = 0x7FFFFFFF;
-  this->deallocate_data();
+  /* The scratch block is kept, not freed: data_len_ 0 means the next
+   * allocate_data() zeroes it rather than handing over the previous effect's
+   * bytes, and only a request bigger than the block reallocates. See the note
+   * in wf_segment.h. */
+  this->data_len_ = 0;
   if (this->canvas_ != nullptr)
     this->canvas_->clear();
 }
@@ -90,11 +94,23 @@ bool Segment::allocate_data(size_t len) {
   }
   if (this->data != nullptr && this->data_len_ == len)
     return true;  // already the right size, matches WLED
+
+  if (this->data != nullptr && this->data_cap_ >= len) {
+    /* The block from the previous effect, or from this effect at a different
+     * size, is big enough. WLED would free it and allocate again; reusing it
+     * keeps the heap from fragmenting. The caller is entitled to zeroed memory
+     * either way, and only the part it asked for is its business. */
+    memset(this->data, 0, len);
+    this->data_len_ = len;
+    return true;
+  }
+
   this->deallocate_data();
   this->data = static_cast<uint8_t *>(platform_alloc(len));
   if (this->data == nullptr)
     return false;
   this->data_len_ = len;
+  this->data_cap_ = len;
   return true;
 }
 
@@ -104,6 +120,7 @@ void Segment::deallocate_data() {
     this->data = nullptr;
   }
   this->data_len_ = 0;
+  this->data_cap_ = 0;
 }
 
 unsigned Segment::length() const {

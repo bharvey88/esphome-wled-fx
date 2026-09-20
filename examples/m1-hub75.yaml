@@ -48,7 +48,7 @@ display:
 wled_fx:
   id: fx
   display_id: matrix
-  update_interval: 33ms
+  update_interval: 23ms
   effect: Fire 2012
   text: "WLED FX"
 

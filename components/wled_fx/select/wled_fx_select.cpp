@@ -40,10 +40,17 @@ void WledFxSelect::setup() {
   }
   this->traits.set_options(options);
 
+  this->publish_current_();
+  // An action or another entity can change the effect, so follow the engine
+  // rather than only publishing once here.
+  this->parent_->add_on_state_change_callback([this]() { this->publish_current_(); });
+}
+
+void WledFxSelect::publish_current_() {
   const std::string current = this->type_ == WledFxSelectType::WLED_FX_SELECT_TYPE_EFFECT
                                   ? this->parent_->current_effect_name()
                                   : this->parent_->current_palette_name();
-  if (!current.empty())
+  if (!current.empty() && (!this->has_state() || this->state != current))
     this->publish_state(current);
 }
 
@@ -53,9 +60,12 @@ void WledFxSelect::control(const std::string &value) {
                       : this->parent_->set_palette_by_name(value);
   if (!ok) {
     ESP_LOGW(TAG, "'%s' is not available in this build", value.c_str());
+    // Put the dropdown back to what the engine is actually running.
+    this->publish_current_();
     return;
   }
-  this->publish_state(value);
+  // A successful change already published through the state change callback,
+  // and it published the registry's spelling rather than whatever arrived.
 }
 
 void WledFxSelect::dump_config() { LOG_SELECT("", "WLED FX Select", this); }

@@ -31,8 +31,8 @@ static const uint32_t FFT_TASK_STACK_SIZE = 3072;
 static const UBaseType_t FFT_TASK_PRIORITY = 2;
 
 /* WLED clears samplePeak once a frame has passed, from its main loop. The
- * analysis runs every 23 ms and the front ends render every 33 ms, so without
- * this the flag would be visible for two or three frames. */
+ * analysis runs every 23 ms and so does the default frame clock, so without
+ * this the flag could still be visible for two or three frames. */
 static const uint32_t PEAK_DELAY_MS = 50;
 
 // About three seconds of audio, by which point the smoothed cost has settled.

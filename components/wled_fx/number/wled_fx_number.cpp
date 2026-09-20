@@ -24,7 +24,19 @@ uint8_t WledFxNumber::read_current_() const {
   return 0;
 }
 
-void WledFxNumber::setup() { this->publish_state(this->read_current_()); }
+void WledFxNumber::setup() {
+  this->publish_current_();
+  /* Changing the effect refills every control the user did not pin from the new
+   * effect's metadata defaults, so this entity is stale the moment anything else
+   * moves unless it follows the engine. */
+  this->parent_->add_on_state_change_callback([this]() { this->publish_current_(); });
+}
+
+void WledFxNumber::publish_current_() {
+  const float current = this->read_current_();
+  if (!this->has_state() || this->state != current)
+    this->publish_state(current);
+}
 
 void WledFxNumber::control(float value) {
   const uint8_t v = static_cast<uint8_t>(value);
@@ -46,7 +58,9 @@ void WledFxNumber::control(float value) {
       engine.set_custom3(v);
       break;
   }
-  this->publish_state(value);
+  // set_custom3() clamps to 31, so republish what the engine took, not what
+  // arrived.
+  this->publish_current_();
 }
 
 void WledFxNumber::dump_config() { LOG_NUMBER("", "WLED FX Number", this); }

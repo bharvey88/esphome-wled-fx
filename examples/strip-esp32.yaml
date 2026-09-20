@@ -46,7 +46,7 @@ light:
           id: strip_fx
           name: WLED FX
           effect: Pride 2015
-          update_interval: 33ms
+          update_interval: 23ms
       - wled_fx:
           name: WLED Fire
           effect: Fire 2012

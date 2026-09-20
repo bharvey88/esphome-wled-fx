@@ -6,6 +6,7 @@ sources at config time, and everything derived from WLED lives there, under
 GPLv3. See PORTING.md.
 """
 
+import logging
 from pathlib import Path
 import re
 
@@ -25,6 +26,7 @@ from esphome.const import (
     CONF_ID,
     CONF_MICROPHONE,
     CONF_NAME,
+    CONF_PLATFORM,
     CONF_RED,
     CONF_TEXT,
     CONF_UPDATE_INTERVAL,
@@ -42,6 +44,8 @@ from .effect_index import (
     suggestion,
     two_dimensional_only,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 CODEOWNERS = ["@bharvey88"]
 DOMAIN = "wled_fx"
@@ -86,6 +90,13 @@ UPDATE_INTERVAL_NEVER = 4294967295
 # wf_segment.h and with frame_interval_ in wled_fx_light.h.
 FRAMETIME = "23ms"
 DEFAULT_FRAME_INTERVAL = cv.positive_time_period_milliseconds(FRAMETIME)
+
+# WLED's own output gamma, applied to the finished frame in show()
+# (wled00/FX_fcn.cpp:1723) and on by default there (wled00/wled.h:412 and :414).
+# The display front end is the stage that stands in for show(), so it carries
+# the same default. 1.0 turns the stage off, for an output that already applies
+# a curve of its own.
+DEFAULT_OUTPUT_GAMMA = 2.2
 
 # Where somebody who installed this with external_components can actually read
 # the effect and palette lists. A bare "see README.md" means nothing to them.
@@ -305,6 +316,7 @@ _ENTRY_SCHEMA = cv.Schema(
         #
         # gamma_correct is an exponent, and 0.0 makes pow(i / 255, 0) == 1 for
         # every input, so the whole panel goes to full white and stays there.
+        # The default, applied in to_code(), is WLED's 2.2.
         cv.Optional(CONF_GAMMA_CORRECT): cv.float_range(min=0.1, max=10.0),
         # A display is a 2D output, so this is the opt-in that puts the 1D-only
         # effects back on the list. No default, for the same reason as the two
@@ -317,7 +329,27 @@ _ENTRY_SCHEMA = cv.Schema(
 ).extend(cv.COMPONENT_SCHEMA)
 
 
+def _reject_esp8266(config):
+    """ESP8266 is not a supported target, so say so rather than half support it.
+
+    Nothing here has been built or run on one. WLED's own ESP8266 build gives an
+    effect a scratch budget of 384 bytes against the 4096 an ESP32-S3 gets, the
+    engine keeps a full RGB canvas of its own on top of whatever the output
+    needs, and 223 effect bodies is a lot of flash for a 1 MB part. A branch
+    nobody can test is worse than an honest refusal.
+    """
+    if CORE.is_esp8266:
+        raise cv.Invalid(
+            "wled_fx does not support the ESP8266. The engine has only ever been "
+            "built and measured on ESP32 family boards and on the host platform, "
+            "and an ESP8266 has neither the RAM the effect scratch budget assumes "
+            "nor the flash for the effect list."
+        )
+    return config
+
+
 def _validate_entry(config):
+    _reject_esp8266(config)
     if CONF_DISPLAY_ID in config:
         # A display is always a 2D output: that is what makes it a display.
         _check_effect_fits(config, True, config.get(CONF_INCLUDE_1D_EFFECTS, False))
@@ -484,7 +516,37 @@ def _final_validate(config):
                 "The engine paints every pixel every frame.",
                 path=[CONF_DISPLAY_ID],
             )
+        _warn_on_double_gamma(entry, display_config)
     return config
+
+
+def _warn_on_double_gamma(entry, display_config):
+    """Two curves in a row is a panel much darker than WLED, so say so.
+
+    WLED's HUB75 builds compile the panel library with -D NO_CIE1931
+    (WLED platformio.ini, the shared [hub75] flags), so the only curve on a
+    WLED panel is the gamma 2.2 that show() applies. ESPHome's hub75 driver
+    applies CIE1931 unless it is told otherwise
+    (esp-hub75 include/hub75_config.h, HUB75_GAMMA_MODE 1), and that lands on
+    top of this component's output gamma. A warning rather than an error: the
+    combination is a look, not a mistake, and only the user knows which they
+    want.
+    """
+    if display_config.get(CONF_PLATFORM) != "hub75":
+        return
+    gamma = entry.get(CONF_GAMMA_CORRECT, DEFAULT_OUTPUT_GAMMA)
+    driver_curve = str(display_config.get(CONF_GAMMA_CORRECT, "CIE1931"))
+    if gamma == 1.0 or driver_curve == "LINEAR":
+        return
+    _LOGGER.warning(
+        "wled_fx applies gamma %.2f and the hub75 display applies %s on top of it, "
+        "so this panel will be darker than a WLED device. A WLED HUB75 build "
+        "disables the driver curve: set 'gamma_correct: LINEAR' on the hub75 "
+        "display to match it, or 'gamma_correct: 1.0' on wled_fx to leave the "
+        "curve to the driver.",
+        gamma,
+        driver_curve,
+    )
 
 
 FINAL_VALIDATE_SCHEMA = _final_validate
@@ -677,7 +739,7 @@ async def to_code(config):
         cg.add(
             var.set_dimensions(entry.get(CONF_WIDTH, 0), entry.get(CONF_HEIGHT, 0))
         )
-        cg.add(var.set_gamma(entry.get(CONF_GAMMA_CORRECT, 1.0)))
+        cg.add(var.set_gamma(entry.get(CONF_GAMMA_CORRECT, DEFAULT_OUTPUT_GAMMA)))
         # A display is a matrix, so this front end is always a 2D output.
         cg.add(var.set_layout_2d(True))
         cg.add(
@@ -720,6 +782,7 @@ def _light_effect_is_2d(config) -> bool:
 
 def _validate_light_effect(config):
     """Rejects an effect the light's own geometry cannot run."""
+    _reject_esp8266(config)
     two_dimensional = _light_effect_is_2d(config)
     include_1d = config.get(CONF_INCLUDE_1D_EFFECTS, False)
     if include_1d and not two_dimensional:

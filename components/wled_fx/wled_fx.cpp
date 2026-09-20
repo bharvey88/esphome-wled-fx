@@ -215,11 +215,7 @@ void WledFxDisplay::setup() {
     return;
   }
 
-  for (int i = 0; i < 256; i++) {
-    this->gamma_lut_[i] = this->gamma_ == 1.0f
-                              ? static_cast<uint8_t>(i)
-                              : static_cast<uint8_t>(std::lround(std::pow(i / 255.0f, this->gamma_) * 255.0f));
-  }
+  build_output_gamma_lut(this->gamma_, this->gamma_lut_);
 
   if (!this->engine_.init(static_cast<uint16_t>(this->width_), static_cast<uint16_t>(this->height_))) {
     ESP_LOGE(TAG, "Canvas allocation failed for %dx%d", this->width_, this->height_);
@@ -314,13 +310,14 @@ void WledFxDisplay::dump_config() {
                 "WLED FX display:\n"
                 "  Canvas: %dx%d\n"
                 "  Frame interval: %" PRIu32 " ms\n"
-                "  Gamma: %.2f\n"
+                "  Output gamma: %.2f\n"
+                "  Effect scratch profile: %s, %u bytes a segment\n"
                 "  Effects compiled in: %u\n"
                 "  Effect: %s\n"
                 "  Palette: %s",
-                this->width_, this->height_, this->frame_interval(), this->gamma_,
-                static_cast<unsigned>(EffectRegistry::count()), this->current_effect_name().c_str(),
-                this->current_palette_name().c_str());
+                this->width_, this->height_, this->frame_interval(), this->gamma_, segment_data_profile(),
+                FAIR_DATA_PER_SEG, static_cast<unsigned>(EffectRegistry::count()),
+                this->current_effect_name().c_str(), this->current_palette_name().c_str());
 }
 
 #endif  // USE_DISPLAY

@@ -213,7 +213,11 @@ class WledFxDisplay : public Component, public WledFxController {
   uint8_t *frame_{nullptr};
   int width_{0};
   int height_{0};
-  float gamma_{1.0f};
+  /* WLED's show() stage, on by default there and on by default here. See the
+   * `gamma_correct` option in README.md: a display that applies a curve of its
+   * own wants this at 1.0 instead, and the hub75 driver is exactly that case
+   * until its own `gamma_correct` is set to LINEAR. */
+  float gamma_{2.2f};
   uint8_t gamma_lut_[256]{};
   // True once the all-black frame that the output being off asks for has been
   // pushed, so a blanked panel costs nothing per frame.

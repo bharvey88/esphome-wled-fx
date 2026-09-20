@@ -18,12 +18,34 @@
  * the reference board, an ESP32-S3 with PSRAM, so they say yes. */
 #ifdef WLED_FX_HOST_BUILD
 #define WLED_FX_PSRAM 1
+#define WLED_FX_ESP32S2 0
+#define WLED_FX_ESP8266 0
 #else
 #include "esphome/core/defines.h"
+/* `USE_PSRAM` means the configuration has a `psram:` block, where upstream's
+ * `BOARD_HAS_PSRAM` means the board definition says the chip has it. They are
+ * not the same question: an ESP32-S3 with PSRAM whose YAML omits `psram:`
+ * compiles to the no-PSRAM profile here and renders twice the particles a WLED
+ * device does. There is nothing better to key on at compile time, because
+ * without the block the PSRAM support is not compiled in at all, so
+ * dump_config prints which profile the build took. */
 #if defined(USE_PSRAM) || defined(USE_HOST) || defined(BOARD_HAS_PSRAM) || defined(CONFIG_SPIRAM)
 #define WLED_FX_PSRAM 1
 #else
 #define WLED_FX_PSRAM 0
+#endif
+/* ESPHome's own variant spelling. `CONFIG_IDF_TARGET_ESP32S2` is not visible
+ * here: it is an sdkconfig.h symbol and nothing in this component's include
+ * chain reaches that file. */
+#if defined(USE_ESP32_VARIANT_ESP32S2)
+#define WLED_FX_ESP32S2 1
+#else
+#define WLED_FX_ESP32S2 0
+#endif
+#if defined(USE_ESP8266)
+#define WLED_FX_ESP8266 1
+#else
+#define WLED_FX_ESP8266 0
 #endif
 #endif
 

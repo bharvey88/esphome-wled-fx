@@ -527,5 +527,19 @@ void adjust_color(CRGBW &rgb, int32_t hue_shift, int32_t sat_change, int32_t val
   hsv2rgb_spectrum(hsv, rgb);
 }
 
+void build_output_gamma_lut(float gamma, uint8_t lut[256]) {
+  if (gamma == 1.0f) {
+    for (int i = 0; i < 256; i++)
+      lut[i] = static_cast<uint8_t>(i);
+    return;
+  }
+  /* Upstream's expression, in float and with the same rounding
+   * (wled00/colors.cpp:655-662), so that at 2.2 this is GAMMA_T and a frame
+   * pushed through here reaches the LEDs as the same bytes a WLED device sends. */
+  lut[0] = 0;
+  for (int i = 1; i < 256; i++)
+    lut[i] = static_cast<uint8_t>(static_cast<int>(std::pow(static_cast<float>(i) / 255.0f, gamma) * 255.0f + 0.5f));
+}
+
 }  // namespace wled_fx
 }  // namespace esphome

@@ -62,9 +62,10 @@ wled_fx:
   # written against and what a panel build uses.
   update_interval: 23ms
   # The reference capture reads WLED's raw render buffer, before its brightness
-  # scaling and before its gamma. 1.0 is the default and makes the gamma table
-  # the identity, but a comparison harness should say what it is comparing
-  # rather than leave it to a default that could move.
+  # scaling and before its gamma, so this side has to be raw too. 1.0 makes the
+  # gamma table the identity. It is not the default any more, which is the
+  # point of setting it here: the display front end defaults to WLED's 2.2 and
+  # a comparison harness has to say what it is comparing.
   gamma_correct: 1.0
   # A display offers only the 2D-capable effects. This harness has to reach all
   # 223, because the point is to compare every one of them against the device.

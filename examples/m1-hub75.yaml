@@ -46,11 +46,21 @@ display:
     update_interval: never
     auto_clear_enabled: false
     double_buffer: true
+    # WLED's HUB75 builds compile the panel library with -D NO_CIE1931, so the
+    # only curve on a WLED panel is the gamma 2.2 that show() applies. This
+    # driver applies CIE1931 unless it is told not to, and two curves in a row
+    # is a much darker panel than a WLED device. wled_fx does the gamma, the
+    # driver stays out of the way.
+    gamma_correct: LINEAR
 
 wled_fx:
   id: fx
   display_id: matrix
   update_interval: 23ms
+  # WLED applies gamma 2.2 to the finished frame in show(), and so does this.
+  # It is the default; 1.0 turns the stage off for a display that already
+  # applies a curve of its own.
+  gamma_correct: 2.2
   # A display is a 2D output, so this offers the 64 effects written for a
   # matrix and hides the 159 that only run on a strip. Add
   # `include_1d_effects: true` to offer those here too; they reach the panel

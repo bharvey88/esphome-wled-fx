@@ -40,6 +40,12 @@ light:
     num_leds: 60
     rgb_order: GRB
     chipset: WS2812
+    # ESPHome's light default is 2.8, WLED's output gamma is 2.2. This is the
+    # closest an ESPHome light gets to what a WLED strip emits. It is not
+    # identical: ESPHome gamma-corrects after its own brightness scaling and
+    # WLED corrects first, so a dimmed strip is darker here than on WLED. See
+    # PORTING.md deviation 33.
+    gamma_correct: 2.2
     effects:
       - wled_fx:
           name: WLED FX

@@ -622,6 +622,12 @@ inline uint32_t fast_color_scale(const uint32_t c, const uint8_t scale) {
 extern const uint8_t GAMMA_T[256];
 extern const uint8_t GAMMA_T_INV[256];
 
+/* The output stage WLED applies in show() (wled00/FX_fcn.cpp:1723), built for an
+ * arbitrary exponent because an ESPHome output may already carry a curve of its
+ * own. At 2.2 it is GAMMA_T byte for byte, which wled_fx_effect_test checks, and
+ * at 1.0 it is the identity. Built once at setup, never per frame. */
+void build_output_gamma_lut(float gamma, uint8_t lut[256]);
+
 inline uint8_t gamma8(uint8_t c) { return GAMMA_T[c]; }
 inline uint8_t gamma8inv(uint8_t c) { return GAMMA_T_INV[c]; }
 inline uint32_t gamma32(uint32_t c) {

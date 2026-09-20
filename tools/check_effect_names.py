@@ -79,8 +79,57 @@ def guarded_macros() -> set[str]:
     return macros
 
 
+def segment_budget_problems() -> list[str]:
+    """The per-platform effect budget has to be upstream's table, in its order.
+
+    Round 2 found three ways this can be wrong without anything noticing: a
+    branch spelled with a symbol ESPHome never defines, so it can never be
+    taken; the PSRAM test before the ESP32-S2 test, where upstream has it after,
+    which gives an S2 with PSRAM twice the segments upstream allows it; and no
+    ESP8266 row at all. None of it is visible on the one board the port is
+    built for, so it is checked here against WLED's own header.
+    """
+    problems: list[str] = []
+    upstream = (ROOT / "refs" / "WLED" / "wled00" / "FX.h").read_text(
+        encoding="utf-8", errors="replace"
+    )
+    port = (ROOT / "components" / "wled_fx" / "wf_segment.h").read_text(encoding="utf-8")
+
+    # (segments, kilobytes) upstream gives each platform, read out of FX.h.
+    block = re.search(
+        r"#ifdef ESP8266(.*?)#define FAIR_DATA_PER_SEG", upstream, re.S
+    )
+    if block is None:
+        return ["could not find the MAX_SEGMENT_DATA block in refs/WLED/wled00/FX.h"]
+    numbers = re.findall(r"#define\s+MAX_(?:NUM_SEGMENTS|SEGMENT_DATA)\s+\(?(\d+)", block.group(1))
+    # ESP8266 16 / 6k, S2 32 / 20k, then PSRAM 64, no PSRAM 32, and 64k for both.
+    if numbers != ["16", "6", "32", "20", "64", "32", "64"]:
+        problems.append(f"WLED's own budget table has changed shape: {numbers}")
+        return problems
+
+    expected = [
+        ("WLED_FX_ESP8266", 16, 6),
+        ("WLED_FX_ESP32S2", 32, 20),
+        ("WLED_FX_PSRAM", 64, 64),
+        (None, 32, 64),  # the #else
+    ]
+    branches = re.findall(
+        r"#(?:(?:el)?if\s+(WLED_FX_\w+)|else)\s*\n"
+        r"inline constexpr unsigned MAX_NUM_SEGMENTS = (\d+);\s*\n"
+        r"inline constexpr unsigned MAX_SEGMENT_DATA = (\d+) \* 1024;",
+        port,
+    )
+    found = [(sym or None, int(segs), int(kb)) for sym, segs, kb in branches]
+    if found != expected:
+        problems.append(
+            "wf_segment.h's budget ladder is not upstream's table in upstream's "
+            f"order: {found}"
+        )
+    return problems
+
+
 def main() -> int:
-    problems = []
+    problems = segment_budget_problems()
 
     entries = registered()
     registry = [name for name, _ in entries]

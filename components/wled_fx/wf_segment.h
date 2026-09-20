@@ -75,19 +75,54 @@ inline constexpr unsigned NUM_COLORS = 3;
  * profile: both stand in for the reference hardware, an ESP32-S3 with PSRAM, and
  * a comparison against it is only meaningful if both sides size their scratch
  * the same way. */
-#if WLED_FX_PSRAM
-inline constexpr unsigned MAX_NUM_SEGMENTS = 64;
-inline constexpr unsigned MAX_SEGMENT_DATA = 64 * 1024;
-inline constexpr bool SEGMENT_DATA_IS_CAPPED = false;
-#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+/* The ladder is upstream's, in upstream's order, which matters: the S2 test
+ * comes before the PSRAM test, so an S2 with PSRAM still gets 32 segments and
+ * 20 KB. Testing PSRAM first, which this did until round 2, gave an S2 with
+ * PSRAM twice the segments and three times the budget of the board upstream
+ * singles out as short of RAM.
+ *
+ * The spellings are ESPHome's, because upstream's are not defined in an ESPHome
+ * build: `CONFIG_IDF_TARGET_ESP32S2` lives in sdkconfig.h, which nothing here
+ * includes and which ESP-IDF does not force-include, so the branch that named
+ * it could never be taken. `USE_ESP32_VARIANT_ESP32S2` is a real -D on the
+ * compiler command line (esp32/__init__.py emits it for every variant).
+ *
+ * WLED_FX_ESP8266 cannot be set today: the Python schema refuses the platform,
+ * because nothing here has ever been built or run on one. The branch is kept so
+ * the table is upstream's whole table and so the effect bodies that already
+ * branch on ESP8266 have a budget that matches them if that ever changes. */
+#if WLED_FX_ESP8266
+inline constexpr unsigned MAX_NUM_SEGMENTS = 16;
+inline constexpr unsigned MAX_SEGMENT_DATA = 6 * 1024;
+inline constexpr bool SEGMENT_DATA_IS_CAPPED = true;
+#elif WLED_FX_ESP32S2
 inline constexpr unsigned MAX_NUM_SEGMENTS = 32;
 inline constexpr unsigned MAX_SEGMENT_DATA = 20 * 1024;
 inline constexpr bool SEGMENT_DATA_IS_CAPPED = true;
+#elif WLED_FX_PSRAM
+inline constexpr unsigned MAX_NUM_SEGMENTS = 64;
+inline constexpr unsigned MAX_SEGMENT_DATA = 64 * 1024;
+inline constexpr bool SEGMENT_DATA_IS_CAPPED = false;
 #else
 inline constexpr unsigned MAX_NUM_SEGMENTS = 32;
 inline constexpr unsigned MAX_SEGMENT_DATA = 64 * 1024;
 inline constexpr bool SEGMENT_DATA_IS_CAPPED = true;
 #endif
+
+// What the build actually took, for dump_config. A user whose board has PSRAM
+// and whose YAML has no `psram:` block gets the no-PSRAM profile and twice the
+// particle counts of a WLED device, and this is where that is visible.
+inline constexpr const char *segment_data_profile() {
+#if WLED_FX_ESP8266
+  return "ESP8266";
+#elif WLED_FX_ESP32S2
+  return "ESP32-S2";
+#elif WLED_FX_PSRAM
+  return "PSRAM";
+#else
+  return "no PSRAM";
+#endif
+}
 
 // WLED FX.h:101. The share of the budget one segment out of many may claim, which
 // effects use as an upper bound on how many particles, balls or sparks they size.
@@ -111,6 +146,13 @@ class Segment {
   bool check2{false};
   bool check3{false};
   uint8_t palette{0};
+  /* What palette 0 renders as, which on WLED depends on the effect: the palette
+   * its metadata declares, or Party when it declares none. WLED's
+   * `_default_palette` (FX.h:474, set in setMode at FX_fcn.cpp:619 and read in
+   * loadPalette at FX_fcn.cpp:234), initialised to 6 as upstream does at
+   * FX.h:594. It is not a control: nothing the user sets writes here, the
+   * effect change does. */
+  uint8_t default_palette{6};
   // WLED's DEFAULT_COLOR, FX.h line 45. It is 0xFFA000, an amber with 160 of
   // green; 0xFFAA00, with 170, is a different amber and is what this was until
   // a capture of a real device showed the hue was off on every effect that

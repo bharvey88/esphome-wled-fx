@@ -57,13 +57,22 @@ inline const char *const CHECKLIST[] = {
     // Section 2, matrix panel
     "Bouncing Balls", "Tetrix", "Rolling Balls", "PS Sonic Stream", "PS Sonic Boom", "PS Springy", "Polar Lights",
     "Firenoise", "Meteor Smooth", "Blobs", "PS Galaxy", "PS Attractor", "Paintbrush", "PS Pinball",
+    // Section 2, the two effects that degrade above 180 pixels wide. Both look
+    // ordinary at 64x64 and are only interesting on a panel wider than that.
+    "Octopus", "Game Of Life",
     // Section 3, real microphone
     "Rocktaves", "Ripple Peak", "Puddlepeak", "DJ Light", "PS Spray", "PS Blobs",
 };
 
 /* The group an effect belongs to. Registry indices are the groups concatenated
  * in link order, which is what EffectRegistry::at() walks, so the same walk
- * gives the group name back. */
+ * gives the group name back.
+ *
+ * The names are the ones the wf_effects_*.cpp files register: 1d2d, 1d_a to
+ * 1d_e, 2d_a, 2d_b, audio_fft, audio_particle, audio_vol, mm, particle_1d and
+ * particle_2d. matches() below tests prefixes of those, so a build with an
+ * `effects:` allow-list, which links only some of the groups, still sorts
+ * correctly. */
 inline const char *group_of(size_t index) {
   for (size_t g = 0; g < EffectRegistry::group_count(); g++) {
     const auto &group = EffectRegistry::group(g);
@@ -72,15 +81,6 @@ inline const char *group_of(size_t index) {
     index -= group.count;
   }
   return "?";
-}
-
-inline std::string name_of(size_t index) {
-  const EffectInfo *info = EffectRegistry::at(index);
-  if (info == nullptr)
-    return "";
-  char buffer[64];
-  esphome::wled_fx::effect_name(*info, buffer, sizeof(buffer));
-  return buffer;
 }
 
 inline bool on_checklist(size_t index) {
@@ -168,29 +168,18 @@ inline size_t first(int filter, size_t from) {
 // Zero on a board with no PSRAM, which is the honest answer rather than an error.
 inline size_t psram_free() { return heap_caps_get_free_size(MALLOC_CAP_SPIRAM); }
 
-/* Tells the select, number and switch entities to republish after the tour has
- * moved the engine behind their backs.
+/* Nothing here wraps the controller any more. The component owns all three of
+ * the things this file used to work around, and the YAML calls them directly:
  *
- * WledFxController::notify_state_change() does not exist in every version of
- * the component, so this resolves to nothing on a build that lacks it and the
- * Effect name text sensor is then the only thing that follows the tour. The
- * harness is meant to survive the component changing under it. */
-namespace detail {
-template<typename T> auto notify(T *controller, int) -> decltype(controller->notify_state_change(), void()) {
-  controller->notify_state_change();
-}
-template<typename T> void notify(T *, long) {}
-}  // namespace detail
-
-template<typename T> void notify_state_change(T *controller) { detail::notify(controller, 0); }
-
-/* Puts the current effect back to frame zero. Selecting the same index again is
- * what does it: the engine resets the segment scratch and refills every control
- * the user has not pinned from the effect's own metadata. */
-template<typename T> void restart_effect(T *controller) {
-  controller->engine().set_effect_index(controller->engine().effect_index());
-  notify_state_change(controller);
-}
+ *   ctrl->notify_state_change()      the select, number and switch entities
+ *                                    republish after something moved the engine
+ *   ctrl->engine().restart_effect()  current effect back to frame zero
+ *   ctrl->current_effect_name()      the display name of what is running
+ *
+ * Refilling the controls from the effect's own metadata is still a reselect of
+ * the current index: restart_effect() resets the segment, and only an effect
+ * change reapplies the defaults. The "Unpin controls" button in tour.yaml is
+ * the one place that wants that. */
 
 /* --- live audio ------------------------------------------------------------
  *

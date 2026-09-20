@@ -57,7 +57,10 @@ records why.
   light's own brightness and transitions apply on top, and the display front end
   takes `gamma_correct`.
 
-Nothing here has run on real hardware. [docs/HARDWARE-TESTING.md](docs/HARDWARE-TESTING.md) is the session guide for changing that, with ready to flash test firmwares in [examples/hardware-test](examples/hardware-test).
+[docs/HARDWARE-TESTING.md](docs/HARDWARE-TESTING.md) is the session guide for
+changing that first line, with four ready to flash test firmwares in
+[examples/hardware-test](examples/hardware-test) and a tour mode that walks
+every effect.
 
 ## Effects
 

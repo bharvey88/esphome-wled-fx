@@ -53,10 +53,11 @@ script:
                                           : wledfx_hwtest::step(filter, current, delta);
           ctrl->engine().set_effect_index(index);
           // The engine was moved behind the platforms' backs, so ask the
-          // select, number and switch entities to republish.
-          wledfx_hwtest::notify_state_change(ctrl);
+          // select, number and switch entities to republish. They follow the
+          // engine, so Effect and Palette track the tour from here on.
+          ctrl->notify_state_change();
 
-          const std::string name = wledfx_hwtest::name_of(index);
+          const std::string name = ctrl->current_effect_name();
           const char *group = wledfx_hwtest::group_of(index);
           ESP_LOGI("tour", "[tour] %u/%u \"%s\" group=%s",
                    (unsigned) wledfx_hwtest::position(filter, index),
@@ -190,16 +191,20 @@ button:
           id: tour_goto
           delta: -1
 
+  # The engine's own restart: the segment goes back to frame zero and the
+  # scratch block is marked stale so the effect reinitialises into it. No
+  # control changes, so nothing has to republish.
   - platform: template
     name: Restart effect
     icon: mdi:restart
     on_press:
-      - lambda: "wledfx_hwtest::restart_effect(id(fx));"
+      - lambda: "id(fx)->engine().restart_effect();"
 
   # Moving Speed, Intensity, Custom or Check pins that value for every effect
   # that follows, which is the engine's override model and is easy to forget
   # halfway through a tour. This puts every control back on the effect's own
-  # metadata defaults.
+  # metadata defaults. Clearing the pins is not enough on its own: the defaults
+  # are refilled on an effect change, so this reselects the current index.
   - platform: template
     name: Unpin controls
     icon: mdi:pin-off
@@ -207,7 +212,8 @@ button:
       - lambda: |-
           auto *ctrl = id(fx);
           ctrl->engine().clear_override(0xFFFF);
-          wledfx_hwtest::restart_effect(ctrl);
+          ctrl->engine().set_effect_index(ctrl->engine().effect_index());
+          ctrl->notify_state_change();
 
 text_sensor:
   - platform: template
@@ -224,9 +230,15 @@ debug:
 
 sensor:
   # Frames the engine actually rendered, not the interval it was asked for.
-  # Segment::call counts one per rendered frame and restarts at zero on an
-  # effect change, so a window that straddles a change counts from zero rather
-  # than reporting a nonsense negative delta.
+  # Segment::call counts one per rendered frame, and the frame gate accumulates
+  # its deadline rather than re-arming it, so at the default 23 ms interval this
+  # should settle near 43 on both front ends. A number near 31 used to be the
+  # scheduler re-arming the interval; that is fixed, so 31 now means the effect
+  # really is taking two main loop ticks per frame.
+  #
+  # Segment::call restarts at zero on every effect change, including the tour's,
+  # so a window that straddles one has no honest frame count. Those windows
+  # publish nothing rather than a number that is low for the wrong reason.
   - platform: template
     id: fx_fps
     name: Effect frame rate
@@ -239,12 +251,13 @@ sensor:
       static uint32_t last_ms = 0;
       const uint32_t call = id(fx)->engine().segment().call;
       const uint32_t now = millis();
-      const uint32_t frames = call >= last_call ? call - last_call : call;
+      const uint32_t frames = call - last_call;
       const uint32_t elapsed = now - last_ms;
+      const bool straddled = call < last_call;
       const bool first = last_ms == 0;
       last_call = call;
       last_ms = now;
-      if (first || elapsed == 0)
+      if (first || straddled || elapsed == 0)
         return {};
       return 1000.0f * frames / elapsed;
 

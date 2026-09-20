@@ -93,6 +93,11 @@ def log(msg: str) -> None:
 # ---------------------------------------------------------------------------
 
 
+# The metrics a repeat capture is allowed to disagree with itself about, and
+# which the flag for that metric then has to beat.
+SPREAD_KEYS = ("mean_brightness", "fraction_lit", "mean_frame_change")
+
+
 class Capture:
     """One effect's frames and metadata from one side, already normalised."""
 
@@ -104,10 +109,45 @@ class Capture:
         self.timestamps = timestamps
         self.meta = meta
         self.metrics = compute_metrics(frames, timestamps)
+        # Filled in by merge_runs() when the same side was captured more than
+        # once. How far two runs of the same effect on the same build disagree
+        # is the floor below which a difference between two sides means
+        # nothing, and round 1 had no such floor.
+        self.spread: dict[str, float] = {}
+        self.runs = 1
 
     @property
     def duration(self) -> float:
         return float(self.timestamps[-1]) if len(self.timestamps) else 0.0
+
+
+def merge_runs(runs: list[dict[str, Capture]]) -> dict[str, Capture]:
+    """Several captures of one side into one, per-effect median with a spread.
+
+    Every effect here is seeded from a random number generator and most of them
+    are paced against a clock that does not restart with the capture, so one
+    six second window is a sample and not a measurement. Two runs of Tri Wipe
+    on this build measured 200 and 242 counts of mean brightness, and Pride
+    2015 measured 114 and 169. A single run treated as ground truth is how a
+    report ends up ranking noise.
+
+    The first run supplies the frames for the side-by-side; the metrics become
+    the per-effect median across runs and each one carries the full range.
+    """
+    if len(runs) == 1:
+        return runs[0]
+    merged: dict[str, Capture] = {}
+    for name, first in runs[0].items():
+        present = [r[name] for r in runs if name in r]
+        first.runs = len(present)
+        for key in SPREAD_KEYS:
+            values = [float(c.metrics[key]) for c in present if key in c.metrics]
+            if not values:
+                continue
+            first.metrics[key] = round(float(np.median(values)), 3)
+            first.spread[key] = round(max(values) - min(values), 3)
+        merged[name] = first
+    return merged
 
 
 def load_side(root: Path, quantise: bool, label: str) -> tuple[dict[str, Capture], list[str]]:
@@ -313,8 +353,13 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
             "render; coverage and brightness below are both inflated by it"
         )
 
+    # A difference smaller than the side's own run-to-run spread is not a
+    # difference. With one capture a side the spread is 0 and nothing changes.
+    def floor(key: str, fixed: float) -> float:
+        return max(fixed, ref.spread.get(key, 0.0), port.spread.get(key, 0.0))
+
     coverage = abs(rm["fraction_lit"] - pm["fraction_lit"])
-    if coverage > COVERAGE_LIMIT:
+    if coverage > floor("fraction_lit", COVERAGE_LIMIT):
         findings.append(
             f"coverage differs: {rm['fraction_lit']:.0%} of WLED's frame is lit "
             f"and {pm['fraction_lit']:.0%} of the port's"
@@ -322,7 +367,7 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
         score += 30 * coverage
 
     brightness = abs(rm["mean_brightness"] - pm["mean_brightness"])
-    if brightness > BRIGHTNESS_LIMIT:
+    if brightness > floor("mean_brightness", BRIGHTNESS_LIMIT):
         findings.append(
             f"mean brightness differs by {brightness:.0f} of 255 "
             f"({rm['mean_brightness']:.0f} vs {pm['mean_brightness']:.0f})"
@@ -339,6 +384,8 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
         "speed_ratio": None if ratio in (None, float("inf")) else round(ratio, 3),
         "coverage_delta": round(coverage, 4),
         "brightness_delta": round(brightness, 2),
+        "runs": {"reference": ref.runs, "port": port.runs},
+        "run_spread": {"reference": ref.spread, "port": port.spread},
         "reference": rm,
         "port": pm,
     }
@@ -642,8 +689,11 @@ def write_index(results: list[dict], out: Path) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--reference", required=True, help="the WLED device capture folder")
-    ap.add_argument("--port", default=None, help="the snapshot harness capture folder")
+    ap.add_argument("--reference", required=True, action="append",
+                    help="the WLED device capture folder; repeat it for a second pass of the "
+                         "same device and the metrics become the median with a spread")
+    ap.add_argument("--port", default=None, action="append",
+                    help="the snapshot harness capture folder; repeatable, same effect")
     ap.add_argument("--engine", default=None, help="a plain engine simulator capture folder")
     ap.add_argument("--out", required=True, help="where the report goes")
     args = ap.parse_args()
@@ -657,13 +707,24 @@ def main() -> int:
     log("loading captures")
     # The reference is 8 bit and already at live-view resolution, so it only
     # needs the colour-depth half of the normalisation.
-    ref, skipped_ref = load_side(Path(args.reference), quantise=True, label="device")
-    log(f"  device: {len(ref)} usable, {len(skipped_ref)} not")
-    metric_problems = check_metrics_agree(ref, Path(args.reference))
+    ref_runs, skipped_ref = [], []
+    for folder in args.reference:
+        loaded, skipped = load_side(Path(folder), quantise=True, label="device")
+        ref_runs.append(loaded)
+        skipped_ref += skipped
+    ref = merge_runs(ref_runs)
+    log(f"  device: {len(ref)} usable over {len(ref_runs)} run(s), {len(skipped_ref)} not")
+    metric_problems = check_metrics_agree(ref_runs[0], Path(args.reference[0]))
 
-    port, skipped_port = load_side(Path(args.port), quantise=False, label="port") if args.port else ({}, [])
+    port, skipped_port = {}, []
     if args.port:
-        log(f"  port: {len(port)} usable, {len(skipped_port)} not")
+        port_runs = []
+        for folder in args.port:
+            loaded, skipped = load_side(Path(folder), quantise=False, label="port")
+            port_runs.append(loaded)
+            skipped_port += skipped
+        port = merge_runs(port_runs)
+        log(f"  port: {len(port)} usable over {len(port_runs)} run(s), {len(skipped_port)} not")
     engine, skipped_engine = (
         load_side(Path(args.engine), quantise=True, label="engine") if args.engine else ({}, [])
     )
@@ -699,13 +760,24 @@ def main() -> int:
         example = next(iter(side.values()))
         gamma = gamma_of(example)
         capture_facts.append(
-            f"{label}: output gamma "
+            f"{label}: {example.runs} capture run(s), output gamma "
             + ("not recorded" if gamma is None else f"{gamma:g}")
             + (
                 ", controls matched to the reference"
                 if settings_of(example) is not None
                 else ", controls not recorded"
             )
+        )
+    widest = sorted(
+        ((max(c.spread.get("mean_brightness", 0.0) for c in (ref[n["name"]], subject[n["name"]])), n["name"])
+         for n in results),
+        reverse=True,
+    )[:5]
+    if widest and widest[0][0] > 0:
+        capture_facts.append(
+            "widest run-to-run spread in mean brightness: "
+            + ", ".join(f"{name} {value:.0f}" for value, name in widest if value > 0)
+            + ". A difference smaller than a side's own spread is not scored"
         )
     matched = sum(1 for n in results if not settings_differ(ref[n["name"]], subject[n["name"]]))
     capture_facts.append(

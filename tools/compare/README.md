@@ -21,6 +21,11 @@ with the applied parameters and the metrics.
 
 ## Running it
 
+`--reference` and `--port` can each be given more than once. Do: a single
+six second window of an effect that is seeded from a random number generator,
+or paced against a clock that does not restart with the capture, is a sample
+and not a measurement.
+
 ```
 powershell -File tools\wsl\wfx.ps1 snapshot
 wsl -d Ubuntu-24.04 -u root -- /root/wfx/esphome-venv/bin/python \
@@ -142,9 +147,14 @@ table off.
   numbers. Capture those for 30 s, or capture twice and believe a flag only
   when it reproduces in both windows.
 * **A single reference capture treated as ground truth.** Game Of Life's
-  reference frame did not reproduce on two later attempts. Capturing the
-  reference twice and comparing the two runs first would give both a
-  reproducibility check and a noise floor to set the thresholds from.
+  reference frame did not reproduce on two later attempts. `--reference` and
+  `--port` are both repeatable now, and with more than one folder each metric
+  becomes the per-effect median across runs and carries its range; a difference
+  smaller than a side's own spread is no longer scored. That is a floor, not a
+  fix: it needs the extra capture runs to be taken. The spread is not small.
+  Three runs of this port measured Tri Wipe at 200, 242 and 244 counts of mean
+  brightness and Pride 2015 at 96, 114 and 169, and two runs of the device
+  measured Matrix at 3.6 and 4.4.
 * **The palette latched at `call == 0`.** WLED cross-fades a palette change over
   its transition time, so an effect that samples the palette once, at its first
   frame, keeps the previous one for the whole capture. Aurora is the clean

@@ -79,7 +79,13 @@ void mode_fire_2012(Segment &seg) {
   const uint32_t it = seg.now >> 5;  // div 32
 
   const auto run_strip = [&](unsigned stripNr, uint8_t *heat, uint32_t it) {
-    const uint8_t ignition = seg_len / 10 > 3 ? seg_len / 10 : 3;  // 10% of length or at least 3 pixels
+    /* 10% of length or at least 3 pixels, but never more than the heat buffer,
+     * which is seg_len bytes. Upstream's MAX(3, SEGLEN/10) writes heat[y] for
+     * y up to 2 on a two pixel strip and runs off the end of the allocation;
+     * the sanitizers catch it at 1x2 and 2x1. At three pixels and above the
+     * clamp never bites, so this is upstream's value everywhere it matters. */
+    const unsigned raw_ignition = seg_len / 10 > 3 ? seg_len / 10 : 3;
+    const uint8_t ignition = static_cast<uint8_t>(raw_ignition < seg_len ? raw_ignition : seg_len);
 
     // Step 1.  Cool down every cell a little
     for (unsigned i = 0; i < seg_len; i++) {

@@ -50,7 +50,7 @@ void WledFxSelect::publish_current_() {
   const std::string current = this->type_ == WledFxSelectType::WLED_FX_SELECT_TYPE_EFFECT
                                   ? this->parent_->current_effect_name()
                                   : this->parent_->current_palette_name();
-  if (!current.empty() && (!this->has_state() || this->state != current))
+  if (!current.empty() && (!this->has_state() || this->current_option() != current))
     this->publish_state(current);
 }
 

@@ -595,13 +595,41 @@ inline uint32_t fast_color_scale(const uint32_t c, const uint8_t scale) {
   return rb | wg;
 }
 
-// WLED's global gamma is deliberately off in this engine: the ESPHome light layer
-// owns gamma for strips and the display front end has its own option. These stay as
-// identity so effect bodies that call them keep working unchanged.
-inline uint8_t gamma8(uint8_t c) { return c; }
-inline uint8_t gamma8inv(uint8_t c) { return c; }
-inline uint32_t gamma32(uint32_t c) { return c; }
-inline uint32_t gamma32inv(uint32_t c) { return c; }
+/* WLED's gamma lookup tables, built by NeoGammaWLEDMethod::calcGammaTable() from
+ * the default gammaCorrectVal of 2.2 (wled00/wled.h:414). WLED fills them at boot
+ * from the config; here they are constant, because there is no gamma setting on
+ * this side to change them with.
+ *
+ * These are not the output gamma stage. WLED has two separate uses of gamma and
+ * this port keeps them apart:
+ *
+ *  * `show()` runs the finished frame through `gamma32()` on its way to the LEDs
+ *    (wled00/FX_fcn.cpp:1713). That stage belongs to the ESPHome light layer's
+ *    `gamma_correct` or to the display front end's own option, and the engine
+ *    does not do it.
+ *  * Effect and particle code calls `gamma8()` and `gamma8inv()` *while drawing*,
+ *    to pre-compensate a brightness so that the output stage lands where the
+ *    effect author wanted it. That maths is part of the picture, it is visible in
+ *    WLED's own pre-output buffer, and so it belongs here. `gamma8` and
+ *    `gamma8inv` are `rawGamma8` and `rawInverseGamma8` upstream: plain table
+ *    reads that do not consult the `gammaCorrectCol` setting at all.
+ *
+ * `gamma32` and `gamma32inv` do consult `gammaCorrectCol` upstream, which defaults
+ * to true (wled00/wled.h:412), so they apply the table here.
+ *
+ * wled_fx_effect_test recomputes both tables from upstream's formula and fails if
+ * a byte drifts. */
+extern const uint8_t GAMMA_T[256];
+extern const uint8_t GAMMA_T_INV[256];
+
+inline uint8_t gamma8(uint8_t c) { return GAMMA_T[c]; }
+inline uint8_t gamma8inv(uint8_t c) { return GAMMA_T_INV[c]; }
+inline uint32_t gamma32(uint32_t c) {
+  return RGBW32(GAMMA_T[R(c)], GAMMA_T[G(c)], GAMMA_T[B(c)], GAMMA_T[W(c)]);
+}
+inline uint32_t gamma32inv(uint32_t c) {
+  return RGBW32(GAMMA_T_INV[R(c)], GAMMA_T_INV[G(c)], GAMMA_T_INV[B(c)], GAMMA_T_INV[W(c)]);
+}
 
 inline CHSV32::CHSV32(const CRGBW &rgb) { rgb2hsv(rgb, *this); }
 inline CHSV32 &CHSV32::operator=(const CRGBW &rgb) {

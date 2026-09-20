@@ -21,11 +21,18 @@ namespace wled_fx {
 
 namespace {
 
-// WLED's global gamma switch. Gamma is deliberately off inside this engine (the
-// light layer and the display front end own it), so the gamma8 / gamma8inv calls
-// below are identities and the compiler drops them. The tests are kept so the
-// bodies still diff cleanly against upstream.
-constexpr bool gammaCorrectCol = false;
+/* WLED's global gamma switch, which defaults to true (wled00/wled.h:412) and is
+ * what turns on the matched gamma and inverse-gamma pair this renderer is built
+ * around: the per-particle brightness is gamma corrected before it is spread over
+ * the sub-pixels, and each sub-pixel weight then gets the inverse, so the spatial
+ * falloff is linear once the output stage applies gamma again.
+ *
+ * Both halves live inside the render and both are visible in WLED's pre-output
+ * buffer, so the engine reproduces them. Dropping them is not the same as turning
+ * gamma off: it leaves the sub-pixel weights uncompensated, which costs a particle
+ * effect between 15 and 57 percent of its brightness and hardens every edge. See
+ * wf_color.h for where the output stage lives instead. */
+constexpr bool gammaCorrectCol = true;
 
 // Arduino turns `abs` into a macro, which eats std::abs at the call site, so the
 // engine uses its own. See PORTING.md section 6.

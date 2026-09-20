@@ -21,8 +21,13 @@ records why.
 * A compile-time allow-list, so a build only carries the effects it uses
 * Addressable light effect front end, for any `light::AddressableLight` driver
 * Display front end, one bulk frame push per tick, hub75 aware
-* Runtime control from Home Assistant: `select`, `number` and `switch` platforms
-  plus actions
+* Runtime control from Home Assistant and from the ESPHome web page, with no
+  Home Assistant needed: `select`, `number`, `switch`, `light`, `text_sensor`
+  and `sensor` platforms plus actions
+* Per-effect control labels, read out of the WLED metadata, so a generic
+  "Custom 1" slider says what it does in the effect that is running
+* Per-effect frame timings, so the effects that are slow on a given board can
+  be found without reflashing
 * A host simulator that renders every effect to a PNG contact sheet
 * A real audio source for the audio reactive effects: microphone, FFT and AGC,
   ported from WLED's `audioreactive` usermod, with simulated sound as the
@@ -30,10 +35,11 @@ records why.
 
 ## Known limitations
 
-* **Nothing here has run on real hardware.** Every effect is verified in a host
-  simulator and every example config is verified by compilation.
-  `HARDWARE-CHECKLIST.md` lists what a real panel or a real microphone would
-  settle, grouped by what you have to flash to check it.
+* **Barely any of this has run on real hardware.** One session on an Apollo M-1,
+  a 64x64 HUB75 panel on an ESP32-S3, is the whole of it. Everything else is
+  verified in a host simulator, and every example config is verified by
+  compilation. `HARDWARE-CHECKLIST.md` lists what a real panel or a real
+  microphone would settle, grouped by what you have to flash to check it.
 * **One segment.** WLED's multi-segment model is not ported, so there is one
   canvas, one effect and one set of controls per front end. Image and Copy
   Segment are the two upstream effects that need what is missing.
@@ -44,18 +50,16 @@ records why.
   ESPHome's `restore_mode`, defaulting to `DISABLED` because the engine owns the
   checkmark; set it to something else and the switch drives the engine at boot
   instead.
-* **There is no way to blank the display front end.** It renders whenever the
-  device is running. A light effect stops when the light is turned off; a
-  display has no equivalent.
 * **Panels wider than 180 pixels hit upstream's own arithmetic.** A handful of
   2D effects hold a coordinate or a scale factor in 8 or 16 bits, which is
   upstream's code unchanged and is fine to the 256x64 this has been tested at,
   but 2D Octopus loses its radius scale above 180 and Game Of Life loses
   spaceship detection above about 16384 pixels with coprime dimensions. Both
   degrade to a duller animation rather than misbehaving.
-* **No brightness, transition or preset model.** ESPHome owns all three: the
-  light's own brightness and transitions apply on top, and the display front end
-  takes `gamma_correct`.
+* **No transition or preset model.** ESPHome owns both: the light's own
+  transitions apply on top of the light front end. Brightness and blanking are
+  the Colour 1 light, which is WLED's own arrangement, and the display front end
+  also takes `gamma_correct`.
 
 [docs/HARDWARE-TESTING.md](docs/HARDWARE-TESTING.md) is the session guide for
 changing that first line, with four ready to flash test firmwares in

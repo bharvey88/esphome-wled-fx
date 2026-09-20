@@ -213,6 +213,23 @@ Name@slider0,slider1,slider2,slider3,slider4,check1,check2,check3;color0,color1,
   128, custom1/2 128, custom3 16, checks off, palette 0).
 * Defaults are only applied to controls the user did not pin in YAML or at runtime.
 
+The first three groups are not only decoration: `effect_labels()` reads them for
+the control names, and the `wled_fx` text sensor publishes them. Get them right.
+
+* An empty slider, checkmark or colour label means the effect does not use that
+  control, and it is left out of the published line entirely. Do not write a
+  plausible name for a control your effect ignores.
+* `!` means WLED's own name for it: Speed, Intensity, Custom 1 to 3, Check 1 to
+  3 for the controls, `Fx`, `Bg` and `Cs` for the three colour slots and
+  `Color palette` for the palette.
+* A numeric palette group is a pinned palette, and the selector is hidden, so it
+  is not published as a control either.
+
+`custom3` is five bits, 0 to 31, everywhere: in the YAML schema, in the number
+platform, in the `wled_fx.set_custom3` action and in `Engine::set_custom3()`,
+which clamps. Effects divide it down on that assumption, so a c3 default above
+31 is a bug and `wled_fx_effect_test` fails on one.
+
 ## 5. Running the simulator
 
 Build once:
@@ -237,6 +254,11 @@ tools/sim/build/wled_fx_sim --effect "Twinkle" --out tools/sim/out
 Other options: `--frames N` (default 300), `--palette N` to override the palette,
 `--no-images` for a text-only run, `--list` to dump the parsed defaults of every
 effect so you can check your metadata string was read the way you expected.
+
+`--speed`, `--intensity` and `--text STRING` are the other three. Reach for them
+when somebody reports an effect misbehaving on hardware: a control left over
+from the previous effect is what most of those reports turn out to be, and these
+reproduce that state here rather than guessing at it.
 
 `--check1`, `--check2` and `--check3` take 0 or 1, `--custom1` to `--custom3` take
 0 to 255, and `--checks-on` is shorthand for all three checkmarks. They pin the

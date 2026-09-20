@@ -146,8 +146,14 @@ def save_original_state(host: str, outdir: Path) -> dict:
     return state
 
 
-def restore_device_state(host: str, outdir: Path) -> None:
-    """Restore to preset 5, brightness 220, on -- the known original state."""
+def restore_device_state(host: str, outdir: Path, original_state: dict = None) -> None:
+    """Restore to preset 5, brightness 220, on -- the known original state.
+
+    Loading preset 5 also restores the segment's original colours (they are
+    part of the preset), so no separate colour POST is needed here -- but we
+    verify colours against the state captured at the very start of the run
+    in case the preset itself changed.
+    """
     try:
         log("Restoring device to original state (preset 5, bri 220, on)...")
         http_post(host, "/json/state", {"on": True, "bri": 220, "ps": 5})
@@ -155,7 +161,19 @@ def restore_device_state(host: str, outdir: Path) -> None:
         readback = http_get(host, "/json/state")
         (outdir / "restored_state_readback.json").write_text(json.dumps(readback, indent=2))
         ok = readback.get("on") is True and readback.get("bri") == 220 and readback.get("ps") == 5
-        log(f"Restore verification: on={readback.get('on')} bri={readback.get('bri')} ps={readback.get('ps')} -> {'OK' if ok else 'MISMATCH, check restored_state_readback.json'}")
+        msg = f"Restore verification: on={readback.get('on')} bri={readback.get('bri')} ps={readback.get('ps')}"
+        if original_state is not None:
+            orig_seg0 = (original_state.get("seg") or [{}])[0]
+            new_seg0 = (readback.get("seg") or [{}])[0]
+            orig_col = orig_seg0.get("col")
+            new_col = new_seg0.get("col")
+            colours_ok = orig_col == new_col
+            orig_fx = orig_seg0.get("fx")
+            new_fx = new_seg0.get("fx")
+            fx_ok = orig_fx == new_fx
+            ok = ok and colours_ok and fx_ok
+            msg += f" fx={new_fx}(orig {orig_fx}) colours_match_original={colours_ok}"
+        log(f"{msg} -> {'OK' if ok else 'MISMATCH, check restored_state_readback.json'}")
     except Exception as e:  # noqa: BLE001
         log(f"WARNING: restore failed: {e}")
 
@@ -250,17 +268,27 @@ def capture_liveview(host: str, seconds: float):
     return frames_raw, timestamps, errors
 
 
-def select_effect(host: str, effect_id: int) -> None:
-    http_post(host, "/json/state", {"seg": [{"id": 0, "fx": effect_id, "fxdef": True}]})
+def select_effect(host: str, effect_id: int, colors=None, extra_fields=None) -> None:
+    seg_obj = {"id": 0, "fx": effect_id, "fxdef": True}
+    if colors is not None:
+        seg_obj["col"] = [list(c) for c in colors]
+    if extra_fields:
+        seg_obj.update(extra_fields)
+    http_post(host, "/json/state", {"seg": [seg_obj]})
 
 
-def capture_one_effect(host: str, effect: dict, seconds: float):
+def apply_colors(host: str, colors) -> None:
+    """Set segment 0 colours directly (no effect change)."""
+    http_post(host, "/json/state", {"seg": [{"id": 0, "col": [list(c) for c in colors]}]})
+
+
+def capture_one_effect(host: str, effect: dict, seconds: float, colors=None, extra_fields=None):
     """Returns (frames_raw, timestamps, applied_state, error_or_None)."""
     errors_all = []
     applied_state = None
     for attempt in range(2):
         try:
-            select_effect(host, effect["id"])
+            select_effect(host, effect["id"], colors=colors, extra_fields=extra_fields)
         except Exception as e:  # noqa: BLE001
             errors_all.append(f"select failed: {e}")
             time.sleep(1.0)
@@ -487,21 +515,27 @@ def is_already_captured(effect_dir: Path) -> bool:
         return False
 
 
-def process_effect(host: str, effect: dict, seconds: float, captures_dir: Path, audio_present: bool) -> dict:
+def process_effect(host: str, effect: dict, seconds: float, captures_dir: Path, audio_present: bool,
+                    colors=None, extra_fields=None) -> dict:
     name, eid = effect["name"], effect["id"]
     folder = safe_folder_name(name, eid)
     effect_dir = captures_dir / folder
     effect_dir.mkdir(parents=True, exist_ok=True)
 
     log(f"[{eid:3d}] {name}")
-    frames_raw, timestamps, applied_state, error = capture_one_effect(host, effect, seconds)
+    frames_raw, timestamps, applied_state, error = capture_one_effect(
+        host, effect, seconds, colors=colors, extra_fields=extra_fields)
 
+    seg0_any = (applied_state or {}).get("seg", [{}])[0] if applied_state else {}
     meta = {
         "id": eid,
         "name": name,
         "folder": folder,
         "fxdata": effect["fxdata"],
         "audioreactive_usermod_present": audio_present,
+        "requested_colors": [list(c) for c in colors] if colors is not None else None,
+        "requested_extra_fields": extra_fields or None,
+        "colours_readback": seg0_any.get("col"),
         "liveview_notes": LIVEVIEW_NOTES,
     }
 
@@ -556,6 +590,37 @@ def process_effect(host: str, effect: dict, seconds: float, captures_dir: Path, 
 # Index / summary
 # ---------------------------------------------------------------------------
 
+_AUDIO_NAME_KEYWORDS = [
+    "freq", "gravcenter", "gravcentric", "gravfreq", "noisemeter", "geq",
+    "sonic", "puddlepeak", "ripple peak", "matripix", "midnoise", "waverly",
+    "blurz", "dj light", "gravimeter",
+]
+
+
+def is_audio_effect(entry: dict) -> bool:
+    fxdata = entry.get("fxdata") or ""
+    if re.search(r"(^|[,;])si=", fxdata):
+        return True
+    name = (entry.get("name") or "").lower()
+    return any(k in name for k in _AUDIO_NAME_KEYWORDS)
+
+
+_TRIGGER_NAME_KEYWORDS = ["halloween eyes", "lightning", "drip"]
+
+
+def guess_black_reason(entry: dict) -> str:
+    if is_audio_effect(entry):
+        return ("audio-reactive default (fxdata declares a soundSim/'si=' default or the name implies "
+                "audio input); the device has a real I2S microphone but the room was quiet during "
+                "capture, so it likely never crossed the effect's trigger threshold")
+    name = (entry.get("name") or "").lower()
+    if any(k in name for k in _TRIGGER_NAME_KEYWORDS):
+        return "effect triggers sparsely/randomly (by design); a several-second window may simply not catch a flash"
+    return ("cause unclear from this pass; most likely the effect draws with the segment's secondary "
+            "or tertiary colour (left at [0,0,0] this run) rather than the primary colour, or a "
+            "palette index resolves to black under these settings -- recapture this effect with "
+            "--only plus --set c2=...,c3=... (or a different --colors) to confirm")
+
 
 def build_index(outdir: Path) -> None:
     captures_dir = outdir / "captures"
@@ -577,10 +642,12 @@ def build_index(outdir: Path) -> None:
     failed = [e for e in entries if e.get("status") == "failed"]
     all_black = [e for e in entries if e.get("metrics", {}).get("all_black")]
     frozen = [e for e in entries if e.get("metrics", {}).get("frozen")]
+    audio = [e for e in entries if e.get("status") != "failed" and is_audio_effect(e)]
 
     lines = ["# WLED reference capture summary", ""]
     lines.append(f"Captured {len(entries)} effect slots.")
     lines.append("")
+
     lines.append(f"## Failures ({len(failed)})")
     if failed:
         for e in failed:
@@ -588,17 +655,43 @@ def build_index(outdir: Path) -> None:
     else:
         lines.append("- none")
     lines.append("")
-    lines.append(f"## All-black effects ({len(all_black)})")
+
+    lines.append(f"## Still all-black ({len(all_black)})")
+    lines.append("Best-effort explanation per effect; verify with --only + --set before trusting it.")
     if all_black:
         for e in all_black:
-            lines.append(f"- [{e['id']}] {e['name']}")
+            lines.append(f"- [{e['id']}] {e['name']}: {guess_black_reason(e)}")
     else:
         lines.append("- none")
     lines.append("")
-    lines.append(f"## Frozen effects (no meaningful frame-to-frame change) ({len(frozen)})")
+
+    lines.append(f"## Frozen (no meaningful frame-to-frame change) ({len(frozen)})")
     if frozen:
         for e in frozen:
-            lines.append(f"- [{e['id']}] {e['name']}")
+            tag = " (also all-black)" if e in all_black else ""
+            lines.append(f"- [{e['id']}] {e['name']}{tag}")
+    else:
+        lines.append("- none")
+    lines.append("")
+
+    lines.append(f"## Audio-reactive effects ({len(audio)})")
+    lines.append(
+        "This device has a real I2S microphone (not simulated audio); AudioReactive usermod is on and "
+        "reporting live room noise. These effects' behaviour depends on whatever the room sounded like "
+        "during this capture run and is only loosely comparable to a port driven by simulated/fixed "
+        "audio input. Recapture individually (with real sound present, or against the port's simulated "
+        "input) before treating a mismatch here as a port bug."
+    )
+    if audio:
+        for e in audio:
+            m = e.get("metrics", {})
+            state = []
+            if m.get("all_black"):
+                state.append("all-black")
+            if m.get("frozen"):
+                state.append("frozen")
+            state_s = f" [{', '.join(state)}]" if state else " [animated]"
+            lines.append(f"- [{e['id']}] {e['name']}{state_s}")
     else:
         lines.append("- none")
     lines.append("")
@@ -649,6 +742,45 @@ def build_index(outdir: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
+def parse_colors(s: str):
+    """'R,G,B;R,G,B;R,G,B' -> [[r,g,b],[r,g,b],[r,g,b]]"""
+    parts = s.split(";")
+    if len(parts) != 3:
+        raise ValueError("--colors needs exactly 3 semicolon-separated R,G,B triplets, e.g. 255,160,0;0,0,0;0,0,0")
+    colors = []
+    for p in parts:
+        rgb = [int(x.strip()) for x in p.split(",")]
+        if len(rgb) != 3 or any(v < 0 or v > 255 for v in rgb):
+            raise ValueError(f"bad colour triplet: {p!r}")
+        colors.append(rgb)
+    return colors
+
+
+_SET_BOOL_FIELDS = {"o1", "o2", "o3", "rev", "mi", "rY", "mY"}
+_SET_INT_FIELDS = {"sx", "ix", "c1", "c2", "c3", "pal", "m12", "si"}
+
+
+def parse_set(s: str) -> dict:
+    """'sx=200,ix=100,pal=3' -> {"sx":200,"ix":100,"pal":3}, with correct types."""
+    out = {}
+    for pair in s.split(","):
+        pair = pair.strip()
+        if not pair:
+            continue
+        if "=" not in pair:
+            raise ValueError(f"--set entries must be field=value, got {pair!r}")
+        key, val = pair.split("=", 1)
+        key = key.strip()
+        val = val.strip()
+        if key in _SET_BOOL_FIELDS:
+            out[key] = val.lower() in ("1", "true", "yes", "on")
+        elif key in _SET_INT_FIELDS:
+            out[key] = int(val)
+        else:
+            raise ValueError(f"unsupported --set field {key!r} (supported: {sorted(_SET_BOOL_FIELDS | _SET_INT_FIELDS)})")
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--host", default=DEFAULT_HOST)
@@ -657,6 +789,15 @@ def main() -> int:
     ap.add_argument("--only", default=None, help="Comma-separated effect names to (re)capture")
     ap.add_argument("--force", action="store_true", help="Recapture even if already captured")
     ap.add_argument("--index-only", action="store_true", help="Rebuild index.json/index.html/SUMMARY.md only, no device contact")
+    ap.add_argument("--colors", default=None,
+                     help="Segment colours to hold for the whole run, as 'R,G,B;R,G,B;R,G,B' "
+                          "(primary;secondary;tertiary). Applied before the loop and re-asserted "
+                          "with every effect selection so effect/palette defaults can't disturb it.")
+    ap.add_argument("--set", default=None,
+                     help="Extra segment fields to force on every selected effect, as "
+                          "'field=value,field=value' (sx, ix, c1, c2, c3, o1, o2, o3, pal, m12, si, "
+                          "rev, mi, rY, mY). Combine with --only to probe one disputed effect at "
+                          "specific slider values.")
     args = ap.parse_args()
 
     outdir = Path(args.outdir)
@@ -667,6 +808,9 @@ def main() -> int:
         build_index(outdir)
         return 0
 
+    colors = parse_colors(args.colors) if args.colors else None
+    extra_fields = parse_set(args.set) if args.set else None
+
     only_names = None
     if args.only:
         only_names = {n.strip().lower() for n in args.only.split(",") if n.strip()}
@@ -675,6 +819,11 @@ def main() -> int:
     try:
         catalog = fetch_effect_catalog(args.host, outdir)
         audio_present = audioreactive_present(outdir)
+
+        if colors is not None:
+            log(f"Applying hold colours before the loop: {colors}")
+            apply_colors(args.host, colors)
+            time.sleep(0.5)
 
         todo = catalog
         if only_names is not None:
@@ -691,7 +840,8 @@ def main() -> int:
             if not force_this and is_already_captured(effect_dir):
                 n_skipped += 1
                 continue
-            meta = process_effect(args.host, effect, args.seconds, captures_dir, audio_present)
+            meta = process_effect(args.host, effect, args.seconds, captures_dir, audio_present,
+                                   colors=colors, extra_fields=extra_fields)
             if meta.get("status") == "failed":
                 n_failed += 1
             else:
@@ -710,7 +860,7 @@ def main() -> int:
         traceback.print_exc()
         return 1
     finally:
-        restore_device_state(args.host, outdir)
+        restore_device_state(args.host, outdir, original_state)
 
 
 if __name__ == "__main__":

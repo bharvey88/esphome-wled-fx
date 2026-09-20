@@ -5,6 +5,8 @@
 # canvas. This is where a 2D effect on the light path gets checked, and where a
 # wiring or serpentine mistake shows up immediately (Scrolling Text and Matrix
 # are the two effects that make it obvious).
+#
+# No secrets.yaml is needed to build or flash this. See network.yaml.
 
 substitutions:
   led_pin: GPIO16
@@ -12,6 +14,10 @@ substitutions:
   matrix_height: "16"
   # width times height.
   led_count: "256"
+
+  # The access point this board offers when it has no network to join. Distinct
+  # per config so two boards can be on the bench at once.
+  ap_ssid: WLED FX matrix test
 
 esphome:
   name: wled-fx-matrix-test
@@ -31,22 +37,8 @@ esp32:
 
 logger:
   level: DEBUG
-
-api:
-  encryption:
-    key: !secret api_encryption_key
-
-ota:
-  - platform: esphome
-    password: !secret ota_password
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-
-web_server:
-  port: 80
-  version: 3
+  # The console is the plain ESP32 default, UART0, which is the USB to serial
+  # bridge on a devkit and is what improv_serial in network.yaml talks over.
 
 external_components:
   - source:
@@ -54,6 +46,9 @@ external_components:
       path: ../../components
 
 packages:
+  # wifi, the fallback access point, the captive portal, Improv over serial,
+  # the API, OTA and the web server. No secrets file involved.
+  network: !include network.yaml
   tour: !include tour.yaml
 
 wled_fx:

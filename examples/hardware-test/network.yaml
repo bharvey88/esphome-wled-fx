@@ -1,0 +1,67 @@
+# Shared network setup for the four hardware-test firmwares. Included as a
+# package beside tour.yaml.
+#
+# The point of this file is that nothing in it needs a secrets.yaml. Build the
+# firmware, flash it, and give the board your wifi credentials afterwards,
+# either from the access point it brings up or over the USB cable.
+#
+# Each config sets ${ap_ssid} in its own substitutions, so two boards can sit on
+# the bench at once without their access points colliding.
+
+wifi:
+  # No network is compiled in. With no `networks:` and an `ap:` present, the
+  # board starts the access point and the captive portal at boot instead of
+  # waiting out an AP timeout first. What you type into the portal is written
+  # to flash and loaded again on every boot after that, so this is a one time
+  # step. Once the board has credentials it joins that network normally, and it
+  # falls back to this access point again after 90 seconds of failing to.
+  ap:
+    ssid: ${ap_ssid}
+    # No password on purpose: an empty password makes it an open access point,
+    # which is one tap on a phone and makes the captive portal pop up on its
+    # own. It only exists until the board has joined your network, and this is
+    # a throwaway test firmware either way. To lock it, add a `password:` of at
+    # least 8 characters here.
+  # A configured access point already suppresses the reboot-on-no-connection
+  # path, and this says so out loud. A board sitting in the portal waiting for
+  # credentials must not reboot underneath you.
+  reboot_timeout: 0s
+
+# The portal's page is compiled into the firmware, so it works with no internet
+# and no other device on the network.
+captive_portal:
+
+# Credentials over the USB cable instead, from a Chromium browser. This works
+# on both targets here: improv_serial rides the logger's console, which
+# defaults to USB_SERIAL_JTAG on the ESP32-S3 and UART0 on the plain ESP32, and
+# the only console it refuses is USB_CDC on an S3. Bluetooth provisioning
+# (esp32_improv) is deliberately not here: it costs flash and RAM that a test
+# build should not be spending.
+improv_serial:
+
+api:
+  # The documented session is a browser and the web server with nothing
+  # connected to the API. The 15 minute default would reboot the board every 15
+  # minutes of that, which looks exactly like a firmware crash. 0s turns it off.
+  reboot_timeout: 0s
+  # No encryption key by default. This is a throwaway test firmware on a home
+  # LAN, and a key here would mean writing a secrets file before the first
+  # build. `esphome logs` over wifi and Home Assistant adoption both work
+  # without one. To add one, put a secrets.yaml beside the config being built
+  # and uncomment:
+  # encryption:
+  #   key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    # Same reasoning as the API key. To require a password for OTA:
+    # password: !secret ota_password
+
+# Every entity is reachable from the device's own web interface with no Home
+# Assistant involved. Version 3 fetches its JavaScript from the internet the
+# first time a browser opens it, so load it once on a machine that has a
+# connection. That is the web server only; the captive portal above is
+# self contained, so onboarding never needs the internet.
+web_server:
+  port: 80
+  version: 3

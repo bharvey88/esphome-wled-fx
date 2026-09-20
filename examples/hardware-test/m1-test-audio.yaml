@@ -4,8 +4,14 @@
 #
 # Flash this second, after m1-test.yaml has proved the panel and the engine.
 # Section 3 of HARDWARE-CHECKLIST.md is what this build exists to settle.
+#
+# No secrets.yaml is needed to build or flash this. See network.yaml.
 
 substitutions:
+  # The access point this board offers when it has no network to join. Distinct
+  # per config so two boards can be on the bench at once.
+  ap_ssid: WLED FX M-1 audio test
+
   # ---------------------------------------------------------------------------
   # PLACEHOLDERS. Set all three to your own wiring before building. They are
   # copied from examples/m1-hub75-audio.yaml and have never been on hardware:
@@ -41,22 +47,10 @@ logger:
   #   Analysis costs 1234 us per 512 sample block, 5.3% of one core
   # It is logged once per boot, so to read it again, restart the device.
   level: DEBUG
-
-api:
-  encryption:
-    key: !secret api_encryption_key
-
-ota:
-  - platform: esphome
-    password: !secret ota_password
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-
-web_server:
-  port: 80
-  version: 3
+  # The console is left on the S3 default, USB_SERIAL_JTAG, which is the native
+  # USB port and is what improv_serial in network.yaml talks over. If this
+  # board turns out to log through a USB to UART bridge instead, add
+  # `hardware_uart: UART0` here; improv_serial works on that too.
 
 external_components:
   - source:
@@ -64,6 +58,9 @@ external_components:
       path: ../../components
 
 packages:
+  # wifi, the fallback access point, the captive portal, Improv over serial,
+  # the API, OTA and the web server. No secrets file involved.
+  network: !include network.yaml
   tour: !include tour.yaml
 
 display:

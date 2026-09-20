@@ -83,11 +83,22 @@ AudioData &simulate_sound(uint8_t simulation_id, uint32_t now) {
       break;
   }
 
-  /* Upstream writes `samplePeak = hw_random8() > 250;` here (wled00/util.cpp:662),
-   * outside the switch, so it is the same in all four simulation modes and no
-   * choice of `si` changes it. Five draws out of 256 is a peak on about 2 percent
-   * of frames, and the three effects that draw nothing except on a peak, Puddlepeak,
-   * Ripple Peak and Waterfall, are blank with the simulated source as a result.
+  /* Upstream's draw, kept and thrown away. The value is not used, the draw is:
+   * the generator is shared with every effect, so consuming one fewer random
+   * number per frame than upstream puts every audio effect on a different
+   * random sequence from the same frame on. Round 2 caught it through the Fw
+   * Starburst audio black allowance, which had to be widened when the draw
+   * disappeared. Round 1's fix replaced the line; this keeps the line and
+   * overrides only what it decided. */
+  (void) hw_random8();
+
+  /* Upstream decides the peak from that draw: `samplePeak = hw_random8() > 250;`
+   * (wled00/util.cpp:662), outside the switch, so it is the same in all four
+   * simulation modes and no choice of `si` changes it. Five draws out of 256 is
+   * a peak on about 2 percent of frames, and Puddlepeak, which draws nothing
+   * except on a peak, is blank with the simulated source as a result. Its rate
+   * is also frame rate dependent, about 0.85 a second at a 23 ms frame and 0.39
+   * at 50 ms, because it is a coin toss per frame rather than per second.
    *
    * This is the one line of the simulation that is the port's rather than WLED's,
    * and it is deviation 27. The rate is the 120 bpm the simulated spectrum is

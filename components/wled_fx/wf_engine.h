@@ -42,8 +42,22 @@ class Engine {
   bool set_effect_index(size_t index);
   size_t effect_index() const { return this->effect_index_; }
 
-  // Pinned controls. Setting one both applies it now and keeps it across effect
-  // changes.
+  /* Whether a control set from here on sticks across an effect change.
+   *
+   * True, the default, is WLED's own behaviour and what a control pinned in
+   * YAML needs: the value survives every later effect. False makes a control
+   * belong to the effect it was set on, so the next effect change refills it
+   * from that effect's own metadata defaults. Turning it off does not unpin
+   * what is already pinned; clear_override() does that.
+   *
+   * Nothing in the component changes this by itself. It is here so a front end
+   * can offer the choice, because a slider that silently follows you into the
+   * next effect leaves that effect in a state its author never meant. */
+  void set_sticky_controls(bool sticky) { this->sticky_ = sticky; }
+  bool sticky_controls() const { return this->sticky_; }
+
+  // Setting a control applies it now, and keeps it across effect changes while
+  // sticky_controls() is true.
   void set_speed(uint8_t v);
   void set_intensity(uint8_t v);
   void set_custom1(uint8_t v);
@@ -72,6 +86,13 @@ class Engine {
 
  protected:
   void apply_effect_defaults_();
+  // Records or clears the override for one control, according to sticky_.
+  void note_override_(uint16_t flag) {
+    if (this->sticky_)
+      this->overrides_ |= flag;
+    else
+      this->overrides_ &= ~flag;
+  }
 
   Canvas canvas_;
   Segment seg_;
@@ -79,6 +100,7 @@ class Engine {
   const EffectInfo *effect_{nullptr};
   size_t effect_index_{0};
   uint16_t overrides_{0};
+  bool sticky_{true};
 };
 
 }  // namespace wled_fx

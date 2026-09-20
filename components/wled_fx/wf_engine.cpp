@@ -59,39 +59,39 @@ bool Engine::set_effect_index(size_t index) {
 
 void Engine::set_speed(uint8_t v) {
   this->seg_.speed = v;
-  this->overrides_ |= OVERRIDE_SPEED;
+  this->note_override_(OVERRIDE_SPEED);
 }
 void Engine::set_intensity(uint8_t v) {
   this->seg_.intensity = v;
-  this->overrides_ |= OVERRIDE_INTENSITY;
+  this->note_override_(OVERRIDE_INTENSITY);
 }
 void Engine::set_custom1(uint8_t v) {
   this->seg_.custom1 = v;
-  this->overrides_ |= OVERRIDE_CUSTOM1;
+  this->note_override_(OVERRIDE_CUSTOM1);
 }
 void Engine::set_custom2(uint8_t v) {
   this->seg_.custom2 = v;
-  this->overrides_ |= OVERRIDE_CUSTOM2;
+  this->note_override_(OVERRIDE_CUSTOM2);
 }
 void Engine::set_custom3(uint8_t v) {
   this->seg_.custom3 = v > 31 ? 31 : v;
-  this->overrides_ |= OVERRIDE_CUSTOM3;
+  this->note_override_(OVERRIDE_CUSTOM3);
 }
 void Engine::set_check1(bool v) {
   this->seg_.check1 = v;
-  this->overrides_ |= OVERRIDE_CHECK1;
+  this->note_override_(OVERRIDE_CHECK1);
 }
 void Engine::set_check2(bool v) {
   this->seg_.check2 = v;
-  this->overrides_ |= OVERRIDE_CHECK2;
+  this->note_override_(OVERRIDE_CHECK2);
 }
 void Engine::set_check3(bool v) {
   this->seg_.check3 = v;
-  this->overrides_ |= OVERRIDE_CHECK3;
+  this->note_override_(OVERRIDE_CHECK3);
 }
 void Engine::set_palette(uint8_t v) {
   this->seg_.palette = v;
-  this->overrides_ |= OVERRIDE_PALETTE;
+  this->note_override_(OVERRIDE_PALETTE);
 }
 
 bool Engine::set_palette_by_name(const char *name) {

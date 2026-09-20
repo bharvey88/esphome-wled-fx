@@ -78,6 +78,11 @@ jobs:
       - name: Effect and control behaviour tests
         run: tools/sim/build/wled_fx_effect_test
 
+      - name: Comparison metrics agree with synthetic patterns of known velocity
+        run: |
+          pip install numpy
+          python3 tools/compare/test_metrics.py
+
       - name: README effect list is generated from the registry, not hand typed
         run: python3 tools/gen_readme_effects.py --check
 

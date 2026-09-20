@@ -94,6 +94,7 @@ case "$cmd" in
       "$BUILD_PLAIN/wled_fx_sim" --size "$size" --no-images --out "$OUT"
     done
     echo "=== python side ==="
+    python3 "$REPO/tools/compare/test_metrics.py"
     python3 "$REPO/tools/gen_readme_effects.py" --check
     # Against the build that was just made, not the stale wled_fx_sim.exe left in
     # the checkout, which WSL would happily run through binfmt interop.

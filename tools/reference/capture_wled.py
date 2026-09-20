@@ -156,7 +156,11 @@ def restore_device_state(host: str, outdir: Path, original_state: dict = None) -
     """
     try:
         log("Restoring device to original state (preset 5, bri 220, on)...")
-        http_post(host, "/json/state", {"on": True, "bri": 220, "ps": 5})
+        # The transition time goes back with it: every capture request sends
+        # transition 0 so an effect that latches the palette at call == 0 does
+        # not latch the previous one, and that is a state field like any other.
+        transition = (original_state or {}).get("transition", 7)
+        http_post(host, "/json/state", {"on": True, "bri": 220, "ps": 5, "transition": transition})
         time.sleep(1.0)
         readback = http_get(host, "/json/state")
         (outdir / "restored_state_readback.json").write_text(json.dumps(readback, indent=2))
@@ -269,17 +273,27 @@ def capture_liveview(host: str, seconds: float):
 
 
 def select_effect(host: str, effect_id: int, colors=None, extra_fields=None) -> None:
+    """Apply an effect and its settings in one request, with no cross-fade.
+
+    `transition: 0` matters more than it looks. WLED cross-fades a palette
+    change over the segment's transition time, and an effect that samples the
+    palette once, at `call == 0`, sees the *old* palette for the whole capture.
+    Aurora is the clean case: it picks its wave colours at the first frame and
+    a capture without this comes out in the previous effect's palette. It is
+    sent per request rather than written to the config, so nothing about the
+    device is changed.
+    """
     seg_obj = {"id": 0, "fx": effect_id, "fxdef": True}
     if colors is not None:
         seg_obj["col"] = [list(c) for c in colors]
     if extra_fields:
         seg_obj.update(extra_fields)
-    http_post(host, "/json/state", {"seg": [seg_obj]})
+    http_post(host, "/json/state", {"transition": 0, "seg": [seg_obj]})
 
 
 def apply_colors(host: str, colors) -> None:
     """Set segment 0 colours directly (no effect change)."""
-    http_post(host, "/json/state", {"seg": [{"id": 0, "col": [list(c) for c in colors]}]})
+    http_post(host, "/json/state", {"transition": 0, "seg": [{"id": 0, "col": [list(c) for c in colors]}]})
 
 
 def capture_one_effect(host: str, effect: dict, seconds: float, colors=None, extra_fields=None):
@@ -312,135 +326,15 @@ def capture_one_effect(host: str, effect: dict, seconds: float, colors=None, ext
 # Metrics
 # ---------------------------------------------------------------------------
 
+# There is one implementation of these and it lives in tools/compare. This tool
+# used to carry its own copy, on the grounds that the two were written on
+# separate branches, and the two copies were identical right down to a sign
+# error in the direction estimator that nothing on either side could catch.
+# Import it instead: a difference in a number is then a difference in the
+# animation and never a difference in how it was measured.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "compare"))
 
-def estimate_motion(frames: np.ndarray, timestamps: np.ndarray) -> dict:
-    F = frames.shape[0]
-    if F < 3:
-        return {"direction": "none/unclear", "speed_px_per_s": 0.0, "confidence": 0.0}
-    H, W = frames.shape[1], frames.shape[2]
-    gray = frames.astype(np.float32).mean(axis=3)
-    window = np.outer(np.hanning(max(H, 2)), np.hanning(max(W, 2)))
-    step = max(1, F // 8)
-    pairs = [(i, i + step) for i in range(0, F - step, step)] or [(0, F - 1)]
-
-    dxs, dys, confs, dts = [], [], [], []
-    for i, j in pairs:
-        a = (gray[i] - gray[i].mean()) * window
-        b = (gray[j] - gray[j].mean()) * window
-        if not np.any(a) or not np.any(b):
-            continue
-        fa = np.fft.fft2(a)
-        fb = np.fft.fft2(b)
-        R = fa * np.conj(fb)
-        mag = np.abs(R)
-        mag[mag == 0] = 1e-8
-        r = np.abs(np.fft.ifft2(R / mag))
-        peak_idx = np.unravel_index(np.argmax(r), r.shape)
-        conf = float(r[peak_idx] / (r.mean() + 1e-8))
-        py, px = peak_idx
-        dy = py if py < H / 2 else py - H
-        dx = px if px < W / 2 else px - W
-        dt = timestamps[j] - timestamps[i]
-        if dt <= 0:
-            continue
-        dxs.append(dx)
-        dys.append(dy)
-        confs.append(conf)
-        dts.append(dt)
-
-    if not dxs:
-        return {"direction": "none/unclear", "speed_px_per_s": 0.0, "confidence": 0.0}
-
-    confs_arr = np.array(confs)
-    good = confs_arr > 3.0
-    if good.sum() < max(1, len(confs_arr) // 3):
-        return {"direction": "none/unclear", "speed_px_per_s": 0.0, "confidence": round(float(confs_arr.mean()), 2)}
-
-    dxs_g = np.array(dxs)[good]
-    dys_g = np.array(dys)[good]
-    dts_g = np.array(dts)[good]
-    speeds = np.sqrt(dxs_g ** 2 + dys_g ** 2) / dts_g
-    mean_dx, mean_dy = float(np.mean(dxs_g)), float(np.mean(dys_g))
-    mag = math.hypot(mean_dx, mean_dy)
-    if mag < 0.5:
-        direction = "none/unclear"
-    else:
-        angle = math.degrees(math.atan2(-mean_dy, mean_dx)) % 360
-        dirs = ["right", "up-right", "up", "up-left", "left", "down-left", "down", "down-right"]
-        direction = dirs[int(((angle + 22.5) % 360) // 45)]
-    return {
-        "direction": direction,
-        "speed_px_per_s": round(float(np.mean(speeds)), 2),
-        "confidence": round(float(confs_arr[good].mean()), 2),
-        "note": "speed measured in pixels/second at the RECEIVED live-view resolution",
-    }
-
-
-def compute_metrics(frames: np.ndarray, timestamps: np.ndarray) -> dict:
-    F = frames.shape[0]
-    if F == 0:
-        return {"empty": True}
-
-    V = frames.max(axis=-1).astype(np.float32)  # value channel per pixel
-    mean_brightness = float(V.mean())
-    max_brightness = float(V.max())
-    lit_threshold = 8.0
-    fraction_lit = float((V > lit_threshold).mean())
-    all_black = bool(max_brightness <= 1.0)
-
-    if F >= 2:
-        diffs = np.abs(frames[1:].astype(np.int16) - frames[:-1].astype(np.int16)).mean(axis=(1, 2, 3))
-        mean_frame_change = float(diffs.mean())
-        max_frame_change = float(diffs.max())
-    else:
-        mean_frame_change = 0.0
-        max_frame_change = 0.0
-    frozen = bool(F >= 2 and mean_frame_change < 0.5)
-
-    r = frames[..., 0].astype(np.float32) / 255.0
-    g = frames[..., 1].astype(np.float32) / 255.0
-    b = frames[..., 2].astype(np.float32) / 255.0
-    maxc = np.maximum(np.maximum(r, g), b)
-    minc = np.minimum(np.minimum(r, g), b)
-    diff = maxc - minc
-    diff_safe = np.where(diff == 0, 1, diff)
-    hue = np.zeros_like(maxc)
-    mask_r = maxc == r
-    mask_g = (maxc == g) & ~mask_r
-    mask_b = (~mask_r) & (~mask_g)
-    hue[mask_r] = (60 * ((g - b) / diff_safe) % 360)[mask_r]
-    hue[mask_g] = (60 * ((b - r) / diff_safe) + 120)[mask_g]
-    hue[mask_b] = (60 * ((r - g) / diff_safe) + 240)[mask_b]
-    lit_mask = V > lit_threshold
-    hue_lit = hue[lit_mask]
-    if hue_lit.size > 0:
-        hist, _ = np.histogram(hue_lit, bins=12, range=(0, 360))
-        dominant_hue_hist = (hist / hist.sum()).tolist()
-    else:
-        dominant_hue_hist = [0.0] * 12
-
-    lr_scores, tb_scores = [], []
-    for f in frames:
-        fl = f.astype(np.float32)
-        lr_scores.append(1.0 - float(np.abs(fl - fl[:, ::-1, :]).mean() / 255.0))
-        tb_scores.append(1.0 - float(np.abs(fl - fl[::-1, :, :]).mean() / 255.0))
-
-    motion = estimate_motion(frames, timestamps)
-
-    return {
-        "frame_count": F,
-        "mean_brightness": round(mean_brightness, 3),
-        "max_brightness": round(max_brightness, 3),
-        "fraction_lit": round(fraction_lit, 4),
-        "all_black": all_black,
-        "mean_frame_change": round(mean_frame_change, 3),
-        "max_frame_change": round(max_frame_change, 3),
-        "frozen": frozen,
-        "dominant_hue_histogram_12bin": [round(x, 4) for x in dominant_hue_hist],
-        "left_right_symmetry": round(float(np.mean(lr_scores)), 4) if lr_scores else None,
-        "top_bottom_symmetry": round(float(np.mean(tb_scores)), 4) if tb_scores else None,
-        "motion": motion,
-    }
+from metrics import compute_metrics, estimate_motion  # noqa: E402,F401
 
 
 # ---------------------------------------------------------------------------

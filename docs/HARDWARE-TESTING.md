@@ -149,7 +149,7 @@ filter, so with **Tour group** set to `All` they count to 223.
 | Panel brightness | hub75 brightness, panel builds only. On the strip builds this is the light entity's own slider. |
 | Effect name / Effect group | Text sensors mirroring the current effect. |
 
-`Checklist` is the group worth knowing about: it filters the tour down to the 28
+`Checklist` is the group worth knowing about: it filters the tour down to the 30
 effects [HARDWARE-CHECKLIST.md](../HARDWARE-CHECKLIST.md) actually asks about.
 One pass of that with a long dwell is the fastest route through the table below.
 

@@ -7,9 +7,10 @@
 //
 // Usage:
 //   wled_fx_sim [--effect NAME] [--group NAME] [--frames N] [--no-images]
-//               [--out DIR] [--list] [--palette N] [--map N] [--size WxH]
-//               [--check1 0|1] [--check2 0|1] [--check3 0|1] [--checks-on]
-//               [--custom1 N] [--custom2 N] [--custom3 N] [--single-pass]
+//               [--out DIR] [--list] [--list-meta] [--palette N] [--map N]
+//               [--size WxH] [--check1 0|1] [--check2 0|1] [--check3 0|1]
+//               [--checks-on] [--custom1 N] [--custom2 N] [--custom3 N]
+//               [--single-pass] [--anim DIR]
 //
 // With none of the control options, every effect is run twice per geometry: once
 // on its own metadata defaults and once with all three checkmarks on. The second
@@ -62,6 +63,18 @@ constexpr uint32_t DEFAULT_STEP_MS = 23;  // WLED's nominal frame period
 const int CAPTURE_FRAMES[] = {1, 30, 90, 150, 210, 299};
 constexpr int CAPTURE_COUNT = sizeof(CAPTURE_FRAMES) / sizeof(CAPTURE_FRAMES[0]);
 constexpr int TILE_GAP = 4;
+
+/* --anim writes raw RGB24 frames instead of a contact sheet, for the animated
+ * gallery previews: 100 frames at 50 ms is five seconds of effect time played
+ * back at 20 fps. The PACING table still applies, because its time acceleration
+ * is the only way a slow effect shows anything: a longer frame period is scaled
+ * by the same ratio it has in the default run, and an effect that needs a few
+ * hundred frames to build its picture gets them as a warm-up that is rendered
+ * and not written. The short warm-up every effect gets skips the opening frames,
+ * where a lot of effects are still fading up from black. */
+constexpr int ANIM_FRAMES = 100;
+constexpr uint32_t ANIM_STEP_MS = 50;
+constexpr int ANIM_WARMUP = 20;
 
 int capture_frame(int index, int effect_frames) {
   if (effect_frames == DEFAULT_FRAMES)
@@ -288,6 +301,8 @@ int main(int argc, char **argv) {
   int map1d2d = -1;  // -1 keeps the effect's own m12 default
   bool images = true;
   bool list_only = false;
+  bool list_meta = false;
+  std::string anim_dir;  // non-empty switches the run over to raw frame output
   // --size WxH replaces the three default geometries with one of your own, for
   // checking a geometry the defaults do not cover (128x64, 300x1, ...).
   std::string size_label;
@@ -361,14 +376,26 @@ int main(int argc, char **argv) {
         return 2;
       }
       geometries.assign(1, Geometry{size_label.c_str(), static_cast<uint16_t>(w), static_cast<uint16_t>(h)});
-    } else if (arg == "--no-images")
+    } else if (arg == "--anim" && i + 1 < argc)
+      anim_dir = argv[++i];
+    else if (arg == "--no-images")
       images = false;
     else if (arg == "--list")
       list_only = true;
+    else if (arg == "--list-meta")
+      list_meta = true;
     else {
       fprintf(stderr, "unknown argument: %s\n", arg.c_str());
       return 2;
     }
+  }
+
+  /* An animation run is one configuration of one geometry: contact sheets and
+   * the checks pass both belong to the verification run, not to a preview. */
+  const bool anim = !anim_dir.empty();
+  if (anim) {
+    images = false;
+    single_pass = true;
   }
 
   // Collect the effects to run, keeping the group each one came from.
@@ -395,6 +422,15 @@ int main(int argc, char **argv) {
              d.speed, d.intensity, d.map1d2d);
     }
     printf("%zu effect(s)\n", selected.size());
+    return 0;
+  }
+
+  /* The metadata string verbatim, one effect per line, so a tool that wants the
+   * slider and checkmark labels reads them from the registry rather than
+   * re-deriving them from the sources. */
+  if (list_meta) {
+    for (const auto &entry : selected)
+      printf("%s\t%s\n", entry.first.c_str(), entry.second->metadata);
     return 0;
   }
 
@@ -440,7 +476,13 @@ int main(int argc, char **argv) {
     char name[64];
     effect_name(*entry.second, name, sizeof(name));
     const Pacing pacing = pacing_for(name);
-    const int effect_frames = frames > 0 ? frames : pacing.frames;
+    const int effect_frames = frames > 0 ? frames : (anim ? ANIM_FRAMES : pacing.frames);
+    // Same time acceleration as the default run, at the preview's frame period.
+    const uint32_t step_ms =
+        anim ? std::max<uint32_t>(1, pacing.step_ms * ANIM_STEP_MS / DEFAULT_STEP_MS) : pacing.step_ms;
+    // Rendered and thrown away, so a per-frame paced effect has built its picture
+    // by the first written frame.
+    const int warmup = anim ? ANIM_WARMUP + std::max(0, pacing.frames - DEFAULT_FRAMES) : 0;
 
     for (const Geometry &geo : geometries) {
       for (const Controls &controls : passes) {
@@ -484,10 +526,23 @@ int main(int argc, char **argv) {
         std::vector<uint8_t> sheet(static_cast<size_t>(sheet_w) * sheet_h * 3, 24);
         int captured = 0;
 
+        FILE *anim_fp = nullptr;
+        std::vector<uint8_t> anim_row;
+        if (anim) {
+          res.image = anim_dir + "/" + sanitize(name) + ".rgb";
+          anim_fp = fopen(res.image.c_str(), "wb");
+          if (anim_fp == nullptr) {
+            fprintf(stderr, "FAIL %s %s: could not open %s\n", name, geo.label, res.image.c_str());
+            failures++;
+            continue;
+          }
+          anim_row.resize(static_cast<size_t>(geo.width) * geo.height * 3);
+        }
+
         uint32_t now = 1000;
-        for (int f = 0; f < effect_frames; f++) {
+        for (int f = 0; f < warmup + effect_frames; f++) {
           engine.render(now);
-          now += pacing.step_ms;
+          now += step_ms;
 
           if (!engine.canvas().guards_intact()) {
             res.guards_ok = false;
@@ -511,6 +566,22 @@ int main(int argc, char **argv) {
                       scale_y);
             captured++;
           }
+
+          if (anim_fp != nullptr && f >= warmup) {
+            for (size_t i = 0; i < engine.canvas().size(); i++) {
+              const uint32_t c = engine.canvas().get(i);
+              anim_row[i * 3] = (c >> 16) & 0xFF;
+              anim_row[i * 3 + 1] = (c >> 8) & 0xFF;
+              anim_row[i * 3 + 2] = c & 0xFF;
+            }
+            fwrite(anim_row.data(), 1, anim_row.size(), anim_fp);
+          }
+        }
+
+        if (anim_fp != nullptr) {
+          fclose(anim_fp);
+          // The manifest the gallery build reads: one line per written animation.
+          printf("anim\t%s\t%u\t%u\t%d\t%s\n", res.image.c_str(), geo.width, geo.height, effect_frames, name);
         }
 
         /* "Something was drawn" is only a fair assertion on the effect's own
@@ -521,7 +592,12 @@ int main(int argc, char **argv) {
          * Fall all do this. The checks pass is there for the guard bands and for
          * reaching the code, so a black result is reported and not failed. */
         if (!res.non_black && res.guards_ok) {
-          if (black_allowed(name, engine.segment().length())) {
+          /* An animation run is a preview at one geometry and one pacing, not the
+           * verification sweep, so a black result there is something for a human to
+           * look at rather than a failure: the sweep is where it is a failure. */
+          if (anim) {
+            fprintf(stderr, "note %s %s: every frame of the animation was black\n", name, geo.label);
+          } else if (black_allowed(name, engine.segment().length())) {
             fprintf(stderr, "note %s %s: every frame was black, allowed at %u pixels\n", name, geo.label,
                     engine.segment().length());
           } else if (controls.label[0] == '\0') {

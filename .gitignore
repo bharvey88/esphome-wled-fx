@@ -11,6 +11,7 @@ examples/secrets.yaml
 
 # Host simulator build output
 tools/sim/build/
+tools/sim/build-gallery/
 tools/sim/out/
 
 # Python

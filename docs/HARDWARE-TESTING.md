@@ -23,6 +23,7 @@ then run this yourself from a PowerShell prompt with the ESPHome virtual
 environment active, with the M-1 on USB:
 
 ```
+cd examples/hardware-test
 esphome run m1-test.yaml
 ```
 

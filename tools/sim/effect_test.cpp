@@ -18,6 +18,7 @@
 
 #include "../../components/wled_fx/wf_engine.h"
 #include "../../components/wled_fx/wf_math.h"
+#include "../../components/wled_fx/wf_palettes.h"
 #include "../../components/wled_fx/wf_particle.h"
 #include "../../components/wled_fx/wf_registry.h"
 
@@ -288,6 +289,132 @@ void test_control_defaults() {
   }
 }
 
+// --- palette defaults -------------------------------------------------------
+
+/* Round 2 findings R2-2 and R2-3, the two halves of WLED's odd palette rule.
+ *
+ * Palette 0 is not Party: it is "whatever this effect declared", resolved at
+ * load time (FX_fcn.cpp:234). And selecting an effect whose metadata declares
+ * no palette leaves the palette where it was (FX_fcn.cpp:617), which is 112 of
+ * the effects here.
+ *
+ * Both were proved on a real device: Fire 2012 at pal=0 and at pal=35 are the
+ * same picture, and Ripple selected after Fire 2012 stays on 35. */
+void test_palette_defaults() {
+  printf("Palette defaults\n");
+
+  // The palette the running effect would actually draw from, rendered out of
+  // the segment so the comparison is on the resolved palette and not on the ID.
+  auto loaded = [](Engine &engine) {
+    CRGBPalette16 out{};
+    load_palette(out, engine.segment().palette, engine.segment().colors, CRGBPalette16{},
+                 engine.segment().default_palette);
+    return out;
+  };
+  auto same = [](const CRGBPalette16 &a, const CRGBPalette16 &b) {
+    for (int i = 0; i < 16; i++) {
+      if (a[i].r != b[i].r || a[i].g != b[i].g || a[i].b != b[i].b)
+        return false;
+    }
+    return true;
+  };
+
+  /* Declared palette against "Default" on the same effect, over the three the
+   * device was probed with plus two more from other families. */
+  struct Case {
+    const char *effect;
+    uint8_t declared;
+  };
+  const Case cases[] = {
+      {"Fire 2012", 35}, {"Glitter", 11}, {"Flow Stripe", 11}, {"Firenoise", 66}, {"Pacifica", 51},
+  };
+  for (const auto &c : cases) {
+    if (EffectRegistry::find(c.effect) == nullptr) {
+      check(false, std::string(c.effect) + " is registered");
+      continue;
+    }
+    Engine engine;
+    engine.init(16, 16);
+    engine.set_effect(c.effect);
+    const EffectDefaults d = effect_defaults(*EffectRegistry::find(c.effect));
+    check(d.palette == c.declared, std::string(c.effect) + " declares its palette in its metadata");
+    check(engine.segment().palette == c.declared, std::string(c.effect) + " loads it on selection");
+    const CRGBPalette16 declared = loaded(engine);
+    engine.set_palette(0);
+    check(same(loaded(engine), declared),
+          std::string(c.effect) + " on \"Default\" renders the palette it declared, not Party");
+  }
+
+  /* An effect that declares none resolves "Default" to Party, which is what
+   * upstream's `if (sOpt <= 0) sOpt = 6;` means. */
+  {
+    Engine engine;
+    engine.init(16, 16);
+    engine.set_effect("Ripple");
+    check(effect_defaults(*EffectRegistry::find("Ripple")).palette < 0, "Ripple declares no palette");
+    check(engine.segment().default_palette == 6, "so \"Default\" on it is Party, upstream's fallback");
+    engine.set_palette(0);
+    CRGBPalette16 party{};
+    load_palette(party, 6, engine.segment().colors, CRGBPalette16{});
+    check(same(loaded(engine), party), "and it renders as Party");
+  }
+
+  // An effect change does not throw the palette away unless the new effect
+  // names one of its own.
+  {
+    Engine engine;
+    engine.init(16, 16);
+    engine.set_sticky_controls(false);
+    engine.set_effect("Fire 2012");
+    check(engine.segment().palette == 35, "Fire 2012 loads palette 35");
+    engine.set_effect("Ripple");
+    check(engine.segment().palette == 35, "Ripple declares no palette, so 35 stays");
+    engine.set_effect("Colortwinkles");
+    check(engine.segment().palette == 35, "and through a second effect that declares none");
+    engine.set_effect("Glitter");
+    check(engine.segment().palette == 11, "an effect that does declare one still loads it");
+  }
+
+  /* The count itself, against the metadata. The device readback in round 2 put
+   * it at 112 of the 216 effects it offers; this build has a few more. */
+  {
+    size_t declared = 0;
+    size_t silent = 0;
+    for (size_t i = 0; i < EffectRegistry::count(); i++) {
+      if (effect_defaults(*EffectRegistry::at(i)).palette >= 0)
+        declared++;
+      else
+        silent++;
+    }
+    printf("  %zu effects declare a palette, %zu leave it alone\n", declared, silent);
+    /* Stock WLED 16.0.1 declares `pal=` on 59 of its 216 metadata strings, and
+     * this build on 63 of 223, the extras being WLED-MM effects. Round 2
+     * reported "104 of 223 declare pal=" and "112 of 216 reset the palette".
+     * Those came from a device readback taken during a capture run, where the
+     * palette an effect inherits is whatever the effect before it left, so
+     * they count carried-over values and not declarations. The behaviour is
+     * real and was reproduced on the device directly; the counts are not. */
+    check(declared == 63 && silent == 160, "the counts are upstream's 59 plus the four MM effects");
+  }
+
+  // si and m12 are the other two keys upstream only applies when present.
+  {
+    Engine engine;
+    engine.init(16, 16);
+    engine.set_effect("Matrix");
+    const uint8_t before = engine.segment().sound_sim;
+    engine.set_effect("Ripple");
+    check(engine.segment().sound_sim == before, "an effect with no si= leaves the sound simulation alone");
+    size_t bad = 0;
+    for (size_t i = 0; i < EffectRegistry::count(); i++) {
+      const EffectDefaults d = effect_defaults(*EffectRegistry::at(i));
+      if (d.map1d2d > 7 || d.sound_sim > 3)
+        bad++;
+    }
+    check(bad == 0, "every declared m12 and si is inside upstream's constrain()");
+  }
+}
+
 // --- control labels ---------------------------------------------------------
 
 void test_labels() {
@@ -300,9 +427,10 @@ void test_labels() {
   // Read straight out of the WLED metadata these effects carry, so a change to
   // the parser that quietly drops a label shows up here.
   const Case cases[] = {
-      {"Matrix", "Speed \xC2\xB7 Intensity: Spawning rate \xC2\xB7 Custom 1: Trail \xC2\xB7 Check 1: Custom color",
+      {"Matrix",
+       "Effect speed \xC2\xB7 Effect intensity: Spawning rate \xC2\xB7 Custom 1: Trail \xC2\xB7 Check 1: Custom color",
        "Color 1: Spawn \xC2\xB7 Color 2: Trail"},
-      {"Solid", "Speed \xC2\xB7 Intensity",
+      {"Solid", "Effect speed \xC2\xB7 Effect intensity",
        "Palette: Color palette \xC2\xB7 Color 1: Fx \xC2\xB7 Color 2: Bg \xC2\xB7 Color 3: Cs"},
   };
   for (const Case &c : cases) {
@@ -363,6 +491,38 @@ void test_gamma() {
   check(gamma8(128) == 56 && gamma8inv(128) == 186, "the tables are not identities");
   check(gamma32inv(RGBW32(64, 64, 64, 0)) == RGBW32(136, 136, 136, 0),
         "gamma32inv lifts a colour, which is what Pride 2015 rides on");
+
+  /* Round 2 finding R2-1, the other half of the same pair. The display front
+   * end stands in for WLED's show(), and its table is what decides whether the
+   * round trip gamma2.2(gamma8inv(175)) comes back out at 175. Nothing in the
+   * capture harness can see this stage, so it is pinned here instead. */
+  {
+    uint8_t lut[256];
+    build_output_gamma_lut(2.2f, lut);
+    int drift = 0;
+    for (int i = 0; i < 256; i++) {
+      if (lut[i] != GAMMA_T[i])
+        drift++;
+    }
+    check(drift == 0, "the output table at 2.2 is WLED's show() table byte for byte");
+    check(lut[128] == 56, "a mid grey of 128 leaves the output stage as 56, as it does on WLED");
+    check(lut[215] == 175 && lut[255] == 255,
+          "Matrix's spawn pixel of 215 leaves as the 175 its gamma8inv(175) started from");
+    check(lut[32] == 3 && lut[64] == 12 && lut[192] == 137, "the rest of R2-1's table");
+
+    build_output_gamma_lut(1.0f, lut);
+    int identity = 0;
+    for (int i = 0; i < 256; i++) {
+      if (lut[i] != i)
+        identity++;
+    }
+    check(identity == 0, "gamma_correct 1.0 is the identity, for an output that carries its own curve");
+
+    /* 2.8 is ESPHome's light default and not WLED's, and the two numbers a
+     * reader of deviation 33 needs are these. */
+    build_output_gamma_lut(2.8f, lut);
+    check(lut[128] == 37 && lut[215] == 158, "ESPHome's light default of 2.8 is a third darker at mid grey");
+  }
 
   /* The particle renderer's matched pair. A particle sitting exactly between
    * four pixels splits its brightness four ways; upstream then puts the inverse
@@ -544,6 +704,58 @@ void test_segment_data_budget() {
   }
 }
 
+// --- collision binning ------------------------------------------------------
+
+/* Round 2 finding R2-6, which does not survive. The critic read the two lines
+ *
+ *   uint32_t maxBinParticles = max(50, (usedParticles + 1) / 4);
+ *   if (maxBinParticles > binArrayEntries) maxBinParticles = binArrayEntries;
+ *
+ * as a clamp that fires on a short strip and changes which particles collide,
+ * because upstream's `binIndices` is a stack array of exactly that size and
+ * cannot be short. It cannot fire here either: this port's bin array is sized
+ * by calculateBinArrayEntries1D() as the same max(50, (numParticles + 1) / 4)
+ * rounded up, and `usedParticles` is never above `numParticles`
+ * (setUsedParticles multiplies by at most 256/256). This walks every strip
+ * length the 1D systems are built at and every fraction the effects ask for,
+ * and measures the headroom. */
+void test_collision_bins() {
+  printf("Collision binning\n");
+  size_t clamped = 0;
+  size_t checked = 0;
+  uint32_t tightest = 0xFFFFFFFFu;
+  const uint8_t fractions[] = {255, 191, 128, 64, 32, 8, 1};
+  for (int length : {2, 3, 4, 8, 16, 32, 60, 100, 128, 200, 300, 512, 1000}) {
+    Engine engine;
+    if (!engine.init(static_cast<uint16_t>(length), 1))
+      continue;
+    Segment &seg = engine.segment();
+    seg.begin_draw(CRGBPalette16(CRGB(0xFFFFFF)));
+    ParticleSystem1D *ps = nullptr;
+    if (!initParticleSystem1D(seg, ps, 1) || ps == nullptr)
+      continue;
+    /* binArrayEntries is private, and at 255 setUsedParticles hands back
+     * numParticles exactly ((n * 256) >> 8), which is what the array was
+     * sized from. */
+    ps->setUsedParticles(255);
+    const uint32_t bins = calculateBinArrayEntries1D(ps->usedParticles);
+    for (uint8_t fraction : fractions) {
+      ps->setUsedParticles(fraction);
+      const uint32_t want = std::max<uint32_t>(50, (ps->usedParticles + 1) / 4);
+      checked++;
+      if (want > bins)
+        clamped++;
+      else
+        tightest = std::min(tightest, bins - want);
+    }
+    seg.deallocate_data();
+  }
+  printf("      %zu length and fraction combinations, tightest headroom %u slots\n", checked,
+         static_cast<unsigned>(tightest));
+  check(checked > 50, "the 1D particle system was built at every length that matters");
+  check(clamped == 0, "the bin array is never smaller than the binning asks for, so the clamp is dead code");
+}
+
 // --- simulated sound --------------------------------------------------------
 
 /* Round 1 finding F5. Puddlepeak, Ripple Peak and Waterfall draw only on
@@ -591,7 +803,12 @@ void test_simulated_peak() {
     }
     const double mean = total / (frames * static_cast<double>(engine.canvas().size()));
     printf("      %s mean brightness %.2f\n", name, mean);
-    check(mean > 0.5, std::string(name) + " renders something with the simulated source");
+    /* The bar is "not blank", which is what the finding was: Puddlepeak
+     * measured 0.01 before the beat and is two orders above that now. It is
+     * not a pinned number, because these three draw random positions and
+     * colours: restoring upstream's discarded random draw in round 2 moved
+     * Puddlepeak from 0.54 to 0.48 without changing a line of the effect. */
+    check(mean > 0.2, std::string(name) + " renders something with the simulated source");
   }
 }
 
@@ -600,9 +817,11 @@ void test_simulated_peak() {
 int main() {
   test_scrolling_text();
   test_control_defaults();
+  test_palette_defaults();
   test_labels();
   test_gamma();
   test_segment_data_budget();
+  test_collision_bins();
   test_simulated_peak();
   printf("\n%d failure(s)\n", failures);
   return failures;

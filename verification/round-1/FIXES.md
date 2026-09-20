@@ -598,17 +598,25 @@ with 900 frames and at four pixels with 300.
 
 ## What round 2 should attack first
 
-1. **PS Starburst.** Consistently 0.5 of the device over four port runs and two
+1. **PS Starburst.** Consistently 0.5 of the device over six port runs and two
    device runs, and it is not the particle count. The gamma work moved it from
-   0.47 to 0.56 and no further.
+   0.47 to 0.50 and no further.
 2. **The 1D layout and the `m12` mapping modes**, which round 1 did not touch
    and this round did not either. Snow Fall's grid sizing is latent there.
 3. **The light front end.** Every port capture on both rounds came through the
-   display front end.
-4. **The effects slower than the capture window**, with 30 second captures
+   display front end, and it has its own gamma and its own frame gate.
+4. **Capture the device twice.** The noise floor is only half built: the port
+   side is pooled over three runs and the reference side is still one. Two of
+   the flags that survive, Lightning and Perlin Move, are frozen-test calls that
+   a second reference run would settle one way or the other in a minute.
+5. **The effects slower than the capture window**, with 30 second captures
    rather than the phase argument from theory: Sweep, Wipe, Tri Wipe, Tartan,
-   Slow Transition, PS Galaxy, Halloween Eyes.
-5. **PS Sonic Stream** still cannot be settled. It needs music playing in the
+   Slow Transition, PS Galaxy, Halloween Eyes. Their run-to-run spread is 44 to
+   200 counts out of 255, which is most of the remaining flagged list.
+6. **The engine attribution**, which has been off since round 1 and is now
+   merely honest about being unavailable. `capture_engine.py --match-reference`
+   exists and has not been run at scale.
+7. **PS Sonic Stream** still cannot be settled. It needs music playing in the
    room, and the device sat in a quiet one for both rounds. The port renders
    34.5 against the device's 0.08, which is consistent with silence and with
    deviation 21 and proves neither.

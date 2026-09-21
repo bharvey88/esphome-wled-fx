@@ -52,6 +52,12 @@ display:
     # is a much darker panel than a WLED device. wled_fx does the gamma, the
     # driver stays out of the way.
     gamma_correct: LINEAR
+    # The panel's own hardware brightness, which is the one to dim with: it
+    # shortens the drive time rather than scaling the frame, so it keeps the
+    # shadow detail that scaling an 8 bit frame throws away. This is the
+    # driver's own default and WLED's factory default of 127; a WLED device
+    # somebody has turned up will be brighter than this. 255 is full.
+    brightness: 128
 
 wled_fx:
   id: fx

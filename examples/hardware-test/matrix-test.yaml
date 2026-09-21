@@ -30,6 +30,10 @@ esphome:
       then:
         - light.turn_on:
             id: matrix_strip
+            # The strip's own brightness. tour.yaml's Colour 1 light is the
+            # engine's master and multiplies this one, so the panel runs at
+            # 60 percent of whatever Colour 1 is set to, and turning Colour 1
+            # off blanks it. Dim with this entity.
             brightness: 60%
             effect: WLED FX
 

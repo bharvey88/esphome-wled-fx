@@ -89,6 +89,12 @@ wled_fx:
 number:
   - platform: template
     id: panel_brightness
+    # The panel's hardware duty, which is the one to dim with: it shortens the
+    # drive time rather than scaling the frame, so it keeps shadow detail that
+    # scaling an 8 bit frame throws away. Colour 1's brightness is the other
+    # one, and it does scale the frame. 128 is the driver's default and WLED's
+    # factory default of 127; a WLED device somebody has turned up will look
+    # brighter than this until you move it. See PORTING.md deviation 36.
     name: Panel brightness
     min_value: 1
     max_value: 255

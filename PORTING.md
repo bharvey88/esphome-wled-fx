@@ -1130,3 +1130,52 @@ specified.
     the gamma table on the display front end, which is WLED's order. On the
     light front end it is applied before `set_rgbw()` and ESPHome's curve then
     bends it, for the same reason: the light owns the stage after this one.
+
+34. **"* Random Cycle" has no settings, and its blend window comes from a
+    constant.** Upstream's `Segment::handleRandomPalette()`
+    (`wled00/FX_fcn.cpp:435`) draws a new harmonic palette every
+    `randomPaletteChangeTime` seconds and then blends the live palette onto it
+    fast enough to arrive inside `strip.getTransition()`, after which it stops
+    and holds. `RandomPalette::step()` does the same arithmetic, with the two
+    numbers as constants: five seconds (`wled00/wled.h:613`) and 750 ms
+    (`wled00/wled.h:609`), neither of which is a setting here. The 750 ms is
+    not a transition, and the port has none; it is only the window the blend
+    is sized to fit, and upstream uses the transition time for it because that
+    is the number a WLED user already has. `useHarmonicRandomPalette`, which
+    upstream defaults to true, is also not a setting: the harmonic generator
+    is always used after the first palette.
+
+    Until v0.4.1 this blended once per frame instead of sizing the blend to
+    the window, which at a 23 ms frame takes about 5.9 seconds to walk 255
+    blend steps: longer than the five second change interval, so the palette
+    never arrived. On the device this reads as a much dimmer, muddier
+    "* Random Cycle": two random palettes averaged partway are less saturated
+    and less bright than either of them. Measured against the reference device
+    at matched controls, the port rendered Fire 2012 on "* Random Cycle" at
+    0.68 of the device's mean brightness and Hiphotic at 0.71; every other
+    palette on those two effects was inside the noise floor.
+
+35. **A control moved at runtime is pinned, and that includes the palette.**
+    `Engine::sticky_` defaults to true, so the first palette picked from the
+    select survives every later effect change. WLED reloads the effect's
+    declared palette instead (`wled00/FX_fcn.cpp:616-617`,
+    `if (sOpt >= 0 && loadDefaults) setPalette(sOpt);`, with `loadDefaults`
+    true from its own UI). The four hardware test firmwares turn pinning off
+    at boot through their "Pin controls" switch and so match WLED; the plain
+    examples have no such switch and do not. There is no YAML key for it yet,
+    only `Engine::set_sticky_controls()`.
+
+36. **A hub75 panel has two brightnesses, and neither defaults to a WLED
+    device's.** WLED's HUB75 bus does not scale pixels in software at all:
+    `BusHub75Matrix::setPixelColor` leaves `nscale8_video` commented out and
+    `setBrightness` does nothing but `display->setBrightness(_bri)`
+    (`wled00/bus_manager.cpp`), so a WLED panel is gamma-corrected bytes at a
+    hardware duty of `bri`. Here the same bytes leave the display front end,
+    and there are two places to dim them: the Colour 1 light, which is a
+    software multiply on the finished 8 bit frame and therefore loses shadow
+    detail the way WLED never does, and the panel's own `brightness`, which is
+    the hardware duty and is the one that matches. The esp-hub75 driver
+    defaults that to 128, which is WLED's own `DEFAULT_BRIGHTNESS` of 127 and
+    not what a device somebody has turned up is running at: the reference
+    device sits at 220, so it emits about 1.7 times the light for the same
+    frame. Dim with the panel brightness, not with Colour 1.

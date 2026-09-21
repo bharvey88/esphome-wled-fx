@@ -470,6 +470,17 @@ lets the new effect's own metadata refill it. That is the single most surprising
 thing about the component, and it is what the `select`, `number` and `switch`
 entities follow when they republish.
 
+A control moved **at runtime** is pinned the same way unless something turns
+pinning off. That is a deliberate difference from WLED, and the palette is
+where it shows: on a WLED device, choosing Fire 2012 puts the palette back to
+Fire whatever the user had picked, because the effect's metadata declares
+`pal=35`. Here the picked palette stays. The four hardware test firmwares turn
+runtime pinning off at boot with their "Pin controls" switch, so they behave as
+WLED does; the plain examples have no such switch and keep it on. If a select
+or number entity that "will not go back to the effect's own value" is not what
+you want, add the same switch, or call
+`id(fx)->engine().set_sticky_controls(false);` in an `on_boot` lambda.
+
 The 1D-to-2D mapping is not configurable. It comes from each effect's `m12`
 metadata key, which is what WLED's "Expand 1D FX" selector sets. The simulator's
 `--map` can force it; the component cannot.

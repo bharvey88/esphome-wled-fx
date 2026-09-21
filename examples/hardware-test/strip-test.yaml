@@ -59,8 +59,10 @@ wled_fx:
 light:
   - platform: esp32_rmt_led_strip
     id: strip
-    # Brightness lives on this entity. The web server shows it as a slider on
-    # the light itself, so the harness does not add a second one.
+    # Brightness lives on this entity, so the harness adds no slider of its
+    # own. It is not the only one: tour.yaml's Colour 1 light is the engine's
+    # master, so its brightness multiplies this one and turning it off blanks
+    # the strip while this entity is still on. Dim with this one.
     name: Strip
     pin: ${led_pin}
     num_leds: ${led_count}

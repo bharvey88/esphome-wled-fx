@@ -1,6 +1,9 @@
 /* See wf_color.h for the combined MIT (FastLED) and EUPL-to-GPLv3 (WLED) notice
  * that covers this file. */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_color.h"
 
 namespace esphome {

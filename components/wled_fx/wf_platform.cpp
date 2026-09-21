@@ -1,3 +1,6 @@
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_platform.h"
 
 #ifdef WLED_FX_HOST_BUILD

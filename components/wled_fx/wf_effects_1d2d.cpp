@@ -12,6 +12,9 @@
 
 /* Effects that render natively in both 1D and 2D. See BATCHES.md. */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include <algorithm>
 
 #include "wf_effects.h"

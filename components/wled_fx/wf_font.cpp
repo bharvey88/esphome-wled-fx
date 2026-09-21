@@ -13,6 +13,9 @@
  * between rows or glyphs.
  */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_font.h"
 
 namespace esphome {

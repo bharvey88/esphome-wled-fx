@@ -14,6 +14,9 @@
  * and run on the particle system in wf_particle.h. See the "Particle effects" and
  * "Audio effects" sections of PORTING.md for the init pattern and the pitfalls. */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include <algorithm>
 #include <utility>
 

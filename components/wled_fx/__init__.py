@@ -81,6 +81,7 @@ CONF_MIC_FILTER = "mic_filter"
 CONF_BANDPASS = "bandpass"
 CONF_PASSIVE = "passive"
 CONF_TASK_IN_PSRAM = "task_in_psram"
+CONF_OPTIMIZE = "optimize"
 
 # update_interval: never is stored as uint32_t max.
 UPDATE_INTERVAL_NEVER = 4294967295
@@ -101,6 +102,18 @@ DEFAULT_OUTPUT_GAMMA = 2.2
 # Where somebody who installed this with external_components can actually read
 # the effect and palette lists. A bare "see README.md" means nothing to them.
 EFFECT_LIST_URL = "https://github.com/bharvey88/esphome-wled-fx#effects"
+
+# --- optimisation ------------------------------------------------------------
+#
+# ESPHome compiles a firmware with -Os. That is right for a firmware and wrong
+# for a per-pixel loop that runs 43 times a second, which is why WLED builds its
+# effects for speed. `speed` puts the component's own translation units, and
+# nothing else in the build, on -O2 through the pragma in wf_optimize.h.
+#
+# The default is speed, because the reason to install this component is to watch
+# it run. `size` is for a board that is short of flash; README.md has the cost
+# per configuration.
+OPTIMIZE_MODES = ("speed", "size")
 
 wled_fx_ns = cg.esphome_ns.namespace("wled_fx")
 WledFxController = wled_fx_ns.class_("WledFxController")
@@ -324,6 +337,11 @@ _ENTRY_SCHEMA = cv.Schema(
         cv.Optional(CONF_INCLUDE_1D_EFFECTS): cv.boolean,
         cv.Optional(CONF_AUDIO): AUDIO_SCHEMA,
         cv.Optional(CONF_UPDATE_INTERVAL): cv.positive_time_period_milliseconds,
+        # Build-wide, so it is allowed on an entry with no display and every
+        # entry has to agree. _final_validate() checks that and emits the flag.
+        cv.Optional(CONF_OPTIMIZE, default="speed"): cv.one_of(
+            *OPTIMIZE_MODES, lower=True
+        ),
         **CONTROL_SCHEMA,
     }
 ).extend(cv.COMPONENT_SCHEMA)
@@ -362,6 +380,9 @@ def _validate_entry(config):
         CONF_GAMMA_CORRECT,
         CONF_INCLUDE_1D_EFFECTS,
         CONF_UPDATE_INTERVAL,
+        # Not CONF_OPTIMIZE: it is one compiler flag for the whole build, and a
+        # bare `wled_fx:` entry beside a light effect is where somebody would
+        # naturally put it.
         *_CONTROL_KEYS,
     ):
         if key in config:
@@ -381,6 +402,7 @@ CONFIG_SCHEMA = cv.ensure_list(cv.All(_ENTRY_SCHEMA, _validate_entry))
 _LAYOUT_DATA_KEY = "wled_fx_layouts"
 _ALLOW_LIST_KEY = "wled_fx_allow_list"
 _SELECTION_DONE_KEY = "wled_fx_selection_emitted"
+_OPTIMIZE_KEY = "wled_fx_optimize"
 
 
 def _all_entries(full_config):
@@ -488,6 +510,19 @@ def _final_validate(config):
         allow_list.extend(entry.get(CONF_EFFECTS, []))
     CORE.data[_ALLOW_LIST_KEY] = allow_list
 
+    # One compiler flag for the whole build, so two entries cannot ask for
+    # different things. Saying so is better than quietly taking whichever one
+    # codegen happened to reach last.
+    modes = {str(entry.get(CONF_OPTIMIZE, "speed")) for entry in entries}
+    if len(modes) > 1:
+        raise cv.Invalid(
+            f"Every wled_fx entry has to agree on '{CONF_OPTIMIZE}': this "
+            f"configuration asks for {' and '.join(sorted(modes))}. It sets the "
+            "optimisation level the component's own sources are compiled at, "
+            "which is one setting for the whole firmware."
+        )
+    CORE.data[_OPTIMIZE_KEY] = modes.pop() if modes else "speed"
+
     for entry in config:
         if (audio_config := entry.get(CONF_AUDIO)) is not None:
             # Checks the microphone really offers the channel that was asked for.
@@ -590,6 +625,12 @@ def _add_effect_selection():
     if CORE.data.get(_SELECTION_DONE_KEY):
         return
     CORE.data[_SELECTION_DONE_KEY] = True
+
+    # A plain -D, not a change to anybody's optimisation flags: it only turns on
+    # the `#pragma GCC optimize` in wf_optimize.h, which every wled_fx source
+    # file includes first and nothing else in the firmware includes at all.
+    if CORE.data.get(_OPTIMIZE_KEY, "speed") == "speed":
+        cg.add_build_flag("-DWLED_FX_OPTIMIZE_SPEED")
 
     # The lists of every entry merged into one, worked out in final validation
     # because that is the only place all the entries are in view at once.

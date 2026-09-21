@@ -1,5 +1,8 @@
 /* See wf_audio_source.h. */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_audio_source.h"
 
 #ifdef WLED_FX_HAS_AUDIO_SOURCE

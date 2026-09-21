@@ -826,9 +826,40 @@ so rather than taking the last one.
 
 The flash cost, ESPHome 2026.8.2:
 
-FLASH_TABLE_PLACEHOLDER
+Image size in bytes, ESPHome 2026.8.2, `esphome compile` of each example:
 
-RAM is unchanged by the setting.
+| Configuration | v0.4.1 | v0.5.0 `optimize: size` | v0.5.0 `optimize: speed` | speed costs |
+|---|---|---|---|---|
+| `examples/m1-hub75.yaml` | 883,027 | 882,567 | 894,643 | **+12,076** |
+| `examples/m1-hub75-audio.yaml` | 937,107 | 936,707 | 948,567 | **+11,860** |
+| `examples/strip-esp32.yaml` | 888,287 | 888,267 | 911,475 | **+23,208** |
+| `examples/strip-esp32-arduino.yaml` | 975,659 | 975,451 | 998,587 | **+23,136** |
+| `hardware-test/m1-test.yaml` | 1,036,315 | 1,036,215 | 1,069,655 | **+33,440** |
+| `hardware-test/m1-test-audio.yaml` | 1,096,123 | 1,095,975 | 1,132,335 | **+36,360** |
+| `hardware-test/matrix-test.yaml` | 1,024,251 | 1,023,459 | 1,056,331 | **+32,872** |
+| `hardware-test/strip-test.yaml` | 977,919 | 977,783 | 1,004,163 | **+26,380** |
+
+`optimize: size` lands within a few hundred bytes of v0.4.1 on every one
+of them, and slightly under it, because the two 2D pixel accessors moved
+into a header and stopped being emitted as functions. So the column to read
+is the last one: speed costs 12 KB on a matrix build that compiles only the
+64 effects a matrix offers, and up to 36 KB on a build carrying all 223.
+
+Statically allocated RAM, bytes:
+
+| Configuration | v0.4.1 | v0.5.0 `optimize: size` | v0.5.0 `optimize: speed` |
+|---|---|---|---|
+| `examples/m1-hub75.yaml` | 126,411 | 126,691 | 126,691 |
+| `examples/m1-hub75-audio.yaml` | 135,331 | 135,603 | 135,603 |
+| `examples/strip-esp32.yaml` | 126,115 | 126,155 | 126,147 |
+| `examples/strip-esp32-arduino.yaml` | 126,883 | 126,907 | 126,899 |
+| `hardware-test/m1-test.yaml` | 129,959 | 130,303 | 130,303 |
+| `hardware-test/m1-test-audio.yaml` | 140,239 | 140,591 | 140,591 |
+| `hardware-test/matrix-test.yaml` | 129,619 | 129,707 | 129,707 |
+| `hardware-test/strip-test.yaml` | 129,619 | 129,643 | 129,635 |
+
+The setting does not move RAM. The few hundred bytes v0.5.0 adds are the
+new lookup table and the cached geometry, not the optimisation level.
 
 ### `canvas_memory:`
 

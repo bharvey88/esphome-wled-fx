@@ -40,6 +40,16 @@ wsl -d Ubuntu-24.04 -u root -- /root/wfx/esphome-venv/bin/python \
 the device capture is still going. Everything it could not read is listed at
 the end of the report.
 
+**Pass `--match-reference` to `capture_port.py`.** Without it the port runs each
+effect on its own WLED metadata defaults while the device side is on whatever it
+was captured at, and the comparison is then measuring the settings rather than
+the port. It is worth roughly three times the flag count: the same build
+compared 19 effects as flagged with it and 65 without. Every capture records
+which it was, as `applied.matched_to_reference` in its `meta.json`, and the
+report prints how many effects matched on both sides. If that line says nothing
+matched, the reference path is wrong; it wants the folder that *contains*
+`captures/`, not `captures/` itself.
+
 ## What is compared, and what is not
 
 **Not pixels.** Every effect is seeded from a random number generator and paced

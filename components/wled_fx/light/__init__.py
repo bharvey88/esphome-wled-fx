@@ -35,8 +35,12 @@ TYPES = {
     "color3": WledFxColorLightType.WLED_FX_COLOR_LIGHT_TYPE_COLOR3,
 }
 
-# Segment::colors[0] in wf_segment.h, which is WLED's own default primary.
-DEFAULT_COLOR1 = (0xFF, 0xAA, 0x00)
+# Segment::colors[0] in wf_segment.h, which is WLED's own DEFAULT_COLOR
+# (wled00/FX.h:45): 0xFFA000, an amber with 160 of green. It has to be this
+# value and not a rounder one, because the light writes it into the engine at
+# boot and it is what every effect draws on palette "Default", and what the
+# four dynamic palettes are built from.
+DEFAULT_COLOR1 = (0xFF, 0xA0, 0x00)
 
 
 def _schema(restore_mode, initial_state):

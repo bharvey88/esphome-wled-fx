@@ -865,6 +865,31 @@ Not done: skipping the push when the frame is unchanged needs a 16 KB comparison
 to find out, which costs about what it saves, and almost no effect produces two
 identical frames anyway.
 
+### The one hot spot left alone on purpose
+
+`sin16_t` is Bhaskara I's sine approximation as a 64 bit multiply and a 64 by
+32 bit division. Xtensa has no hardware for that division, so an objdump of the
+ESP32-S3 build shows every call ending in `callx8` to `__udivdi3` in ROM:
+
+    4201cf47: l32r  a8, 40002544 <__udivdi3>
+    4201cf4a: callx8 a8
+
+Pacifica calls it nineteen times a pixel, so 78000 software divisions a frame,
+which is most of its 53 ms. Distortion Waves calls it twenty-one times, Tartan
+five.
+
+It stays. `wled00/wled_math.cpp` is the same function, division included, so a
+WLED device on the same panel pays exactly the same price, and the measurement
+says so: Pacifica runs at 8.0 fps on the reference device and 13.1 here. This
+is upstream's arithmetic producing upstream's pixels, and the two effects it
+dominates are the two effects WLED itself is slow on. Replacing it with a table
+or a reciprocal multiply would have to be proved bit identical over all 32768
+inputs before it could be called a port of WLED at all, and it would buy
+nothing on the effects that are actually short of the cap.
+
+`color_from_palette` and the Perlin noise functions were read for the same kind
+of avoidable work and are also upstream's, call for call.
+
 ### Rendering on the second core
 
 Out of scope for v0.5.0, and worth writing down now that the output path is

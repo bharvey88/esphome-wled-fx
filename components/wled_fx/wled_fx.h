@@ -213,6 +213,10 @@ class WledFxDisplay : public Component, public WledFxController {
  protected:
   // Blits the frame buffer and flips the display's own buffer.
   void push_frame_();
+  /* Folds the master brightness into the gamma table, so the per-pixel loop is
+   * three lookups and nothing else whatever the brightness is. Called from
+   * loop() when the brightness has moved, which is a slider, not a frame. */
+  void rebuild_output_lut_();
 
   display::Display *display_{nullptr};
   uint8_t *frame_{nullptr};
@@ -223,7 +227,14 @@ class WledFxDisplay : public Component, public WledFxController {
    * own wants this at 1.0 instead, and the hub75 driver is exactly that case
    * until its own `gamma_correct` is set to LINEAR. */
   float gamma_{2.2f};
+  // Gamma alone, kept so the combined table can be rebuilt without pow().
   uint8_t gamma_lut_[256]{};
+  // Gamma then the master brightness, which is what the frame is built from.
+  uint8_t output_lut_[256]{};
+  // The brightness output_lut_ was built for. 256 is "never built".
+  uint16_t output_lut_brightness_{256};
+  // True when the frame buffer landed in internal RAM. dump_config prints it.
+  bool frame_internal_{false};
   // True once the all-black frame that the output being off asks for has been
   // pushed, so a blanked panel costs nothing per frame.
   bool blanked_{false};

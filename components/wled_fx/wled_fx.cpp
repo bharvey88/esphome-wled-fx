@@ -226,15 +226,31 @@ void WledFxDisplay::setup() {
     return;
   }
 
-  RAMAllocator<uint8_t> allocator;
-  this->frame_ = allocator.allocate(static_cast<size_t>(this->width_) * this->height_ * 3);
+  /* Packed 24 bit RGB, which is what draw_pixels_at() takes and what the hub75
+   * driver reads straight through. It is written once and read once per frame,
+   * both sequentially, so it wants internal RAM less badly than the canvas
+   * does; it asks second and takes whatever is left. */
+  this->frame_ = static_cast<uint8_t *>(
+      platform_alloc_fast(static_cast<size_t>(this->width_) * this->height_ * 3, &this->frame_internal_));
   if (this->frame_ == nullptr) {
     ESP_LOGE(TAG, "Frame buffer allocation failed");
     this->mark_failed();
     return;
   }
+  this->rebuild_output_lut_();
   this->engine_.set_text(this->text_.c_str());
   this->ensure_offered_effect();
+}
+
+void WledFxDisplay::rebuild_output_lut_() {
+  const uint8_t brightness = this->output_brightness();
+  if (brightness == 255) {
+    memcpy(this->output_lut_, this->gamma_lut_, sizeof(this->output_lut_));
+  } else {
+    for (int i = 0; i < 256; i++)
+      this->output_lut_[i] = this->scale_output_(this->gamma_lut_[i]);
+  }
+  this->output_lut_brightness_ = brightness;
 }
 
 void WledFxDisplay::loop() {
@@ -266,26 +282,25 @@ void WledFxDisplay::loop() {
   this->engine_.render(now);
   const uint32_t render_end = micros();
 
+  /* One table and one loop. The master brightness is a plain linear dim of the
+   * finished frame, applied after gamma rather than bent by it, and folding it
+   * into the table gives exactly the same bytes as scaling each channel did
+   * while taking a lookup instead of a lookup, a multiply and a shift. The
+   * brightness only moves when somebody moves it, so the compare is the whole
+   * per-frame cost of noticing. */
+  if (this->output_lut_brightness_ != this->output_brightness())
+    this->rebuild_output_lut_();
+
   const Canvas &canvas = this->engine_.canvas();
   const size_t pixels = canvas.size();
+  const uint32_t *in = canvas.pixels();
+  const uint8_t *const lut = this->output_lut_;
   uint8_t *out = this->frame_;
-  const uint8_t brightness = this->output_brightness();
-  if (brightness == 255) {
-    for (size_t i = 0; i < pixels; i++) {
-      const uint32_t c = canvas.get(i);
-      *out++ = this->gamma_lut_[(c >> 16) & 0xFF];
-      *out++ = this->gamma_lut_[(c >> 8) & 0xFF];
-      *out++ = this->gamma_lut_[c & 0xFF];
-    }
-  } else {
-    // Master brightness is a plain linear dim of the finished frame, so it is
-    // applied after gamma rather than bent by it.
-    for (size_t i = 0; i < pixels; i++) {
-      const uint32_t c = canvas.get(i);
-      *out++ = this->scale_output_(this->gamma_lut_[(c >> 16) & 0xFF]);
-      *out++ = this->scale_output_(this->gamma_lut_[(c >> 8) & 0xFF]);
-      *out++ = this->scale_output_(this->gamma_lut_[c & 0xFF]);
-    }
+  for (size_t i = 0; i < pixels; i++) {
+    const uint32_t c = in[i];
+    *out++ = lut[(c >> 16) & 0xFF];
+    *out++ = lut[(c >> 8) & 0xFF];
+    *out++ = lut[c & 0xFF];
   }
 
   this->push_frame_();
@@ -309,7 +324,13 @@ void WledFxDisplay::push_frame_() {
    * display the comparison harness uses. */
   this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_ORDER_RGB,
                                  display::COLOR_BITNESS_888, true);
-  // Pushes the frame out. On hub75 with double buffering this is the flip.
+  /* Pushes the frame out. On hub75 with double buffering this is the flip, and
+   * the flip does not wait: esp-hub75's GdmaDma::flip_buffer() splices one
+   * descriptor `next` pointer and swaps two indices. The panel refreshes itself
+   * from a circular GDMA chain at about 76 Hz whatever this component does, so
+   * nothing here is ever blocked on a panel refresh and the frame rate is set
+   * by how long the work above takes, not by the display. See PORTING.md,
+   * "What the output path costs". */
   this->display_->update();
 }
 
@@ -319,13 +340,24 @@ void WledFxDisplay::dump_config() {
                 "  Canvas: %dx%d\n"
                 "  Frame interval: %" PRIu32 " ms\n"
                 "  Output gamma: %.2f\n"
+                "  Optimised for: %s\n"
+                "  Memory policy: %s (canvas in %s RAM, frame buffer in %s RAM)\n"
+                "  Internal heap free: %u bytes, largest block %u\n"
                 "  Effect scratch profile: %s, %u bytes a segment\n"
                 "  Effects compiled in: %u\n"
                 "  Effect: %s\n"
                 "  Palette: %s",
-                this->width_, this->height_, this->frame_interval(), this->gamma_, segment_data_profile(),
-                FAIR_DATA_PER_SEG, static_cast<unsigned>(EffectRegistry::count()),
-                this->current_effect_name().c_str(), this->current_palette_name().c_str());
+                this->width_, this->height_, this->frame_interval(), this->gamma_,
+#ifdef WLED_FX_OPTIMIZE_SPEED
+                "speed",
+#else
+                "size",
+#endif
+                platform_memory_policy_name(), this->engine_.canvas().in_internal_ram() ? "internal" : "external",
+                this->frame_internal_ ? "internal" : "external", static_cast<unsigned>(platform_internal_free()),
+                static_cast<unsigned>(platform_internal_largest_block()), segment_data_profile(), FAIR_DATA_PER_SEG,
+                static_cast<unsigned>(EffectRegistry::count()), this->current_effect_name().c_str(),
+                this->current_palette_name().c_str());
 }
 
 #endif  // USE_DISPLAY

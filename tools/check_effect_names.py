@@ -131,6 +131,74 @@ def segment_budget_problems() -> list[str]:
     return problems
 
 
+def palette_problems() -> list[str]:
+    """The 72 palettes, against WLED's own list and its own tables.
+
+    A palette is three things that have to agree: the name the select offers,
+    the slot that name resolves to, and the bytes that slot loads. The name
+    list is checked against `JSON_palette_names`, which is the same list a
+    device serves from `/json/palettes`, and the two table arrays are checked
+    against `palettes.cpp`, entry for entry and in order. Renaming one palette
+    or reordering the gradient array would leave every effect rendering in
+    somebody else's colours, which no brightness or hue metric would flag
+    because the colours would all still be WLED's.
+
+    Skipped when there is no checkout of WLED beside this tree, which is the
+    case in CI.
+    """
+    problems: list[str] = []
+    palettes = palette_names()
+    if len(palettes) < 2 or palettes[0] != "Default":
+        problems.append(f"the palette name scan looks wrong: {palettes[:4]}")
+        return problems
+
+    upstream_dir = ROOT / "refs" / "WLED" / "wled00"
+    fx_fcn = upstream_dir / "FX_fcn.cpp"
+    upstream_palettes = upstream_dir / "palettes.cpp"
+    if not fx_fcn.exists() or not upstream_palettes.exists():
+        return problems
+
+    names_block = re.search(
+        r'JSON_palette_names\[\]\s*PROGMEM\s*=\s*R"=====\(\[(.*?)\]\)=====";',
+        fx_fcn.read_text(encoding="utf-8", errors="replace"),
+        re.S,
+    )
+    if names_block is None:
+        problems.append("could not find JSON_palette_names in refs/WLED/wled00/FX_fcn.cpp")
+    else:
+        upstream_names = re.findall(r'"([^"]*)"', names_block.group(1))
+        if palettes != upstream_names:
+            differing = [
+                f"{i}: {a!r} vs {b!r}"
+                for i, (a, b) in enumerate(zip(palettes, upstream_names))
+                if a != b
+            ]
+            problems.append(
+                "the palette list is not WLED's: "
+                f"{len(palettes)} here against {len(upstream_names)} upstream"
+                + (f", first differences {differing[:5]}" if differing else "")
+            )
+
+    # The two table arrays, which are what a name actually loads.
+    def table_order(text: str, array: str, symbol: str) -> list[str]:
+        block = re.search(rf"{array}\s*\[\]\s*(?:PROGMEM\s*)?=\s*\{{(.*?)\}}\s*;", text, re.S)
+        return re.findall(symbol, block.group(1)) if block else []
+
+    port_text = (ROOT / "components" / "wled_fx" / "wf_palettes.cpp").read_text(encoding="utf-8")
+    up_text = upstream_palettes.read_text(encoding="utf-8", errors="replace")
+    for port_array, up_array, symbol, label in (
+        ("GRADIENT_PALETTES", "gGradientPalettes", r"(\w+_gp)", "gradient"),
+        ("FASTLED_PALETTES", "fastledPalettes", r"&(\w+)", "FastLED"),
+    ):
+        here = table_order(port_text, port_array, symbol)
+        there = table_order(up_text, up_array, symbol)
+        if not here or not there:
+            problems.append(f"could not read the {label} palette array from both sides")
+        elif here != there:
+            problems.append(f"the {label} palette array is not upstream's, in upstream's order")
+    return problems
+
+
 def main() -> int:
     problems = segment_budget_problems()
 
@@ -199,8 +267,7 @@ def main() -> int:
         )
 
     palettes = palette_names()
-    if len(palettes) < 2 or palettes[0] != "Default":
-        problems.append(f"the palette name scan looks wrong: {palettes[:4]}")
+    problems.extend(palette_problems())
 
     if problems:
         for problem in problems:

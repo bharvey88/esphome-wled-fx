@@ -193,6 +193,42 @@ sides were captured over different windows anyway.
 * The report records the output gamma each side was captured with, and how many
   effects were captured at matching controls.
 
+## The palette sweep
+
+The three captures above take each effect once, on the palette the device
+happened to be holding. That is one of 72 palettes per effect, so anything
+that goes wrong only on a palette nobody selected survives the whole
+comparison. [`palette_sweep.py`](palette_sweep.py) is the mode that closes
+that: one effect, all 72 palettes, both sides, at the same colours and the
+same frame period.
+
+```
+# the device, about seven minutes an effect at four seconds a palette
+C:\Users\bharv\wfx-ref-venv\Scripts\python.exe tools\compare\palette_sweep.py device ^
+    --out C:\Users\bharv\development\esphome-wled-fx-palsweep
+
+# the port, about twenty seconds an effect
+wsl -d Ubuntu-24.04 -u root -- /root/wfx/esphome-venv/bin/python \
+    /mnt/c/.../tools/compare/palette_sweep.py port --out /root/wfx/palsweep-port --with-gamma 2.2
+
+wsl ... palette_sweep.py report --device ... --port ... --out .../REPORT.md
+```
+
+Both sides record mean brightness, the three channel means, the fraction lit
+and a twelve bin hue histogram per palette, and the report scores each pair
+against the `NOISE.md` floors. `--with-gamma` records the port a second time
+through the output gamma table, because the device's live view is the buffer
+*before* WLED's `show()` gamma and the two stages have to be read separately.
+`--effects` takes any comma separated list; the default is one effect from
+each family that reads a palette differently.
+
+The host side of the same question is `test_palette_sweep()` in
+[`tools/sim/effect_test.cpp`](../sim/effect_test.cpp), which needs no device:
+it checks every palette index against the table it should resolve to, checks
+that the four dynamic palettes follow the segment colours, and renders two
+palette-driven effects at all 66 named palettes, failing if any of them comes
+out below 0.70 or above 1.30 of that palette's own mean value.
+
 ## Still known to be weak
 
 * **A capture shorter than the effect**, for anything not in `SLOW_EFFECTS`.

@@ -848,6 +848,12 @@ The effect scratch block is deliberately left in PSRAM whatever this is set to:
 it reaches 25 KB on the particle effects and would be competing with the canvas
 for exactly the memory the canvas needs.
 
+The floors are deliberately cautious, because a device that renders fast and
+cannot join a network is a worse outcome than one that renders at v0.4.1's
+speed. If `dump_config` says the canvas went to external RAM on a board you know
+has room, `canvas_memory: internal` takes it anyway; that is what the log line
+is there for.
+
 `dump_config` prints the policy, where each buffer landed and how much internal
 heap is left:
 

@@ -90,22 +90,25 @@ def segment_budget_problems() -> list[str]:
     built for, so it is checked here against WLED's own header.
     """
     problems: list[str] = []
-    upstream = (ROOT / "refs" / "WLED" / "wled00" / "FX.h").read_text(
-        encoding="utf-8", errors="replace"
-    )
     port = (ROOT / "components" / "wled_fx" / "wf_segment.h").read_text(encoding="utf-8")
 
-    # (segments, kilobytes) upstream gives each platform, read out of FX.h.
-    block = re.search(
-        r"#ifdef ESP8266(.*?)#define FAIR_DATA_PER_SEG", upstream, re.S
-    )
-    if block is None:
-        return ["could not find the MAX_SEGMENT_DATA block in refs/WLED/wled00/FX.h"]
-    numbers = re.findall(r"#define\s+MAX_(?:NUM_SEGMENTS|SEGMENT_DATA)\s+\(?(\d+)", block.group(1))
-    # ESP8266 16 / 6k, S2 32 / 20k, then PSRAM 64, no PSRAM 32, and 64k for both.
-    if numbers != ["16", "6", "32", "20", "64", "32", "64"]:
-        problems.append(f"WLED's own budget table has changed shape: {numbers}")
-        return problems
+    # WLED's own header, when there is a checkout of it beside this tree. It is
+    # not in the repository and CI does not have it, so the ladder is checked
+    # against the recorded table either way and against upstream as well when
+    # upstream is there.
+    upstream_path = ROOT / "refs" / "WLED" / "wled00" / "FX.h"
+    if upstream_path.exists():
+        upstream = upstream_path.read_text(encoding="utf-8", errors="replace")
+        block = re.search(r"#ifdef ESP8266(.*?)#define FAIR_DATA_PER_SEG", upstream, re.S)
+        if block is None:
+            return ["could not find the MAX_SEGMENT_DATA block in refs/WLED/wled00/FX.h"]
+        numbers = re.findall(
+            r"#define\s+MAX_(?:NUM_SEGMENTS|SEGMENT_DATA)\s+\(?(\d+)", block.group(1)
+        )
+        # ESP8266 16 / 6k, S2 32 / 20k, then PSRAM 64, no PSRAM 32, 64k for both.
+        if numbers != ["16", "6", "32", "20", "64", "32", "64"]:
+            problems.append(f"WLED's own budget table has changed shape: {numbers}")
+            return problems
 
     expected = [
         ("WLED_FX_ESP8266", 16, 6),

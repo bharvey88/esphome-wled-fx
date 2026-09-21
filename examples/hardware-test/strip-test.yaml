@@ -10,6 +10,9 @@ substitutions:
   # Which tour group this firmware starts on. tour.yaml lists them; on a
   # panel "Panel" is the effects a 2D output offers without the 1D opt-in.
   tour_default_group: Strip
+  # Every effect a strip can run, which on a 1D output is all of them. There is
+  # no mapped-effect dropdown here because there are no mapped effects.
+  tour_effect_scope: all
   # Set these two to your wiring. Everything else is the same harness the panel
   # builds use.
   led_pin: GPIO16

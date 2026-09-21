@@ -78,6 +78,14 @@ jobs:
       - name: Effect and control behaviour tests
         run: tools/sim/build/wled_fx_effect_test
 
+      # One hash per effect over every pixel of every frame of a fixed 40 frame
+      # run with the host RNG seeded. This is what makes a performance change
+      # safe to merge: anything that moves a pixel fails here. A commit that
+      # deliberately corrects an effect regenerates the file with
+      # `wled_fx_bench --write tools/sim/golden.txt` and says so in its message.
+      - name: Golden frames, no effect draws anything different
+        run: tools/sim/build/wled_fx_bench --check tools/sim/golden.txt
+
       - name: Comparison metrics agree with synthetic patterns of known velocity
         run: |
           pip install numpy

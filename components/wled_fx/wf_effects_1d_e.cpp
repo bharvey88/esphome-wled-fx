@@ -12,6 +12,9 @@
 
 /* 1D batch E. See BATCHES.md for the effect list this file owns. */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_effects.h"
 
 // Whole-file guard. Every WLED_FX_FX_* macro this file can provide goes in the

@@ -107,6 +107,9 @@ CONF_MIC_FILTER = "mic_filter"
 CONF_BANDPASS = "bandpass"
 CONF_PASSIVE = "passive"
 CONF_TASK_IN_PSRAM = "task_in_psram"
+CONF_OPTIMIZE = "optimize"
+CONF_CANVAS_MEMORY = "canvas_memory"
+CONF_LOOP_INTERVAL = "loop_interval"
 
 # update_interval: never is stored as uint32_t max.
 UPDATE_INTERVAL_NEVER = 4294967295
@@ -124,9 +127,34 @@ DEFAULT_FRAME_INTERVAL = cv.positive_time_period_milliseconds(FRAMETIME)
 # a curve of its own.
 DEFAULT_OUTPUT_GAMMA = 2.2
 
+# --- the main loop -----------------------------------------------------------
+#
+# ESPHome runs its component phase at most every 16 ms. A 23 ms frame deadline
+# against a 16 ms tick lands late as soon as a rendered tick runs long, which is
+# what turns effects whose own work is 13 ms into 29 ms frames. See
+# WledFxDisplay::apply_loop_interval_() for the mechanism.
+#
+# `auto` asks for a third of the frame period, floored here so a very fast frame
+# interval cannot ask for a 1 ms loop. It only ever lowers the interval, never
+# raises it. `never` leaves ESPHome's own setting alone.
+LOOP_INTERVAL_AUTO_DIVISOR = 3
+LOOP_INTERVAL_FLOOR_MS = 4
+
 # Where somebody who installed this with external_components can actually read
 # the effect and palette lists. A bare "see README.md" means nothing to them.
 EFFECT_LIST_URL = "https://github.com/bharvey88/esphome-wled-fx#effects"
+
+# --- optimisation ------------------------------------------------------------
+#
+# ESPHome compiles a firmware with -Os. That is right for a firmware and wrong
+# for a per-pixel loop that runs 43 times a second, which is why WLED builds its
+# effects for speed. `speed` puts the component's own translation units, and
+# nothing else in the build, on -O2 through the pragma in wf_optimize.h.
+#
+# The default is speed, because the reason to install this component is to watch
+# it run. `size` is for a board that is short of flash; README.md has the cost
+# per configuration.
+OPTIMIZE_MODES = ("speed", "size")
 
 wled_fx_ns = cg.esphome_ns.namespace("wled_fx")
 WledFxController = wled_fx_ns.class_("WledFxController")
@@ -145,6 +173,15 @@ SetCheckAction = wled_fx_ns.class_("SetCheckAction", automation.Action)
 SetColorAction = wled_fx_ns.class_("SetColorAction", automation.Action)
 ControlSlider = wled_fx_ns.enum("ControlSlider", is_class=True)
 ControlCheck = wled_fx_ns.enum("ControlCheck", is_class=True)
+
+# Where the canvas and the small per-frame buffers go. MemoryPolicy in
+# wf_platform.h is the same three values and explains the trade.
+MemoryPolicy = wled_fx_ns.enum("MemoryPolicy", is_class=True)
+MEMORY_POLICIES = {
+    "auto": MemoryPolicy.AUTO,
+    "internal": MemoryPolicy.INTERNAL,
+    "psram": MemoryPolicy.PSRAM,
+}
 
 SLIDERS = {
     CONF_SPEED: ControlSlider.CONTROL_SLIDER_SPEED,
@@ -762,6 +799,23 @@ _ENTRY_SCHEMA = cv.Schema(
         cv.Optional(CONF_AUDIO): AUDIO_SCHEMA,
         cv.Optional(CONF_UPDATE_INTERVAL): cv.positive_time_period_milliseconds,
         cv.Optional(CONF_CONTROLS): _controls_option,
+        # Build-wide, so it is allowed on an entry with no display and every
+        # entry has to agree. _final_validate() checks that and emits the flag.
+        cv.Optional(CONF_OPTIMIZE, default="speed"): cv.one_of(
+            *OPTIMIZE_MODES, lower=True
+        ),
+        # Also build-wide: the policy is a process-wide static read at
+        # allocation time, so there is one of it however many front ends there
+        # are, and _final_validate() checks that they agree.
+        cv.Optional(CONF_CANVAS_MEMORY, default="auto"): cv.enum(
+            MEMORY_POLICIES, lower=True
+        ),
+        # A time period pins it, `never` leaves ESPHome's own value alone, and
+        # `auto`, the default, derives it from update_interval.
+        cv.Optional(CONF_LOOP_INTERVAL, default="auto"): cv.Any(
+            cv.one_of("auto", "never", lower=True),
+            cv.positive_time_period_milliseconds,
+        ),
         **CONTROL_SCHEMA,
     }
 ).extend(cv.COMPONENT_SCHEMA)
@@ -803,6 +857,10 @@ def _validate_entry(config):
         CONF_INCLUDE_1D_EFFECTS,
         CONF_UPDATE_INTERVAL,
         CONF_CONTROLS,
+        CONF_LOOP_INTERVAL,
+        # Neither CONF_OPTIMIZE nor CONF_CANVAS_MEMORY: both are one setting for
+        # the whole build, and a bare `wled_fx:` entry beside a light effect is
+        # exactly where somebody would put them.
         *_CONTROL_KEYS,
     ):
         if key in config:
@@ -822,6 +880,8 @@ CONFIG_SCHEMA = cv.ensure_list(cv.All(_ENTRY_SCHEMA, _validate_entry))
 _LAYOUT_DATA_KEY = "wled_fx_layouts"
 _ALLOW_LIST_KEY = "wled_fx_allow_list"
 _SELECTION_DONE_KEY = "wled_fx_selection_emitted"
+_OPTIMIZE_KEY = "wled_fx_optimize"
+_MEMORY_KEY = "wled_fx_canvas_memory"
 # Which entity platforms a light effect's `controls:` needs. The light effect
 # is validated before AUTO_LOAD runs, and AUTO_LOAD is only handed the
 # `wled_fx:` config, so the light side leaves the answer here.
@@ -1033,6 +1093,34 @@ def _final_validate(config):
         full_config, entries, allow_list
     )
 
+    # One compiler flag and one allocation policy for the whole build, so two
+    # entries cannot ask for different things. Saying so is better than quietly
+    # taking whichever one codegen happened to reach last.
+    modes = {str(entry.get(CONF_OPTIMIZE, "speed")) for entry in entries}
+    if len(modes) > 1:
+        raise cv.Invalid(
+            f"Every wled_fx entry has to agree on '{CONF_OPTIMIZE}': this "
+            f"configuration asks for {' and '.join(sorted(modes))}. It sets the "
+            "optimisation level the component's own sources are compiled at, "
+            "which is one setting for the whole firmware."
+        )
+    CORE.data[_OPTIMIZE_KEY] = modes.pop() if modes else "speed"
+
+    # cv.enum validates to the spelling from the YAML, carrying the C++ symbol
+    # alongside it, so this compares words and codegen emits the symbol.
+    policies = {str(entry.get(CONF_CANVAS_MEMORY, "auto")) for entry in entries}
+    if len(policies) > 1:
+        raise cv.Invalid(
+            f"Every wled_fx entry has to agree on '{CONF_CANVAS_MEMORY}': this "
+            f"configuration asks for {' and '.join(sorted(policies))}. There is "
+            "one allocation policy in the component, whatever the number of "
+            "front ends."
+        )
+    for entry in entries:
+        if CONF_CANVAS_MEMORY in entry:
+            CORE.data[_MEMORY_KEY] = entry[CONF_CANVAS_MEMORY]
+            break
+
     for entry in config:
         if (audio_config := entry.get(CONF_AUDIO)) is not None:
             # Checks the microphone really offers the channel that was asked for.
@@ -1135,6 +1223,20 @@ def _add_effect_selection():
     if CORE.data.get(_SELECTION_DONE_KEY):
         return
     CORE.data[_SELECTION_DONE_KEY] = True
+
+    # A plain -D, not a change to anybody's optimisation flags: it only turns on
+    # the `#pragma GCC optimize` in wf_optimize.h, which every wled_fx source
+    # file includes first and nothing else in the firmware includes at all.
+    if CORE.data.get(_OPTIMIZE_KEY, "speed") == "speed":
+        cg.add_build_flag("-DWLED_FX_OPTIMIZE_SPEED")
+
+    # Emitted into the generated setup(), which runs before any component's
+    # setup(), so every canvas and frame buffer is allocated under it. The
+    # default is left out: it is the C++ default too, and a line that says
+    # nothing is a line to read.
+    policy = CORE.data.get(_MEMORY_KEY)
+    if policy is not None and str(policy) != "auto":
+        cg.add(wled_fx_ns.platform_set_memory_policy(policy))
 
     # The lists of every entry merged into one, worked out in final validation
     # because that is the only place all the entries are in view at once.
@@ -1264,6 +1366,17 @@ async def audio_to_code(config):
     return var
 
 
+def _loop_interval_ms(entry, frame_interval) -> int:
+    """The main loop interval this front end will ask ESPHome for, or 0."""
+    value = entry.get(CONF_LOOP_INTERVAL, "auto")
+    if value == "never":
+        return 0
+    if value != "auto":
+        return int(value.total_milliseconds)
+    period = int(frame_interval.total_milliseconds)
+    return max(LOOP_INTERVAL_FLOOR_MS, period // LOOP_INTERVAL_AUTO_DIVISOR)
+
+
 async def to_code(config):
     _add_effect_selection()
     for entry in config:
@@ -1290,11 +1403,9 @@ async def to_code(config):
         cg.add(
             var.set_include_1d_effects(entry.get(CONF_INCLUDE_1D_EFFECTS, False))
         )
-        cg.add(
-            var.set_frame_interval(
-                entry.get(CONF_UPDATE_INTERVAL, DEFAULT_FRAME_INTERVAL)
-            )
-        )
+        frame_interval = entry.get(CONF_UPDATE_INTERVAL, DEFAULT_FRAME_INTERVAL)
+        cg.add(var.set_frame_interval(frame_interval))
+        cg.add(var.set_loop_interval(_loop_interval_ms(entry, frame_interval)))
         await apply_controls(var, entry)
         await controls_to_code(var, entry.get(CONF_CONTROLS) or {})
 

@@ -1,3 +1,6 @@
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_canvas.h"
 
 #include <cstring>
@@ -11,7 +14,10 @@ bool Canvas::allocate(uint16_t width, uint16_t height) {
     return false;
   const size_t pixel_count = static_cast<size_t>(width) * height;
   const size_t words = pixel_count + 2 * CANVAS_GUARD_WORDS;
-  this->buffer_ = static_cast<uint32_t *>(platform_alloc(words * sizeof(uint32_t)));
+  /* The hot buffer of the whole component, so it asks for internal RAM first.
+   * platform_alloc_fast() decides whether the board can spare it and says which
+   * way it went. */
+  this->buffer_ = static_cast<uint32_t *>(platform_alloc_fast(words * sizeof(uint32_t), &this->internal_));
   if (this->buffer_ == nullptr)
     return false;
   this->pixels_ = this->buffer_ + CANVAS_GUARD_WORDS;
@@ -33,6 +39,7 @@ void Canvas::release() {
   }
   this->width_ = 0;
   this->height_ = 0;
+  this->internal_ = false;
 }
 
 void Canvas::clear() {

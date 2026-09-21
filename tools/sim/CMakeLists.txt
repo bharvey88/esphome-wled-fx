@@ -84,6 +84,19 @@ if(WLED_FX_SANITIZE)
     target_link_options(wled_fx_audio_test PRIVATE -fsanitize=address,undefined)
 endif()
 
+# Benchmark and golden-frame check. Same sources, no images, no sanitizers by
+# default: it exists to be built twice at two optimisation levels and compared,
+# and to hash every pixel of every frame so a speed change that moved one is
+# caught. See tools/sim/bench.cpp.
+add_executable(wled_fx_bench
+    bench.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/groups_generated.cpp
+    ${ENGINE_SOURCES}
+)
+target_compile_definitions(wled_fx_bench PRIVATE WLED_FX_HOST_BUILD WLED_FX_ALL_EFFECTS)
+target_include_directories(wled_fx_bench PRIVATE ${ENGINE_DIR})
+target_compile_options(wled_fx_bench PRIVATE -Wall -Wextra -Wno-unused-parameter)
+
 # Behaviour tests: the questions a contact sheet cannot answer, such as which
 # way a scrolling effect moves and whether a control leaks into the next effect.
 add_executable(wled_fx_effect_test

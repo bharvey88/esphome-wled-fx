@@ -13,6 +13,9 @@
 /* Particle system 2D effects, non-audio. See the "Particle effects" section of
  * PORTING.md for the init pattern and the pitfalls. */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_effects.h"
 #include "wf_particle.h"
 

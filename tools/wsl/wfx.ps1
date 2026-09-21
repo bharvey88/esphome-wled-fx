@@ -18,6 +18,9 @@
     run        one simulator run; everything after it is passed to wled_fx_sim
     audio      the audio pipeline test
     effect     the effect and control behaviour test
+    bench      the engine benchmark; everything after it is passed to wled_fx_bench
+    golden     the golden-frame check against tools/sim/golden.txt
+    optbench   the same benchmark built at -Os and at -O2, for the optimize: option
     snapshot   the ESPHome snapshot harness; everything after it is passed to capture_port.py
     shell      an interactive bash in the distribution, already in the repository
     clean      remove the simulator build directories
@@ -35,7 +38,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('bootstrap', 'sweep', 'build', 'run', 'audio', 'effect', 'snapshot', 'shell', 'clean')]
+    [ValidateSet('bootstrap', 'sweep', 'build', 'run', 'audio', 'effect', 'bench', 'golden', 'optbench', 'snapshot', 'shell', 'clean')]
     [string]$Command = 'sweep',
 
     [Parameter(Position = 1, ValueFromRemainingArguments = $true)]

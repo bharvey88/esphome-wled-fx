@@ -71,6 +71,39 @@ case "$cmd" in
     "$BUILD_ASAN/wled_fx_effect_test" "$@"
     ;;
 
+  bench)
+    # Sanitizers off and optimisation on, because this is a timing measurement.
+    configure_and_build "$BUILD_PLAIN" OFF
+    # In the repository, so --write and --check take a path the way somebody
+    # reading the command would expect.
+    cd "$REPO"
+    "$BUILD_PLAIN/wled_fx_bench" "$@"
+    ;;
+
+  golden)
+    configure_and_build "$BUILD_PLAIN" OFF
+    "$BUILD_PLAIN/wled_fx_bench" --check "$REPO/tools/sim/golden.txt" "$@"
+    ;;
+
+  optbench)
+    # The measurement behind the `optimize:` option: the same engine built at
+    # -Os, which is what ESPHome compiles a firmware with, and at -O2, which is
+    # what `optimize: speed` asks the hot translation units for. Two build
+    # directories so neither can reuse the other's objects.
+    for level in Os O2; do
+      dir="$WFX_HOME/sim-$level"
+      cmake -S "$REPO/tools/sim" -B "$dir" -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CXX_FLAGS_RELEASE="-$level -DNDEBUG" \
+        -DWLED_FX_SANITIZE=OFF >/dev/null
+      cmake --build "$dir" -j "$jobs" --target wled_fx_bench >/dev/null
+    done
+    echo "=== -Os ==="
+    "$WFX_HOME/sim-Os/wled_fx_bench" --repeats 3 "$@" | tail -5
+    echo "=== -O2 ==="
+    "$WFX_HOME/sim-O2/wled_fx_bench" --repeats 3 "$@" | tail -5
+    ;;
+
   sweep)
     mkdir -p "$OUT"
     echo "=== building, sanitizers on ==="
@@ -91,6 +124,8 @@ case "$cmd" in
     "$BUILD_ASAN/wled_fx_audio_test"
     echo "=== effect and control behaviour tests ==="
     "$BUILD_ASAN/wled_fx_effect_test"
+    echo "=== golden frames ==="
+    "$BUILD_ASAN/wled_fx_bench" --check "$REPO/tools/sim/golden.txt" | tail -3
     # A 256x64 frame is sixteen times a 64x64 one, which under the sanitizers is
     # hours rather than minutes. The canvas guard bands cover it instead, which
     # is the same split CI makes between its two jobs.
@@ -110,7 +145,7 @@ case "$cmd" in
     ;;
 
   *)
-    echo "unknown command '$cmd'. One of: sweep, build, run, audio, effect, clean" >&2
+    echo "unknown command '$cmd'. One of: sweep, build, run, audio, effect, bench, golden, optbench, clean" >&2
     exit 2
     ;;
 esac

@@ -468,6 +468,9 @@ on the light effect instead.
 | `check1`, `check2`, `check3` | bool | effect default | |
 | `text` | string | empty | read by Scrolling Text |
 | `controls` | bool or mapping | off | build a named entity for every control the pinned `effect:` uses, instead of the generic eight. Needs exactly one `effect:`; see [Named controls for one pinned effect](#named-controls-for-one-pinned-effect) |
+| `optimize` | `speed`, `size` | `speed` | compile this component's own sources at -O2 rather than ESPHome's -Os. One setting for the whole build, so every entry has to agree. See [Performance](#performance) |
+| `canvas_memory` | `auto`, `internal`, `psram` | `auto` | where the canvas and the small per-frame buffers go. One setting for the whole build. See [Performance](#performance) |
+| `loop_interval` | time, `auto`, `never` | `auto` | the main loop interval to ask ESPHome for, so the frame deadline is not rounded up to the next tick. `auto` is a third of `update_interval`, floored at 4 ms, and never longer than what the firmware already has. See [Performance](#performance) |
 
 Every control key here, and on the light effect below, is **pinned**: naming
 `speed:` in YAML keeps that value when the effect changes, and leaving it out
@@ -727,6 +730,16 @@ select:
     wled_fx_id: fx
     type: effect      # or palette
     name: Effect
+    # `scope` narrows an effect list. `all`, the default, is everything this
+    # output offers. On a matrix with include_1d_effects: true that is all 223
+    # and two thirds of them are 1D effects drawn through WLED's 1D-to-2D
+    # mapping, which look like a line crawling across the panel. `panel` lists
+    # what a 2D output offers without the opt-in and `strip` lists what a 1D
+    # output offers, both read from the same rule the component enforces, so a
+    # panel can have one dropdown of the effects that suit it and a second,
+    # named for what it is, holding the mapped ones. While an effect outside
+    # its scope is running, a select holds its last value.
+    scope: all        # or panel, strip
 
 number:
   - platform: wled_fx
@@ -923,6 +936,126 @@ storage on the three numbers and two selects that configuration does have.
 
 `docs/NAMED-CONTROLS-REVIEW.md` has the full entity list for each of the three
 examples and the exact error messages.
+
+## Performance
+
+The frame gate targets WLED's own 23 ms, about 43 fps. Whether an effect
+reaches it depends on the board, the canvas size and the effect.
+
+Measured on an Apollo M-1, an ESP32-S3 at 240 MHz with octal PSRAM driving a
+64x64 HUB75 panel, against a WLED 16.0.1 device on the same panel: at v0.4.1
+this port held 40 fps or better on 58 of its 223 effects with a median of
+34.6 fps, where WLED holds it on 199 of 216 with a median of 43.0. v0.5.0 is
+about closing that. On the host benchmark, over all 223 effects at 64x64, a
+frame went from 94.0 us to 54.8 us, a factor of 1.71, with no pixel of any
+frame of any effect changing.
+
+Three options control it, and each can be turned off on its own.
+
+### `optimize:`
+
+ESPHome compiles a firmware with -Os on both frameworks. That is right for a
+firmware, which is mostly setup code, and wrong for a per-pixel loop that runs
+43 times a second, which is why WLED compiles its own hottest functions with
+`__attribute__((optimize("O2")))`.
+
+`optimize: speed`, the default, puts this component's own translation units, and
+nothing else in the build, on -O2 through a `#pragma GCC optimize` in
+`wf_optimize.h`. `optimize: size` leaves them at -Os. It is one flag for the
+whole build, so every `wled_fx:` entry has to agree and config validation says
+so rather than taking the last one.
+
+The flash cost, ESPHome 2026.8.2:
+
+FLASH_TABLE_PLACEHOLDER
+
+RAM is unchanged by the setting.
+
+### `canvas_memory:`
+
+ESPHome's default allocator prefers PSRAM. The canvas is 16 KB on a 64x64 panel
+and every effect reads and writes it several times a frame in scattered order,
+which is the access pattern PSRAM is worst at.
+
+`canvas_memory: auto`, the default, asks for internal RAM for the canvas, the
+frame buffer and the small per-frame scratch buffers, then looks at what is left
+and hands the block back if taking it would leave less than 48 KB of internal
+heap or no free block of 16 KB. Wifi, the API and OTA all want internal RAM
+after `setup()` has run, and a panel that renders fast and cannot join a network
+is not a trade worth making. `internal` takes it whenever the allocation
+succeeds at all. `psram` never does, which is v0.4.1's behaviour.
+
+The effect scratch block is deliberately left in PSRAM whatever this is set to:
+it reaches 25 KB on the particle effects and would be competing with the canvas
+for exactly the memory the canvas needs.
+
+The floors are deliberately cautious, because a device that renders fast and
+cannot join a network is a worse outcome than one that renders at v0.4.1's
+speed. If `dump_config` says the canvas went to external RAM on a board you know
+has room, `canvas_memory: internal` takes it anyway; that is what the log line
+is there for.
+
+`dump_config` prints the policy, where each buffer landed and how much internal
+heap is left:
+
+```
+[C][wled_fx]: WLED FX display:
+[C][wled_fx]:   Canvas: 64x64
+[C][wled_fx]:   Main loop interval: 7 ms
+[C][wled_fx]:   Optimised for: speed
+[C][wled_fx]:   Memory policy: auto (canvas in internal RAM, frame buffer in external RAM)
+[C][wled_fx]:   Internal heap free: 58240 bytes, largest block 22528
+```
+
+### `loop_interval:`
+
+ESPHome runs its component phase at most every 16 ms. A 23 ms frame deadline
+against a 16 ms tick is meant to alternate one tick and two for an average of
+23 ms, and for a cheap effect it does. It stops working as soon as a rendered
+tick runs long: ESPHome times the next tick from the start of the last one, so a
+tick that took 19 ms pushes the one after it a further 16 ms out, the deadline
+falls in the gap and the frame lands at 35 ms instead of 23.
+
+`loop_interval: auto`, the default, asks ESPHome for a third of `update_interval`
+floored at 4 ms, so the gate lands within one short tick of every deadline. It
+only ever lowers the interval and never raises it, so nothing else in the
+firmware loses responsiveness it already had, and the frame gate still
+accumulates its deadline, so nothing renders faster than it was asked to. The
+cost is that every component's `loop()` is polled more often, which on a mains
+powered panel is idle time being spent.
+
+This is the one setting here that changes something outside this component.
+`loop_interval: never` leaves ESPHome's own value alone, and it is the first
+thing to try if anything else in a firmware starts behaving oddly.
+
+It is a display front end option and the light effect has no equivalent, which
+is deliberate rather than an omission: the quantisation only bites when a
+rendered tick overruns 16 ms on its own, and that takes a canvas of thousands of
+pixels. A 60 LED strip, or a 16x16 matrix on the light path, renders in
+microseconds and the alternating pattern the frame gate was designed around
+works exactly as intended.
+
+### Measuring it
+
+The two per-effect sensors are always compiled in:
+
+```yaml
+sensor:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: render_time   # or output_time
+    name: Effect render time
+```
+
+`render_time` is microseconds in the effect function and `output_time` is
+microseconds from the canvas to the output, both averaged over the time the
+current effect has been running with its first second left out. On the M-1 the
+output side is a flat figure for every effect, most of it inside the HUB75
+driver turning pixels into bit planes; PORTING.md section 11 has the whole
+accounting, including what a second core would and would not buy.
+
+On the host, `tools/wsl/wfx.ps1 bench` times every effect and
+`tools/wsl/wfx.ps1 golden` checks that none of them draws anything different.
 
 ## Host simulator
 

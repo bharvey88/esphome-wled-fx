@@ -12,6 +12,9 @@
 
 /* 1D batch C. See BATCHES.md for the effect list this file owns. */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include <algorithm>
 
 #include "wf_effects.h"

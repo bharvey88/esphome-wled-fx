@@ -1,5 +1,8 @@
 /* See wf_registry.h for the WLED attribution and licence notice. */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_registry.h"
 
 #include <cstdlib>

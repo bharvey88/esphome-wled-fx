@@ -68,5 +68,47 @@ uint32_t platform_millis();
 void *platform_alloc(size_t size);
 void platform_free(void *ptr);
 
+/* --- where the hot buffers live ---------------------------------------------
+ *
+ * platform_alloc() is PSRAM first, because that is what ESPHome's default
+ * RAMAllocator does and because the effect scratch block reaches 25 KB on the
+ * particle effects, which is more internal RAM than an ESP32-S3 running wifi,
+ * the API and a HUB75 driver has to give.
+ *
+ * The canvas is the other case. It is 16 KB on a 64x64 panel and every effect
+ * reads and writes it several times a frame, in scattered order: blur reads
+ * five neighbours per pixel, fade and the particle renderers read, modify and
+ * write, and none of that is the long sequential burst PSRAM is good at. On an
+ * ESP32-S3 an internal SRAM word is a load; a PSRAM word that misses the cache
+ * is a load plus an external transaction. Putting the canvas in internal RAM
+ * when there is room for it is the largest thing this component can do about
+ * the per-pixel cost without changing a single effect.
+ *
+ * "When there is room for it" is the whole difficulty: the wifi stack, the API
+ * server and the logger all take internal RAM for the life of the device, and
+ * several of those allocations happen after setup(). AUTO therefore allocates,
+ * looks at what is left, and hands the block straight back if it took too
+ * much. The floors are in wf_platform.cpp. */
+enum class MemoryPolicy : uint8_t {
+  AUTO = 0,  // internal RAM while enough is left over, PSRAM otherwise
+  INTERNAL,  // internal RAM whenever the allocation succeeds at all
+  PSRAM,     // never internal; whatever platform_alloc() would do
+};
+
+void platform_set_memory_policy(MemoryPolicy policy);
+MemoryPolicy platform_memory_policy();
+// "auto", "internal" or "psram", for dump_config.
+const char *platform_memory_policy_name();
+
+/* Like platform_alloc(), for a small buffer the CPU touches every frame.
+ * `internal_out`, when given, says where the block actually landed, so the
+ * front end can print it rather than leave the user guessing. */
+void *platform_alloc_fast(size_t size, bool *internal_out = nullptr);
+
+// Internal heap figures, for the line dump_config prints. Both are zero on a
+// build with no separate internal region.
+size_t platform_internal_free();
+size_t platform_internal_largest_block();
+
 }  // namespace wled_fx
 }  // namespace esphome

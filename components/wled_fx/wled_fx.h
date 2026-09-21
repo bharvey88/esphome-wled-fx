@@ -199,6 +199,10 @@ class WledFxDisplay : public Component, public WledFxController {
   }
   void set_gamma(float gamma) { this->gamma_ = gamma; }
 
+  /* How often ESPHome should run its component phase at all, in milliseconds,
+   * or 0 to leave it alone. See apply_loop_interval_() for what this is for. */
+  void set_loop_interval(uint32_t interval_ms) { this->loop_interval_ = interval_ms; }
+
   void setup() override;
   /* A plain loop(), not a PollingComponent's update(). ESPHome's scheduler
    * re-arms an interval from the moment the callback ran, which on a 16 ms main
@@ -213,6 +217,41 @@ class WledFxDisplay : public Component, public WledFxController {
  protected:
   // Blits the frame buffer and flips the display's own buffer.
   void push_frame_();
+  /* Folds the master brightness into the gamma table, so the per-pixel loop is
+   * three lookups and nothing else whatever the brightness is. Called from
+   * loop() when the brightness has moved, which is a slider, not a frame. */
+  void rebuild_output_lut_();
+
+  /* --- the main loop, and why the frame gate is not enough ------------------
+   *
+   * The frame gate renders when the deadline has passed, but it can only be
+   * asked once a loop tick, and ESPHome runs its component phase at most every
+   * `loop_interval_`, 16 ms by default (esphome/core/application.h). A 23 ms
+   * deadline against a 16 ms tick is meant to alternate one tick and two, an
+   * average of 23 ms, and for a cheap effect it does: Solid measured 43.1 fps
+   * on the M-1.
+   *
+   * It stops working as soon as a rendered tick runs long. ESPHome times the
+   * next tick from the start of the last one, so a tick that took 19 ms is
+   * followed by the next at 16 ms after it began, which is 3 ms of waiting, and
+   * then the one after that is a further 16 ms away. The 23 ms deadline lands
+   * in that gap and the frame is 35 ms late instead of 23. That is the shape of
+   * the measured median: 34.6 fps, about 29 ms, on effects whose own work is
+   * nowhere near 29 ms.
+   *
+   * Asking for a shorter tick fixes the quantisation rather than the work: with
+   * a tick well inside the frame period the gate lands within one tick of every
+   * deadline and the long run average is the period that was configured. The
+   * frame gate still accumulates, so nothing renders faster than it was asked
+   * to; the shorter tick only stops it rendering slower.
+   *
+   * A third of the frame period, floored at 4 ms, and never longer than what
+   * the application already has, so this can lower the interval and never raise
+   * it: whatever else is in the firmware keeps at least the responsiveness it
+   * had. The cost is that every component's loop() is polled more often, which
+   * on a mains powered panel is idle time being spent. `loop_interval: never`
+   * turns it off. */
+  void apply_loop_interval_();
 
   display::Display *display_{nullptr};
   uint8_t *frame_{nullptr};
@@ -223,7 +262,16 @@ class WledFxDisplay : public Component, public WledFxController {
    * own wants this at 1.0 instead, and the hub75 driver is exactly that case
    * until its own `gamma_correct` is set to LINEAR. */
   float gamma_{2.2f};
+  // Gamma alone, kept so the combined table can be rebuilt without pow().
   uint8_t gamma_lut_[256]{};
+  // Gamma then the master brightness, which is what the frame is built from.
+  uint8_t output_lut_[256]{};
+  // The brightness output_lut_ was built for. 256 is "never built".
+  uint16_t output_lut_brightness_{256};
+  // True when the frame buffer landed in internal RAM. dump_config prints it.
+  bool frame_internal_{false};
+  // The main loop interval to ask for, or 0 for "leave it alone".
+  uint32_t loop_interval_{0};
   // True once the all-black frame that the output being off asks for has been
   // pushed, so a blanked panel costs nothing per frame.
   bool blanked_{false};

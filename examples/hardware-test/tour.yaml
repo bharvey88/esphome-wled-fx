@@ -274,9 +274,20 @@ select:
           delta: 0
           to: -1
 
+  # The same rule as the "Panel" tour group, from the same effect_available()
+  # in the component: on a matrix this lists the 64 effects a 2D output offers
+  # without the 1D opt-in, and on a strip it lists everything. The 1D-only
+  # effects these firmwares also compile in are on a second, clearly named
+  # dropdown that panel-effects.yaml adds, so nothing lands a crawling strip
+  # effect on a 64x64 panel by accident. See docs/HARDWARE-TESTING.md.
+  #
+  # While one of those is running, this entity holds its last value rather than
+  # showing something that is not on its list. "Effect name" below is always
+  # what the engine is actually running.
   - platform: wled_fx
     wled_fx_id: fx
     type: effect
+    scope: ${tour_effect_scope}
     name: Effect
   - platform: wled_fx
     wled_fx_id: fx

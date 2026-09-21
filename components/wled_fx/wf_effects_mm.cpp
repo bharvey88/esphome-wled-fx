@@ -37,6 +37,9 @@
  * here it is 4. Both edits are called out on the entry that needed them.
  */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_effects.h"
 
 // Whole-file guard. Every WLED_FX_FX_* macro this file can provide goes in the

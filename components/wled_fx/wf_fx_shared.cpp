@@ -10,6 +10,9 @@
  * Per-effect credits are kept on the code they belong to.
  */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_effects.h"
 
 namespace esphome {

@@ -10,6 +10,9 @@
  * Per-effect credits are kept on the effect they belong to.
  */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_effects.h"
 
 // Whole-file guard: with an allow-list that selects nothing from this group, the

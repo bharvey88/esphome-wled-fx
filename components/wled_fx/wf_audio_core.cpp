@@ -7,6 +7,9 @@
  * two can be diffed. The deviations are listed in PORTING.md.
  */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_audio_core.h"
 
 #include <cmath>

@@ -199,15 +199,55 @@ class Segment {
   // Zeroes the runtime scratch and frees the effect data. Call on effect change.
   void reset();
 
-  // --- geometry -----------------------------------------------------------------
-  uint16_t width() const { return this->canvas_ != nullptr ? this->canvas_->width() : 0; }
-  uint16_t height() const { return this->canvas_ != nullptr ? this->canvas_->height() : 0; }
-  bool is_2d() const { return this->width() > 1 && this->height() > 1; }
+  /* --- geometry ---------------------------------------------------------------
+   *
+   * All five read members rather than the canvas, and all five are inline.
+   *
+   * They are the hottest code in the component. A 2D effect calls
+   * set_pixel_color_xy() once a pixel, that calls is_active(), width(), height()
+   * and then width() again inside the raw setter, and an effect running through
+   * the 1D to 2D mapping calls length(), is_2d(), width() and height() again on
+   * top of that. Through the canvas pointer, each of those was a null test and
+   * two loads, so a single pixel of Fire 2012 was a dozen redundant loads behind
+   * two out-of-line calls, 4096 times a frame, at -Os. WLED caches the same
+   * figures on the segment for the same reason.
+   *
+   * The cache is filled by set_canvas(). Nothing else can change it: the canvas
+   * is allocated once at setup and never resized while an effect is running,
+   * which is the contract wf_canvas.h already states and what lets the effect
+   * bodies keep WLED's lossless read-back. */
+  uint16_t width() const { return this->vw_; }
+  uint16_t height() const { return this->vh_; }
+  bool is_2d() const { return this->is_2d_; }
   // Raw pixel count of the canvas, what the fade and blur helpers walk.
-  size_t raw_length() const { return this->canvas_ != nullptr ? this->canvas_->size() : 0; }
-  // Virtual 1D length, which depends on the 1D-to-2D mapping. WLED's SEGLEN.
-  unsigned length() const;
-  bool is_active() const { return this->canvas_ != nullptr && this->canvas_->is_allocated(); }
+  size_t raw_length() const { return this->raw_len_; }
+  bool is_active() const { return this->canvas_pixels_ != nullptr; }
+
+  /* Virtual 1D length, which depends on the 1D-to-2D mapping. WLED's SEGLEN.
+   * Inline, and reading the cached geometry, because a 1D effect evaluates it
+   * once per loop iteration and again inside every set_pixel_color(). The
+   * switch stays live rather than being cached with the rest: map1d2d is a
+   * plain public field that an effect is entitled to read, and caching it would
+   * be the one piece of this that could go stale mid frame. */
+  unsigned length() const {
+    if (this->vw_ == 0)
+      return 0;
+    if (!this->is_2d_)
+      return this->raw_len_;
+    switch (this->map1d2d) {
+      case M12_P_BAR:
+        return this->vh_;
+      case M12_P_CORNER:
+        return this->vw_ > this->vh_ ? this->vw_ : this->vh_;
+      case M12_P_ARC:
+        return sqrt32_bw(static_cast<unsigned>(this->vw_) * this->vw_ +
+                         static_cast<unsigned>(this->vh_) * this->vh_);
+      case M12_S_PINWHEEL:
+        return pinwheel_length(this->vw_, this->vh_);
+      default:
+        return this->raw_len_;
+    }
+  }
 
   // WLED's nrOfVStrips() / indexToVStrip(). In M12_P_BAR a 1D effect is run once
   // per matrix column, with the column number packed into the high half of the index.
@@ -269,12 +309,12 @@ class Segment {
 
   // --- raw pixel access ----------------------------------------------------------
   // No mapping, no bounds check. The fade, blur and move helpers use these.
-  void set_pixel_color_raw(unsigned i, uint32_t c) const { this->canvas_->set(i, c); }
-  uint32_t get_pixel_color_raw(unsigned i) const { return this->canvas_->get(i); }
+  void set_pixel_color_raw(unsigned i, uint32_t c) const { this->canvas_pixels_[i] = c; }
+  uint32_t get_pixel_color_raw(unsigned i) const { return this->canvas_pixels_[i]; }
   void set_pixel_color_xy_raw(unsigned x, unsigned y, uint32_t c) const {
-    this->canvas_->set(x + y * this->width(), c);
+    this->canvas_pixels_[x + y * this->vw_] = c;
   }
-  uint32_t get_pixel_color_xy_raw(unsigned x, unsigned y) const { return this->canvas_->get(x + y * this->width()); }
+  uint32_t get_pixel_color_xy_raw(unsigned x, unsigned y) const { return this->canvas_pixels_[x + y * this->vw_]; }
 
   // --- 1D pixel access -----------------------------------------------------------
   void set_pixel_color(int n, uint32_t c) const;
@@ -303,8 +343,18 @@ class Segment {
     this->set_pixel_color(n, color_fade(this->get_pixel_color(n), fade, true));
   }
 
-  // --- 2D pixel access -----------------------------------------------------------
-  void set_pixel_color_xy(int x, int y, uint32_t c) const;
+  /* --- 2D pixel access -----------------------------------------------------
+   *
+   * The bounds checked pair is inline. They are three member loads, a compare
+   * and a store now that the geometry is cached, which is less code at the
+   * call site than the call itself, and they are the single most called pair
+   * of functions in the component: every 2D effect, every particle renderer
+   * and every one of the 1D to 2D mappings goes through them once a pixel. */
+  void set_pixel_color_xy(int x, int y, uint32_t c) const {
+    if (static_cast<unsigned>(x) >= this->vw_ || static_cast<unsigned>(y) >= this->vh_)
+      return;
+    this->canvas_pixels_[static_cast<unsigned>(x) + static_cast<unsigned>(y) * this->vw_] = c;
+  }
   void set_pixel_color_xy(unsigned x, unsigned y, uint32_t c) const {
     this->set_pixel_color_xy(static_cast<int>(x), static_cast<int>(y), c);
   }
@@ -312,7 +362,14 @@ class Segment {
     this->set_pixel_color_xy(x, y, RGBW32(r, g, b, w));
   }
   void set_pixel_color_xy(int x, int y, CRGB c) const { this->set_pixel_color_xy(x, y, RGBW32(c.r, c.g, c.b, 0)); }
-  uint32_t get_pixel_color_xy(int x, int y) const;
+  /* No is_active() test in either: an inactive segment has vw_ and vh_ at zero,
+   * so the unsigned compare already rejects every coordinate, negative ones
+   * included, and the pixel pointer is never followed. */
+  uint32_t get_pixel_color_xy(int x, int y) const {
+    if (static_cast<unsigned>(x) >= this->vw_ || static_cast<unsigned>(y) >= this->vh_)
+      return 0;
+    return this->canvas_pixels_[static_cast<unsigned>(x) + static_cast<unsigned>(y) * this->vw_];
+  }
   void blend_pixel_color_xy(int x, int y, uint32_t color, uint8_t blend) const {
     this->set_pixel_color_xy(x, y, color_blend(this->get_pixel_color_xy(x, y), color, blend));
   }
@@ -375,6 +432,14 @@ class Segment {
                             bool get_pixel = false) const;
 
   Canvas *canvas_{nullptr};
+  /* The canvas geometry, copied out of it by set_canvas(). See the note on
+   * width() above for why these exist. canvas_pixels_ doubles as the
+   * "is there a canvas" flag, so is_active() is one load. */
+  uint32_t *canvas_pixels_{nullptr};
+  uint16_t vw_{0};
+  uint16_t vh_{0};
+  bool is_2d_{false};
+  uint32_t raw_len_{0};
   CRGBPalette16 current_palette_{};
   size_t data_len_{0};  // what the running effect asked for
   size_t data_cap_{0};  // what is actually allocated, never smaller

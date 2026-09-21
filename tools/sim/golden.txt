@@ -1,0 +1,229 @@
+# Canvas hashes for the wled_fx engine, written by tools/sim/bench.cpp.
+# One FNV-1a over every pixel of every frame: 40 frames at 64x64, 23 ms a frame,
+# host RNG seeded with c0ffee11. Regenerate with:
+#   powershell -File tools\wsl\wfx.ps1 bench --write tools/sim/golden.txt
+# A line that changes means the pixels changed. That is a bug unless the
+# commit is deliberately correcting the effect, in which case say so.
+Fireworks	618dbab3ea00f16d
+Rain	444351fe063b0383
+Ripple	6227ca20598249dc
+Ripple Rainbow	d7a9badec667d6d3
+Palette	f3d6e580be477c83
+Halloween Eyes	a7922ac52fd016bf
+Fireworks 1D	fd88226df1964c9b
+Solid	439d499a18230383
+Blink	23910e0bf3436d13
+Rainbow	1ce383c840c8e203
+Pride 2015	9d46128763c7c7a7
+Fire 2012	51346e4df45c6443
+Noise 1	203b479b1b98f763
+Plasma	6e0a8b9a1309dc43
+Wipe	8f1e89b71a28e2c3
+Wipe Random	7ba1b57ed2dbc8af
+Sweep	d2f0e9452197b5bf
+Sweep Random	89381b804152d303
+Strobe	eabd0b29f3837453
+Strobe Rainbow	0963f13f32400383
+Blink Rainbow	d4ec725e37d90383
+Twinkle	e3d78badc2a85483
+Twinkleup	abe9527c52ce5a12
+Fairytwinkle	50e0acc2a256580e
+Colortwinkles	3b297bdd00611248
+Twinklefox	8c03c591026f03af
+Twinklecat	478276199b08bf67
+Gradient	4da3c2b1534a37be
+Loading	3914535ee2755afe
+Glitter	979eb6293a408f70
+Solid Glitter	5a59091c4a5a1f5d
+Dynamic	83b60fc7569d8683
+Dynamic Smooth	5a7b5cd7c50ecc60
+Rolling Balls	85c84f3a5b96c083
+Tetrix	444351fe063b0383
+ICU	4bd8f56185770383
+Oscillate	b08f5510a4dc0383
+Sunrise	444351fe063b0383
+Stream	515c6ae818a32d0d
+Solid Pattern Tri	f209e80a0cd30383
+Chunchun	62b8ec0d3c1880e8
+Sine	636bdd74880d42d6
+Perlin Move	9854badcb9d1a907
+Wavesins	b68bb3f50d2d5383
+Dissolve	f05a18a30b22fb3d
+Dissolve Rnd	e8d5d64de61371cf
+Scan	92bfbe21c2194583
+Scan Dual	2f3f7dbee5685825
+Scanner	b3be390d1c5ad4b6
+Scanner Dual	a4c363f6a5ede329
+Sinelon	401d222d7061b2ec
+Sinelon Dual	400eb3566371c6d9
+Sinelon Rainbow	0f7c02db297d52f8
+Spots	36a04697164b2e03
+Spots Fade	cb19a331582bc80f
+Washing Machine	b345cf3461c8017d
+PacMan	a06428811830471c
+TV Simulator	a907f04be9405383
+Drip	2ca5724d5004a483
+Fairy	bfbf3d30bd04f1ad
+Meteor	aa348c911c47eb41
+Tri Fade	72fb779e3282d777
+Traffic Light	6484c8dd355d37e3
+Fire Flicker	7d6083941fc5e80d
+Two Dots	c21d83b7ca0e0383
+Juggle	d4338f1580e6d1fc
+Colorloop	817ebaac9c78d383
+Fade	23bc811d4bd4515b
+Theater	999b4fb6b49a20c9
+Theater Rainbow	332bc84464ca5383
+Chase 2	0d80bd85e9f6888f
+Running	59430e591da64e96
+Saw	97f33d958928522d
+Running Dual	916c73f5f7d66a56
+Chase Flash	3b7641f826e99bc3
+Chase Flash Rnd	f0c235597b958383
+Random Colors	c77a97431f130383
+Pacifica	a3cadf3b77adb801
+Noise 2	15f10ed68264c625
+Noise 3	b791a32486d85f07
+Noise 4	8a8aa56d6cfebbcb
+Fill Noise	177d0030ec941183
+Noise Pal	469baf0cd3de61e9
+Sparkle	d50463d161a2d509
+Sparkle Dark	004102f0991d9bc3
+Sparkle+	004102f0991d9bc3
+Dancing Shadows	a52b3e0be99da03a
+Shimmer	6763407eceb400a8
+Popcorn	8354080d6779c5c9
+Colorful	c009e7148c894383
+Aurora	de2629ca2ad07798
+Tri Wipe	987a25b1679d6283
+Flow	5313178f38486203
+Railway	50240fa91a690383
+Strobe Mega	d80bba409d7ef3f3
+Blends	72edb218bfddc97e
+Breathe	701decce054f6157
+Flow Stripe	9e8157a853c185f3
+Android	e7c8df747f58d603
+Chase	661f6fb0e205418c
+Chase Random	20641a2527680383
+Chase Rainbow	2f19cce3190f86c7
+Rainbow Runner	c81353c126468d2e
+Lighthouse	8944207ccabbad49
+Chase 3	512a3ef92b12ac6b
+Multi Comet	768bda66db8e0383
+Stream 2	1f5975c65151433b
+Lightning	c8d184dda7c47a54
+Colorwaves	ae453112001525fb
+Bpm	50c3791ede952d4b
+Lake	17753db315d14943
+Solid Pattern	1b6e13dc08530383
+Bouncing Balls	191690fe9103c75c
+Candle	99a617b8526a0383
+Candle Multi	401fe0ece8d1d383
+Fireworks Starburst	d1633c6a69dcaaf0
+Percent	ff30235eb7d1257f
+Heartbeat	3b2b67ee0f5d3f83
+Phased	92215940046caaf4
+Phased Noise	71993839d1d24f68
+Color Clouds	0f1dfb78568c28d7
+Slow Transition	439d499a18230383
+Matrix	f573e0ae8646b636
+Metaballs	71f83a5e21845d52
+Scrolling Text	444351fe063b0383
+Black Hole	0243fb8b1754e264
+Colored Bursts	c8765c25d06ea126
+DNA	70bc3a46efe17c0f
+DNA Spiral	91c4527c553e8214
+Drift	36aa6907b9ef773f
+Firenoise	6fed82a567470c83
+Frizzles	adf8393f36603443
+Game Of Life	0c10a605f3aa8a93
+Hiphotic	0d2597c569d2be3b
+Julia	9536cf84797b7af5
+Lissajous	acde75129e40b727
+Noise2D	b9da52b329d19c56
+Plasma Ball	e8ff84d6461d2d77
+Polar Lights	b1ae180b033a7a83
+Pulser	5e4943beccb657d9
+Sindots	dc0db74d848f4686
+Squared Swirl	ecbd3dfad383f9ee
+Sun Radiation	aca057b6f5196b83
+Tartan	47d1fc1b8ad042b3
+Spaceships	9ecb382fd6fdd050
+Crazy Bees	b019c5614df7b843
+Ghost Rider	f67de9b2e908367c
+Blobs	179b8a3febab5370
+Drift Rose	d8147e033a74cb66
+Rotozoomer	aabefed2640e4c41
+Distortion Waves	b459ee29e4954072
+Soap	5f0dd963f80c8795
+Octopus	4d7428daf7a1ef2f
+Waving Cell	3d88b223405891cf
+Gravfreq	6951664a8cf42055
+Freqwave	56a88b95f65406e2
+Freqmatrix	985f81a75f715c6e
+GEQ	01bd7021316b9c07
+Waterfall	03464c677610b093
+Freqpixels	c01e9e86ab689e83
+Noisemove	e8490e6070729567
+Freqmap	f5e912711880bb83
+DJ Light	e2bdba30ba15fca8
+Funky Plank	141dbb14befa7df3
+Blurz	9eadc7f20d211c83
+Rocktaves	f2db423684a49c43
+Akemi	9ee567bf1a869ef3
+PS Spray	89d870a6f866371b
+PS GEQ 2D	fb1391606792ba8b
+PS GEQ Nova	94cdd935526efa6e
+PS Blobs	a079764be84a86cf
+PS GEQ 1D	05aa30863a3e965d
+PS Sonic Stream	0dbbddbedc838669
+PS Sonic Boom	ca1c41c9f807cddc
+PS Springy	e52c7aa70a13a5ec
+Ripple Peak	3f295b802454eda7
+Swirl	9255eeed9dad63d4
+Waverly	7f247de29f720015
+Gravcenter	ba63da9aace1b16d
+Gravcentric	d349a8c463423aa7
+Gravimeter	d0962132e83eb5af
+Juggles	3edff2d1f86fdd2f
+Matripix	83e04d9322d68d52
+Midnoise	ff59ade1bcbe6443
+Noisefire	f005b5e23f9d1f83
+Noisemeter	1fb6ab5859624ff6
+Pixelwave	19c5bd8b93a5780d
+Plasmoid	2ae7cce791865283
+Puddlepeak	0b550e6779dcdf75
+Puddles	795c5b9ecdfe8c28
+Pixels	ad4b8af1435d8b40
+Meteor Smooth	a504cebbb537c2a7
+Party jerk	f471e9ff19a5f983
+Popcorn audio	79f7c1937afd42d5
+Multi Comet audio	c165240193ee211f
+Fw Starburst audio	d14b2f9b948f5b71
+Fireworks audio	91ce34e06b0eb649
+GEQ 3D	4e4124b4c8f2bd6b
+Paintbrush	1ab1f32d671ab91a
+Snow Fall	78a5fbe4f84ef683
+PS DripDrop	d13a8c8adef316dc
+PS Pinball	bc2683d4bee878e7
+PS Dancing Shadows	5a6a29db07f8a488
+PS Fireworks 1D	df5162acdbdb226d
+PS Sparkler	8a2656be6aeb3045
+PS Hourglass	c646f596ee5b8a6c
+PS Spray 1D	e6aa3c3fdacd8383
+PS 1D Balance	3a082dacab26b4c0
+PS Chase	f54da74fc8e51a63
+PS Starburst	2e3718f1f9bb82fe
+PS Fire 1D	dcce8773b4b0edbc
+PS Fire	ac8981e14c149924
+PS Fireworks	d9de78e485804eed
+PS Vortex	a26575e2986ec300
+PS Volcano	81940989902a0402
+PS Ballpit	444351fe063b0383
+PS Waterfall	b71befaa1093de45
+PS Box	a9bdaa9074aee67c
+PS Fuzzy Noise	619f90b2e1f849c7
+PS Impact	6167202dda35d3f0
+PS Attractor	ff2446fec0e03332
+PS Ghost Rider	6a010d77654589e3
+PS Galaxy	81a326f54626d43f

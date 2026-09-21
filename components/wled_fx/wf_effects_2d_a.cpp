@@ -9,6 +9,9 @@
  * Per-effect credits are kept on the effect they belong to.
  */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_effects.h"
 
 #define WLED_FX_GROUP_2D_A \

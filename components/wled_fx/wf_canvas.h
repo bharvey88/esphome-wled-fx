@@ -34,6 +34,11 @@ class Canvas {
   uint16_t height() const { return this->height_; }
   size_t size() const { return static_cast<size_t>(this->width_) * this->height_; }
   bool is_allocated() const { return this->pixels_ != nullptr; }
+  /* True when the buffer landed in internal RAM rather than PSRAM. Every
+   * effect reads and writes this buffer several times a frame in scattered
+   * order, so which one it is matters more here than anywhere else in the
+   * component; see MemoryPolicy in wf_platform.h. dump_config prints it. */
+  bool in_internal_ram() const { return this->internal_; }
 
   uint32_t *pixels() { return this->pixels_; }
   const uint32_t *pixels() const { return this->pixels_; }
@@ -51,6 +56,7 @@ class Canvas {
   uint32_t *pixels_{nullptr};  // buffer_ + CANVAS_GUARD_WORDS
   uint16_t width_{0};
   uint16_t height_{0};
+  bool internal_{false};
 };
 
 }  // namespace wled_fx

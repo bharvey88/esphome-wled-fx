@@ -13,6 +13,9 @@
 
 /* 2D only, non-audio, non-particle. See BATCHES.md. */
 
+// Built at -O2 when `optimize: speed` is set. Must come first; see wf_optimize.h.
+#include "wf_optimize.h"
+
 #include "wf_effects.h"
 
 #include <algorithm>

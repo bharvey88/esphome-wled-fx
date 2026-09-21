@@ -416,10 +416,10 @@ MASTER_COLOR_NAME = "Panel"
 # only thing that has to ask for the platforms; AUTO_LOAD below returns exactly
 # these and only when a configuration used them.
 _CONTROL_PLATFORMS = {
-    **{key: "number.wled_fx" for key in SLIDER_KEYS},
-    **{key: "switch.wled_fx" for key in CHECK_KEYS},
-    PALETTE_KEY: "select.wled_fx",
-    **{key: "light.wled_fx" for key in COLOR_KEYS},
+    **{key: f"number.{DOMAIN}" for key in SLIDER_KEYS},
+    **{key: f"switch.{DOMAIN}" for key in CHECK_KEYS},
+    PALETTE_KEY: f"select.{DOMAIN}",
+    **{key: f"light.{DOMAIN}" for key in COLOR_KEYS},
 }
 
 # The keys of `controls:` that adjust one entity. Everything here is forwarded

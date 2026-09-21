@@ -92,6 +92,13 @@ FAMILY = {
 }
 
 # WLED writes '!' in a metadata field to mean "the default label for this slot".
+#
+# The first two are deliberately not WLED's own words here. The component's
+# "Effect controls" sensor publishes "Effect speed" and "Effect intensity",
+# which is what index.js:1646 restores for a "!" and what somebody comparing a
+# device needs to read. This page puts the label in a narrow column beside the
+# value, where the shorter word reads better and there is nothing to confuse it
+# with. Same control, two audiences.
 SLIDER_DEFAULTS = ["Speed", "Intensity", "Custom 1", "Custom 2", "Custom 3"]
 COLOR_DEFAULTS = ["Colour 1", "Colour 2", "Colour 3"]
 CHECK_DEFAULTS = ["Check 1", "Check 2", "Check 3"]

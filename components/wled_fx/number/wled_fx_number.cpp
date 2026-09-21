@@ -25,6 +25,15 @@ uint8_t WledFxNumber::read_current_() const {
 }
 
 void WledFxNumber::setup() {
+  if (this->restore_) {
+    this->pref_ = this->make_entity_preference<uint8_t>();
+    uint8_t stored;
+    if (this->pref_.load(&stored)) {
+      // Through control(), so the engine takes it and pins it exactly as it
+      // would a value moved from Home Assistant a moment after boot.
+      this->control(stored);
+    }
+  }
   this->publish_current_();
   /* Changing the effect refills every control the user did not pin from the new
    * effect's metadata defaults, so this entity is stale the moment anything else
@@ -61,6 +70,11 @@ void WledFxNumber::control(float value) {
   // set_custom3() clamps to 31, so republish what the engine took, not what
   // arrived.
   this->publish_current_();
+  if (this->restore_) {
+    // What the engine took, for the same reason.
+    const uint8_t stored = this->read_current_();
+    this->pref_.save(&stored);
+  }
 }
 
 void WledFxNumber::dump_config() { LOG_NUMBER("", "WLED FX Number", this); }

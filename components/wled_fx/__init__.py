@@ -12,33 +12,58 @@ import re
 
 from esphome import automation
 import esphome.codegen as cg
+# Aliased, every one of them: this package has subpackages called number,
+# switch, select and light, and importing one binds its name on this module
+# and would shadow the ESPHome component of the same name.
 from esphome.components import display, microphone
+from esphome.components import light as light_component
+from esphome.components import number as number_component
+from esphome.components import select as select_component
+from esphome.components import switch as switch_component
 from esphome.components.light.effects import register_addressable_effect
 from esphome.components.light.types import AddressableLightEffect
 import esphome.config_validation as cv
 from esphome.core import CORE
 from esphome.const import (
     CONF_BLUE,
+    CONF_BRIGHTNESS,
+    CONF_DEFAULT_TRANSITION_LENGTH,
     CONF_DISPLAY_ID,
+    CONF_ENTITY_CATEGORY,
     CONF_GAMMA_CORRECT,
     CONF_GREEN,
     CONF_HEIGHT,
+    CONF_ICON,
     CONF_ID,
+    CONF_INITIAL_STATE,
     CONF_MICROPHONE,
+    CONF_MODE,
     CONF_NAME,
+    CONF_OUTPUT_ID,
     CONF_PLATFORM,
     CONF_RED,
+    CONF_STATE,
     CONF_TEXT,
+    CONF_TYPE,
     CONF_UPDATE_INTERVAL,
+    CONF_WEB_SERVER,
     CONF_WIDTH,
     PLATFORM_ESP32,
 )
 import esphome.final_validate as fv
 
 from .effect_index import (
+    CHECK_KEYS,
+    COLOR_KEYS,
+    CONTROL_KEYS,
+    PALETTE_KEY,
+    SLIDER_KEYS,
+    SLIDER_MAXIMUM,
     available_effects,
+    controls_by_key,
     effect_macro,
     effect_names,
+    metadata_for,
     one_dimensional_only,
     palette_names,
     suggestion,
@@ -132,6 +157,115 @@ CHECKS = {
     CONF_CHECK2: ControlCheck.CONTROL_CHECK_CHECK2,
     CONF_CHECK3: ControlCheck.CONTROL_CHECK_CHECK3,
 }
+
+
+# --- the entity classes -------------------------------------------------------
+#
+# Declared here rather than in each platform package, because `controls:` builds
+# the same entities out of this file. One declaration each, so a generic
+# "Custom 1" written under `number:` and a named "Spawning rate" built by
+# `controls:` are the same C++ class with the same runtime behaviour.
+
+WledFxNumber = wled_fx_ns.class_("WledFxNumber", number_component.Number, cg.Component)
+WledFxNumberType = wled_fx_ns.enum("WledFxNumberType", is_class=True)
+NUMBER_TYPES = {
+    CONF_SPEED: WledFxNumberType.WLED_FX_NUMBER_TYPE_SPEED,
+    CONF_INTENSITY: WledFxNumberType.WLED_FX_NUMBER_TYPE_INTENSITY,
+    CONF_CUSTOM1: WledFxNumberType.WLED_FX_NUMBER_TYPE_CUSTOM1,
+    CONF_CUSTOM2: WledFxNumberType.WLED_FX_NUMBER_TYPE_CUSTOM2,
+    CONF_CUSTOM3: WledFxNumberType.WLED_FX_NUMBER_TYPE_CUSTOM3,
+}
+
+WledFxSwitch = wled_fx_ns.class_("WledFxSwitch", switch_component.Switch, cg.Component)
+WledFxSwitchType = wled_fx_ns.enum("WledFxSwitchType", is_class=True)
+SWITCH_TYPES = {
+    CONF_CHECK1: WledFxSwitchType.WLED_FX_SWITCH_TYPE_CHECK1,
+    CONF_CHECK2: WledFxSwitchType.WLED_FX_SWITCH_TYPE_CHECK2,
+    CONF_CHECK3: WledFxSwitchType.WLED_FX_SWITCH_TYPE_CHECK3,
+}
+
+WledFxSelect = wled_fx_ns.class_("WledFxSelect", select_component.Select, cg.Component)
+WledFxSelectType = wled_fx_ns.enum("WledFxSelectType", is_class=True)
+SELECT_TYPES = {
+    CONF_EFFECT: WledFxSelectType.WLED_FX_SELECT_TYPE_EFFECT,
+    CONF_PALETTE: WledFxSelectType.WLED_FX_SELECT_TYPE_PALETTE,
+}
+
+WledFxColorLight = wled_fx_ns.class_(
+    "WledFxColorLight", light_component.LightOutput, cg.Component
+)
+WledFxColorLightType = wled_fx_ns.enum("WledFxColorLightType", is_class=True)
+COLOR_LIGHT_TYPES = {
+    "color1": WledFxColorLightType.WLED_FX_COLOR_LIGHT_TYPE_COLOR1,
+    "color2": WledFxColorLightType.WLED_FX_COLOR_LIGHT_TYPE_COLOR2,
+    "color3": WledFxColorLightType.WLED_FX_COLOR_LIGHT_TYPE_COLOR3,
+}
+
+# Segment::colors[0] in wf_segment.h, which is WLED's own DEFAULT_COLOR
+# (wled00/FX.h:45): 0xFFA000, an amber with 160 of green. It has to be this
+# value and not a rounder one, because the light writes it into the engine at
+# boot and it is what every effect draws on palette "Default", and what the four
+# dynamic palettes are built from.
+DEFAULT_COLOR1 = (0xFF, 0xA0, 0x00)
+
+
+def color_light_schema(slot: str, *, with_parent_id: bool = True) -> cv.Schema:
+    """The schema for one colour slot's light.
+
+    A fresh device comes up with exactly the colours the engine already had, so
+    adding these entities does not change what any effect looks like: colour 1
+    on at WLED's own primary, colour 2 and colour 3 black.
+
+    `with_parent_id` is off for a light that `controls:` builds, which already
+    knows its controller and must not make the user name one.
+    """
+    if slot == "color1":
+        restore_mode = "RESTORE_DEFAULT_ON"
+        initial_state = {
+            CONF_STATE: True,
+            CONF_BRIGHTNESS: 1.0,
+            CONF_RED: DEFAULT_COLOR1[0] / 255,
+            CONF_GREEN: DEFAULT_COLOR1[1] / 255,
+            CONF_BLUE: DEFAULT_COLOR1[2] / 255,
+        }
+    else:
+        restore_mode = "RESTORE_DEFAULT_OFF"
+        initial_state = {CONF_STATE: False}
+    parent = (
+        {cv.GenerateID(CONF_WLED_FX_ID): cv.use_id(WledFxController)}
+        if with_parent_id
+        else {}
+    )
+    return (
+        light_component.light_schema(
+            WledFxColorLight, light_component.LightType.RGB, default_restore_mode=restore_mode
+        )
+        .extend(
+            {
+                **parent,
+                # A colour slot is a value, not a lamp: the picker should hand
+                # the engine the colour it shows, without a display gamma bent
+                # into it and without a second of fading on the way.
+                cv.Optional(CONF_GAMMA_CORRECT, default=1.0): cv.positive_float,
+                cv.Optional(
+                    CONF_DEFAULT_TRANSITION_LENGTH, default="0s"
+                ): cv.positive_time_period_milliseconds,
+                cv.Optional(CONF_INITIAL_STATE, default=initial_state): (
+                    light_component.LIGHT_STATE_SCHEMA
+                ),
+            }
+        )
+        .extend(cv.COMPONENT_SCHEMA)
+    )
+
+
+async def color_light_to_code(config, slot: str, parent):
+    """Builds one colour slot's light and points it at its controller."""
+    var = cg.new_Pvariable(config[CONF_OUTPUT_ID], COLOR_LIGHT_TYPES[slot])
+    await light_component.register_light(var, config)
+    await cg.register_component(var, config)
+    await cg.register_parented(var, parent)
+    return var
 
 
 def _known_effect(value):
@@ -252,6 +386,304 @@ _CONTROL_KEYS = (
     CONF_TEXT,
 )
 
+# --- named controls ----------------------------------------------------------
+#
+# The eight generic controls are called what WLED calls them for whichever
+# effect is running, and an ESPHome entity's name is fixed when the firmware is
+# built. Those two facts cannot both be served, so a configuration that pins one
+# effect can ask for the other trade instead: `controls: true` builds, at
+# compile time, one entity per control that effect actually uses, named what
+# WLED names it, and nothing called Custom 1 or Check 1.
+#
+# It is for one pinned effect and nothing else. A build that switches between
+# effects keeps the generic entities and the `controls` text sensor that says
+# what they mean, and the errors below say so rather than half working.
+
+CONF_CONTROLS = "controls"
+CONF_NAME_PREFIX = "name_prefix"
+CONF_RESTORE_VALUE = "restore_value"
+
+# What the colour 1 light is called on a display when the effect does not use a
+# colour slot of its own. That entity still has to exist there: on the display
+# front end colour 1 carries the master brightness and the on/off for the whole
+# panel, which is WLED's own arrangement, so a panel without it cannot be dimmed
+# or blanked.
+MASTER_COLOR_NAME = "Panel"
+
+# Which platform each kind of control needs in the build. `controls:` is the
+# only thing in the component that creates entities out of nowhere, so it is the
+# only thing that has to ask for the platforms; AUTO_LOAD below returns exactly
+# these and only when a configuration used them.
+_CONTROL_PLATFORMS = {
+    **{key: "number.wled_fx" for key in SLIDER_KEYS},
+    **{key: "switch.wled_fx" for key in CHECK_KEYS},
+    PALETTE_KEY: "select.wled_fx",
+    **{key: "light.wled_fx" for key in COLOR_KEYS},
+}
+
+# The keys of `controls:` that adjust one entity. Everything here is forwarded
+# to the entity's own schema, which is what validates it, so `web_server:` takes
+# whatever sorting fields the installed ESPHome supports and says so itself when
+# it does not.
+_CONTROL_OVERRIDE_SCHEMA = cv.Schema(
+    {
+        cv.Optional(CONF_NAME): cv.string,
+        cv.Optional(CONF_ICON): cv.icon,
+        cv.Optional(CONF_ENTITY_CATEGORY): cv.entity_category,
+        cv.Optional(CONF_RESTORE_VALUE): cv.boolean,
+        cv.Optional(CONF_WEB_SERVER): dict,
+    }
+)
+
+
+def _control_option(value):
+    """One control: `false` leaves it out, `true` takes it as it comes."""
+    if isinstance(value, bool):
+        return {} if value else False
+    return _CONTROL_OVERRIDE_SCHEMA(value)
+
+
+_CONTROLS_SCHEMA = cv.Schema(
+    {
+        cv.Optional(CONF_NAME_PREFIX): cv.string,
+        cv.Optional(CONF_ICON): cv.icon,
+        cv.Optional(CONF_ENTITY_CATEGORY): cv.entity_category,
+        cv.Optional(CONF_RESTORE_VALUE, default=False): cv.boolean,
+        cv.Optional(CONF_WEB_SERVER): dict,
+        **{cv.Optional(key): _control_option for key in CONTROL_KEYS},
+    }
+)
+
+
+def _controls_option(value):
+    """`controls:` is a flag or a mapping; which control keys are legal in the
+    mapping depends on the pinned effect, so that part waits for _expand()."""
+    if isinstance(value, bool):
+        return _CONTROLS_SCHEMA({}) if value else None
+    return _CONTROLS_SCHEMA(value)
+
+
+_NO_EFFECT_LINE = (
+    f"'{CONF_CONTROLS}' builds one entity per control of one effect, so the "
+    f"entry it is on needs exactly one '{CONF_EFFECT}:'. Name the effect, or "
+    f"drop '{CONF_CONTROLS}' and use the generic 'number', 'switch' and "
+    "'select' platforms, which work whatever effect is running."
+)
+
+
+def _control_entities(
+    controls, effect: str, *, display: bool, use_light_color: bool, base: str | None
+):
+    """The validated entity configuration for every control the effect uses.
+
+    One entry per entity, keyed by the control it drives, in WLED's own order.
+    Everything about what exists and what it is called comes from the effect's
+    metadata string, which is read out of the C++ registration tables; nothing
+    here holds a table of effect parameters of its own.
+    """
+    available = controls_by_key(metadata_for(effect))
+
+    if display and "color1" not in available:
+        # Colour 1 is the panel's master brightness and its on/off switch, so a
+        # display gets one whatever the effect does with the colour slot.
+        from .effect_index import Control
+
+        available["color1"] = Control(
+            "color1", "color", MASTER_COLOR_NAME, False, None
+        )
+    if not display and use_light_color:
+        # The light's own colour is segment colour 1 here, so a second entity
+        # for it would be two controls fighting over one value.
+        available.pop("color1", None)
+
+    named = [key for key in controls if key in CONTROL_KEYS]
+    unknown = [key for key in named if key not in available]
+    if unknown:
+        raise cv.Invalid(
+            f'"{effect}" does not use {_and_list(unknown)}, so there is no '
+            f"entity to configure. The controls it has are "
+            f"{_and_list(list(available))}.",
+            path=[CONF_CONTROLS, unknown[0]],
+        )
+
+    out = {}
+    for key, control in available.items():
+        override = controls.get(key, {})
+        if override is False:
+            continue
+        out[key] = _entity_config(key, control, controls, override, base)
+    return out
+
+
+def _and_list(items) -> str:
+    items = [f"'{item}'" for item in items]
+    if len(items) < 2:
+        return items[0] if items else "nothing"
+    return f"{', '.join(items[:-1])} and {items[-1]}"
+
+
+def _entity_name(control, controls, override) -> str:
+    name = override.get(CONF_NAME, control.label)
+    prefix = controls.get(CONF_NAME_PREFIX)
+    return f"{prefix} {name}" if prefix else name
+
+
+def _shared(controls, override) -> dict:
+    """The keys `controls:` passes straight through to the entity's schema."""
+    out = {}
+    for key in (CONF_ICON, CONF_ENTITY_CATEGORY, CONF_WEB_SERVER):
+        if key in override:
+            out[key] = override[key]
+        elif key in controls:
+            out[key] = controls[key]
+    return out
+
+
+def _entity_config(key, control, controls, override, base: str | None):
+    raw = {CONF_NAME: _entity_name(control, controls, override), **_shared(controls, override)}
+    restore = override.get(CONF_RESTORE_VALUE, controls[CONF_RESTORE_VALUE])
+
+    if control.kind == "color":
+        if CONF_RESTORE_VALUE in override:
+            raise cv.Invalid(
+                f"'{CONF_RESTORE_VALUE}' does not apply to a colour slot. An "
+                "ESPHome light restores its own state, so a colour comes back "
+                "as it was left whatever this says.",
+                path=[CONF_CONTROLS, key, CONF_RESTORE_VALUE],
+            )
+        if base is not None:
+            raw[CONF_ID] = f"{base}_{key}"
+            raw[CONF_OUTPUT_ID] = f"{base}_{key}_output"
+        return color_light_schema(key, with_parent_id=False)(raw)
+
+    if base is not None:
+        raw[CONF_ID] = f"{base}_{key}"
+
+    if control.kind == "slider":
+        # A slider, because that is what it is in WLED, and 0 to 255 in a box is
+        # not something anybody wants to type.
+        raw.setdefault(CONF_MODE, "SLIDER")
+        raw[CONF_RESTORE_VALUE] = restore
+        return _NAMED_NUMBER_SCHEMA(raw)
+
+    if control.kind == "check":
+        # The engine owns this checkmark unless the configuration asked for it
+        # to be remembered, and then the remembered value has to be the one
+        # that wins at boot. Which of the two restore modes depends on what the
+        # effect's own metadata says the checkmark starts at.
+        mode = "DISABLED"
+        if restore:
+            mode = "RESTORE_DEFAULT_ON" if control.default else "RESTORE_DEFAULT_OFF"
+        return switch_component.switch_schema(WledFxSwitch, default_restore_mode=mode).extend(
+            cv.COMPONENT_SCHEMA
+        )(raw)
+
+    raw[CONF_RESTORE_VALUE] = restore
+    return _NAMED_SELECT_SCHEMA(raw)
+
+
+_NAMED_NUMBER_SCHEMA = (
+    number_component.number_schema(WledFxNumber)
+    .extend(cv.COMPONENT_SCHEMA)
+    .extend({cv.Optional(CONF_RESTORE_VALUE, default=False): cv.boolean})
+)
+_NAMED_SELECT_SCHEMA = (
+    select_component.select_schema(WledFxSelect)
+    .extend(cv.COMPONENT_SCHEMA)
+    .extend({cv.Optional(CONF_RESTORE_VALUE, default=False): cv.boolean})
+)
+
+
+def _expand_controls(config, *, display: bool, use_light_color: bool):
+    """Turns `controls:` into the entity configurations it stands for."""
+    controls = config.get(CONF_CONTROLS)
+    if controls is None:
+        return config
+    effect = config.get(CONF_EFFECT)
+    if effect is None:
+        raise cv.Invalid(_NO_EFFECT_LINE, path=[CONF_CONTROLS])
+    declared = config.get(CONF_ID)
+    # Entity ids are only C++ variable names, and what Home Assistant shows is
+    # built from the entity's name, so an entry with no id of its own can let
+    # ESPHome generate them. An entry that has one gets readable ones.
+    base = declared.id if declared is not None and declared.id else None
+    config[CONF_CONTROLS] = _control_entities(
+        controls,
+        effect,
+        display=display,
+        use_light_color=use_light_color,
+        base=base,
+    )
+    return config
+
+
+def _controls_platforms(entities) -> set[str]:
+    """The entity platforms these controls need compiled into the build."""
+    return {_CONTROL_PLATFORMS[key] for key in entities}
+
+
+def autoload_stub(schema, platform: str):
+    """Lets one of the four platform packages recognise an auto-load stub.
+
+    `controls:` asks ESPHome for the platforms its entities need, and ESPHome
+    loads a platform by adding an entry to that domain carrying nothing but
+    `platform: wled_fx`. The entry creates no entity: it is there so this
+    package's sources reach the build. An entry somebody wrote always has a
+    `type:`, so an empty one can only be the stub, and it is only accepted when
+    AUTO_LOAD says it asked for that platform.
+    """
+
+    def validate(config):
+        if not config and f"{platform}.{DOMAIN}" in CORE.data.get(_AUTOLOADED_KEY, ()):
+            return config
+        return schema(config)
+
+    return validate
+
+
+def is_autoload_stub(config) -> bool:
+    """True for the entry AUTO_LOAD added to pull a platform's sources in.
+
+    The schema sees it with `platform:` taken off, so it is empty there and it
+    is not here. Every real entry of all four platforms names a `type:`.
+    """
+    return CONF_TYPE not in config
+
+
+async def controls_to_code(parent, entities):
+    """Builds the named entities and points every one of them at the engine.
+
+    They are the same classes the generic platforms build, so the runtime is
+    the one that already exists: each entity publishes what the engine holds at
+    setup and subscribes to the controller's state change callback. Nothing here
+    adds anything to a frame.
+    """
+    for key, conf in entities.items():
+        if key in SLIDER_KEYS:
+            var = cg.new_Pvariable(conf[CONF_ID], NUMBER_TYPES[key])
+            await number_component.register_number(
+                var, conf, min_value=0, max_value=SLIDER_MAXIMUM[key], step=1
+            )
+            await cg.register_component(var, conf)
+            await cg.register_parented(var, parent)
+            if conf[CONF_RESTORE_VALUE]:
+                cg.add(var.set_restore_value(True))
+        elif key in CHECK_KEYS:
+            var = cg.new_Pvariable(conf[CONF_ID], SWITCH_TYPES[key])
+            await switch_component.register_switch(var, conf)
+            await cg.register_component(var, conf)
+            await cg.register_parented(var, parent)
+        elif key == PALETTE_KEY:
+            var = cg.new_Pvariable(conf[CONF_ID], SELECT_TYPES[CONF_PALETTE])
+            await select_component.register_select(var, conf, options=[])
+            await cg.register_component(var, conf)
+            await cg.register_parented(var, parent)
+            if conf[CONF_RESTORE_VALUE]:
+                cg.add(var.set_restore_value(True))
+        else:
+            await color_light_to_code(conf, key, parent)
+
+
 # --- audio -----------------------------------------------------------------
 #
 # The analysis source is process wide: the engine has one canvas and one
@@ -324,6 +756,7 @@ _ENTRY_SCHEMA = cv.Schema(
         cv.Optional(CONF_INCLUDE_1D_EFFECTS): cv.boolean,
         cv.Optional(CONF_AUDIO): AUDIO_SCHEMA,
         cv.Optional(CONF_UPDATE_INTERVAL): cv.positive_time_period_milliseconds,
+        cv.Optional(CONF_CONTROLS): _controls_option,
         **CONTROL_SCHEMA,
     }
 ).extend(cv.COMPONENT_SCHEMA)
@@ -353,7 +786,9 @@ def _validate_entry(config):
     if CONF_DISPLAY_ID in config:
         # A display is always a 2D output: that is what makes it a display.
         _check_effect_fits(config, True, config.get(CONF_INCLUDE_1D_EFFECTS, False))
-        return config
+        # Colour 1 on a display is also the master brightness and the panel's
+        # on/off, and the display front end owns its colours outright.
+        return _expand_controls(config, display=True, use_light_color=False)
     # An entry with no display never becomes a component, so anything that would
     # be applied to one would be silently dropped. Say so instead.
     for key in (
@@ -362,6 +797,7 @@ def _validate_entry(config):
         CONF_GAMMA_CORRECT,
         CONF_INCLUDE_1D_EFFECTS,
         CONF_UPDATE_INTERVAL,
+        CONF_CONTROLS,
         *_CONTROL_KEYS,
     ):
         if key in config:
@@ -381,6 +817,36 @@ CONFIG_SCHEMA = cv.ensure_list(cv.All(_ENTRY_SCHEMA, _validate_entry))
 _LAYOUT_DATA_KEY = "wled_fx_layouts"
 _ALLOW_LIST_KEY = "wled_fx_allow_list"
 _SELECTION_DONE_KEY = "wled_fx_selection_emitted"
+# Which entity platforms a light effect's `controls:` needs. The light effect
+# is validated before AUTO_LOAD runs, and AUTO_LOAD is only handed the
+# `wled_fx:` config, so the light side leaves the answer here.
+_LIGHT_PLATFORMS_KEY = "wled_fx_light_control_platforms"
+# What AUTO_LOAD asked for, so autoload_stub() can tell a stub from an entry
+# somebody wrote and left unfinished.
+_AUTOLOADED_KEY = "wled_fx_autoloaded_platforms"
+
+
+def AUTO_LOAD(config):
+    """The entity platforms `controls:` needs, and only when it needs them.
+
+    ESPHome copies a component's sources only for the components a
+    configuration actually loads, and only defines USE_NUMBER and its
+    neighbours once an entity of that kind exists. So a build with no
+    `controls:` pays nothing for this, and a build with it gets exactly the
+    platforms its pinned effect turned out to need. ESPHome loads a platform by
+    adding an entry carrying nothing but `platform:`, which each of the four
+    platform packages recognises and skips.
+
+    Dynamic AUTO_LOAD runs after every component's schema validation, which is
+    why the light effect can leave its answer in CORE.data first.
+    """
+    needed: set[str] = set(CORE.data.get(_LIGHT_PLATFORMS_KEY, set()))
+    for item in config or []:
+        for entry in item if isinstance(item, list) else [item]:
+            if entities := entry.get(CONF_CONTROLS):
+                needed |= _controls_platforms(entities)
+    CORE.data[_AUTOLOADED_KEY] = needed
+    return sorted(needed)
 
 
 def _all_entries(full_config):
@@ -454,6 +920,80 @@ def _validate_allow_list(entries, offered: set[str] | None, layouts):
             raise cv.Invalid(reason, path=[CONF_EFFECTS, index])
 
 
+def _front_end_configs(entries, full_config):
+    """Every configuration in the file that owns a canvas and an engine."""
+    out = [entry for entry in entries if CONF_DISPLAY_ID in entry]
+    out.extend(_configured_light_effects(full_config))
+    return out
+
+
+# The two ways out, written once so every message about the choice says the
+# same thing.
+_GENERIC_CONTROLS_LINE = (
+    "the generic 'number', 'switch' and 'select' platforms with the 'controls' "
+    "text sensor, which names them for whichever effect is running"
+)
+
+
+def _check_named_controls(full_config, entries, allow_list):
+    """Everything about `controls:` that needs the whole configuration in view.
+
+    Returns the allow-list to build with, which for a pinned single effect is
+    that one effect: nothing else could ever be selected, so nothing else is
+    worth the flash.
+    """
+    front_ends = _front_end_configs(entries, full_config)
+    pinned = [config for config in front_ends if config.get(CONF_CONTROLS)]
+    if not pinned:
+        return allow_list
+
+    # A generic entity for a controller that already has named ones is two
+    # entities for one control, one of them called Custom 1.
+    targets = {
+        config[CONF_ID].id: config[CONF_EFFECT]
+        for config in pinned
+        if config.get(CONF_ID) is not None and config[CONF_ID].id
+    }
+    for domain in ("number", "switch", "select", "light"):
+        for index, item in enumerate(full_config.get(domain, []) or []):
+            if not isinstance(item, dict) or item.get(CONF_PLATFORM) != DOMAIN:
+                continue
+            target = item.get(CONF_WLED_FX_ID)
+            if target is None or target.id not in targets:
+                continue
+            raise cv.Invalid(
+                f"'{CONF_CONTROLS}' on the wled_fx entry '{target.id}' already "
+                f"builds a named entity for every control "
+                f'"{targets[target.id]}" uses, and this \'{domain}\' entry adds '
+                "a generic one for the same controller. Pick one: named "
+                "controls for a single pinned effect, or "
+                f"{_GENERIC_CONTROLS_LINE}. Remove this '{domain}' entry, or "
+                f"remove '{CONF_CONTROLS}'.",
+                path=[domain, index],
+            )
+
+    names = sorted({config[CONF_EFFECT] for config in pinned})
+    if allow_list:
+        if {name.casefold() for name in allow_list} != {
+            name.casefold() for name in names
+        }:
+            raise cv.Invalid(
+                f"'{CONF_CONTROLS}' names the entities after "
+                f"{_and_list(names)}, and this '{CONF_EFFECTS}' allow-list "
+                f"names {_and_list(sorted(allow_list))}. The named entities "
+                "would be the wrong ones for anything else that got selected. "
+                f"Either cut the allow-list down to {_and_list(names)}, which "
+                "is what leaving it out does on its own, or drop "
+                f"'{CONF_CONTROLS}' and use {_GENERIC_CONTROLS_LINE}.",
+                path=[DOMAIN, 0, CONF_EFFECTS],
+            )
+    elif len(pinned) == len(front_ends):
+        # Every output in the build is pinned, so nothing can ever select
+        # anything else and the other 222 effects are flash spent on nothing.
+        allow_list = names
+    return allow_list
+
+
 def _final_validate(config):
     """A display handed to wled_fx must not also be driven by its own poller."""
     full_config = fv.full_config.get()
@@ -486,7 +1026,9 @@ def _final_validate(config):
     allow_list: list[str] = []
     for entry in entries:
         allow_list.extend(entry.get(CONF_EFFECTS, []))
-    CORE.data[_ALLOW_LIST_KEY] = allow_list
+    CORE.data[_ALLOW_LIST_KEY] = _check_named_controls(
+        full_config, entries, allow_list
+    )
 
     for entry in config:
         if (audio_config := entry.get(CONF_AUDIO)) is not None:
@@ -751,6 +1293,7 @@ async def to_code(config):
             )
         )
         await apply_controls(var, entry)
+        await controls_to_code(var, entry.get(CONF_CONTROLS) or {})
 
 
 LIGHT_EFFECT_SCHEMA = cv.Schema(
@@ -764,6 +1307,7 @@ LIGHT_EFFECT_SCHEMA = cv.Schema(
         cv.Optional(
             CONF_UPDATE_INTERVAL, default=FRAMETIME
         ): cv.positive_time_period_milliseconds,
+        cv.Optional(CONF_CONTROLS): _controls_option,
         **CONTROL_SCHEMA,
     }
 )
@@ -794,6 +1338,14 @@ def _validate_light_effect(config):
             path=[CONF_INCLUDE_1D_EFFECTS],
         )
     _check_effect_fits(config, two_dimensional, include_1d)
+    _expand_controls(
+        config, display=False, use_light_color=config[CONF_USE_LIGHT_COLOR]
+    )
+    if entities := config.get(CONF_CONTROLS):
+        # AUTO_LOAD only sees the `wled_fx:` config, and this is a light effect,
+        # so the platforms this needs are left where AUTO_LOAD will find them.
+        platforms = CORE.data.setdefault(_LIGHT_PLATFORMS_KEY, set())
+        platforms |= _controls_platforms(entities)
     return config
 
 
@@ -944,4 +1496,5 @@ async def wled_fx_light_effect_to_code(config, effect_id):
     cg.add(var.set_include_1d_effects(config[CONF_INCLUDE_1D_EFFECTS]))
     cg.add(var.set_frame_interval(config[CONF_UPDATE_INTERVAL]))
     await apply_controls(var, config)
+    await controls_to_code(var, config.get(CONF_CONTROLS) or {})
     return var

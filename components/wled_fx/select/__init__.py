@@ -3,31 +3,34 @@ from esphome.components import select
 import esphome.config_validation as cv
 from esphome.const import CONF_TYPE
 
-from .. import CONF_WLED_FX_ID, WledFxController, wled_fx_ns
+from .. import (
+    SELECT_TYPES,
+    CONF_WLED_FX_ID,
+    WledFxController,
+    WledFxSelect,
+    autoload_stub,
+    is_autoload_stub,
+)
 
 DEPENDENCIES = ["wled_fx"]
 
-WledFxSelect = wled_fx_ns.class_("WledFxSelect", select.Select, cg.Component)
-WledFxSelectType = wled_fx_ns.enum("WledFxSelectType", is_class=True)
-
-TYPES = {
-    "effect": WledFxSelectType.WLED_FX_SELECT_TYPE_EFFECT,
-    "palette": WledFxSelectType.WLED_FX_SELECT_TYPE_PALETTE,
-}
-
-CONFIG_SCHEMA = (
+_ENTRY_SCHEMA = (
     select.select_schema(WledFxSelect)
     .extend(
         {
             cv.GenerateID(CONF_WLED_FX_ID): cv.use_id(WledFxController),
-            cv.Required(CONF_TYPE): cv.enum(TYPES, lower=True),
+            cv.Required(CONF_TYPE): cv.enum(SELECT_TYPES, lower=True),
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
 )
 
+CONFIG_SCHEMA = autoload_stub(_ENTRY_SCHEMA, "select")
+
 
 async def to_code(config):
+    if is_autoload_stub(config):
+        return
     var = cg.new_Pvariable(config[select.CONF_ID], config[CONF_TYPE])
     await select.register_select(var, config, options=[])
     await cg.register_component(var, config)

@@ -56,6 +56,15 @@ void WledFxSelect::setup() {
   }
   this->traits.set_options(options);
 
+  if (this->restore_) {
+    this->pref_ = this->make_entity_preference<uint8_t>();
+    uint8_t stored;
+    // A build whose option list shrank would otherwise restore somebody else's
+    // palette, so an index that no longer fits is dropped.
+    if (this->pref_.load(&stored) && stored < this->traits.get_options().size())
+      this->control(this->traits.get_options()[stored]);
+  }
+
   this->publish_current_();
   // An action or another entity can change the effect, so follow the engine
   // rather than only publishing once here.
@@ -82,6 +91,16 @@ void WledFxSelect::control(const std::string &value) {
   }
   // A successful change already published through the state change callback,
   // and it published the registry's spelling rather than whatever arrived.
+  if (this->restore_) {
+    // The engine's spelling, not the one that arrived, and as a position in
+    // the option list so one byte covers it.
+    const StringRef option = this->current_option();
+    const auto index = this->index_of(option.c_str(), option.size());
+    if (index.has_value()) {
+      const uint8_t stored = static_cast<uint8_t>(*index);
+      this->pref_.save(&stored);
+    }
+  }
 }
 
 void WledFxSelect::dump_config() { LOG_SELECT("", "WLED FX Select", this); }

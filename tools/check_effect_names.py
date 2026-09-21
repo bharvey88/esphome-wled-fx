@@ -27,15 +27,21 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "components" / "wled_fx"))
 
 from effect_index import (  # noqa: E402
+    effect_controls,
     effect_macro,
+    effect_metadata,
     effect_names,
     flag_overrides,
+    metadata_defaults,
     one_dimensional_only,
     palette_names,
     two_dimensional_only,
 )
 
 LINE = re.compile(r"^(\S+)\s+(.+?)\s+flags=0x([0-9A-Fa-f]{2})\s")
+DEFAULTS_LINE = re.compile(
+    r"^\S+\s+(.+?)\s+flags=0x[0-9A-Fa-f]{2}\s+pal=(-?\d+)\s+sx=(\d+)\s+ix=(\d+)\s"
+)
 FLAG_0D = 1 << 0
 FLAG_1D = 1 << 1
 FLAG_2D = 1 << 2
@@ -59,16 +65,81 @@ def find_sim() -> pathlib.Path:
     sys.exit("build the simulator first: cmake --build tools/sim/build")
 
 
-def registered() -> list[tuple[str, int]]:
-    out = subprocess.run(
-        [str(find_sim()), "--list"], capture_output=True, text=True, check=True
+def sim_output(*args: str) -> str:
+    return subprocess.run(
+        [str(find_sim()), *args], capture_output=True, text=True, check=True
     ).stdout
+
+
+def registered() -> list[tuple[str, int]]:
     entries = []
-    for line in out.splitlines():
+    for line in sim_output("--list").splitlines():
         match = LINE.match(line)
         if match is not None:
             entries.append((match.group(2).strip(), int(match.group(3), 16)))
     return entries
+
+
+def control_problems() -> list[str]:
+    """The controls `controls:` builds, against what the registry holds.
+
+    `controls: true` creates one entity per control the pinned effect uses,
+    named what WLED names it, and every bit of that comes from reading the
+    effect's metadata string in Python. The firmware reads the same string in
+    C++. If the two readings ever part company, a configuration gets entities
+    for controls the effect does not have, or misses ones it does, and nothing
+    else would notice.
+
+    So: the strings the scanner sees are checked against `--list-meta`, which
+    prints them verbatim from the registry, and the defaults it parses out of
+    them are checked against `--list`, which prints what the engine will
+    actually write into the segment.
+    """
+    problems: list[str] = []
+
+    registry_meta = []
+    for line in sim_output("--list-meta").splitlines():
+        if "\t" in line:
+            registry_meta.append(line.split("\t", 1)[1])
+    scanned_meta = effect_metadata()
+    if registry_meta != scanned_meta:
+        only_registry = sorted(set(registry_meta) - set(scanned_meta))
+        only_scanned = sorted(set(scanned_meta) - set(registry_meta))
+        problems.append(
+            "the metadata strings the scanner reads are not the ones the "
+            f"registry holds: registry only {only_registry[:3]}, scanner only "
+            f"{only_scanned[:3]}"
+        )
+        return problems
+
+    by_name = {entry.split("@", 1)[0]: entry for entry in scanned_meta}
+    for line in sim_output("--list").splitlines():
+        match = DEFAULTS_LINE.match(line)
+        if match is None:
+            continue
+        name, palette, speed, intensity = match.groups()
+        name = name.strip()
+        metadata = by_name.get(name)
+        if metadata is None:
+            continue
+        controls = {c.key: c for c in effect_controls(metadata)}
+        # The sliders, when the effect offers them. A control it does not offer
+        # has no entity and so no default worth comparing.
+        for key, expected in (("speed", int(speed)), ("intensity", int(intensity))):
+            if key in controls and controls[key].default != expected:
+                problems.append(
+                    f"{name}: the scanner reads {key} as "
+                    f"{controls[key].default} and the registry as {expected}"
+                )
+        # pal prints -1 when the metadata declares none, and the scanner reads
+        # the same absence as "the segment keeps palette 0".
+        declared = metadata_defaults(metadata).get("pal")
+        if int(palette) != (-1 if declared is None else declared):
+            problems.append(
+                f"{name}: the scanner reads pal as {declared} and the registry "
+                f"as {palette}"
+            )
+    return problems
 
 
 def guarded_macros() -> set[str]:
@@ -268,6 +339,7 @@ def main() -> int:
 
     palettes = palette_names()
     problems.extend(palette_problems())
+    problems.extend(control_problems())
 
     if problems:
         for problem in problems:

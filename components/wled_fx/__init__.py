@@ -499,10 +499,16 @@ def _control_entities(
     named = [key for key in controls if key in CONTROL_KEYS]
     unknown = [key for key in named if key not in available]
     if unknown:
+        # A control is addressed by its slot rather than by the name WLED gives
+        # it, because two controls of one effect can share a name: Matrix has a
+        # slider and a colour slot both called Trail. So the slot names have to
+        # be discoverable, and this is where somebody finds them.
+        has = ", ".join(
+            f"{key} ({control.label})" for key, control in available.items()
+        )
         raise cv.Invalid(
             f'"{effect}" does not use {_and_list(unknown)}, so there is no '
-            f"entity to configure. The controls it has are "
-            f"{_and_list(list(available))}.",
+            f"entity to configure. What it does use: {has}.",
             path=[CONF_CONTROLS, unknown[0]],
         )
 

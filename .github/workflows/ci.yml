@@ -89,6 +89,13 @@ jobs:
       - name: Effect and palette names the config validation sees match the registry
         run: python3 tools/check_effect_names.py
 
+      # The reading of the metadata string that `controls:` builds entities
+      # out of. No ESPHome needed: effect_index.py imports none.
+      - name: The per-effect control parsing
+        run: |
+          pip install pytest
+          python3 -m pytest tests/test_effect_controls.py -q
+
       - name: Upload contact sheets
         uses: actions/upload-artifact@v4
         if: always() && env.WANT_IMAGES == 'true'
@@ -199,6 +206,25 @@ jobs:
           path: ${{ runner.temp }}/portcap
           retention-days: 5
 
+  # What `controls:` accepts and what it refuses, over the real `esphome
+  # config`. Separate from the compile matrix because it needs no toolchain and
+  # finishes in seconds.
+  config-tests:
+    name: Config validation tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install ESPHome
+        run: pip install esphome pytest
+
+      - name: Run them
+        run: python -m pytest tests -q
+
   compile:
     name: esphome compile ${{ matrix.config }}
     runs-on: ubuntu-latest
@@ -210,6 +236,9 @@ jobs:
           - strip-esp32-arduino.yaml
           - m1-hub75.yaml
           - m1-hub75-audio.yaml
+          - m1-matrix-named.yaml
+          - m1-particle-named.yaml
+          - strip-fire-named.yaml
           - host.yaml
     steps:
       - uses: actions/checkout@v4

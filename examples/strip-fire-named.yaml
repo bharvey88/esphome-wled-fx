@@ -1,0 +1,66 @@
+# A WS2812 strip pinned to Fire 2012, with the controls that effect has.
+#
+# `controls: true` goes on the light effect itself, which is the thing that
+# owns the engine on this front end. Fire 2012's metadata calls its two
+# standard sliders Cooling and Spark rate, uses custom2 for 2D Blur and
+# custom3 for Boost, has no checkmarks and no colour slots of its own, and
+# takes a palette, so that is exactly the set of entities this builds.
+#
+# Colour 1 is the light's own colour, because `use_light_color` defaults to
+# true, so there is no second entity for it. Set `use_light_color: false` and
+# a colour slot the effect uses gets a light of its own instead.
+
+esphome:
+  name: wled-fx-strip-fire
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+# The registration stub that puts the light effect in the effect registry.
+wled_fx:
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: strip
+    name: Strip
+    pin: GPIO16
+    num_leds: 60
+    rgb_order: GRB
+    chipset: WS2812
+    # ESPHome's light default is 2.8, WLED's output gamma is 2.2. See
+    # strip-esp32.yaml for what this does and does not match.
+    gamma_correct: 2.2
+    effects:
+      - wled_fx:
+          id: strip_fx
+          name: Fire
+          effect: Fire 2012
+          update_interval: 23ms
+          controls:
+            # Everything the effect has, with two adjustments: the palette
+            # keeps its choice across a reboot, and WLED's "2D Blur" is called
+            # what it does on a strip.
+            restore_value: true
+            custom2:
+              name: Blur

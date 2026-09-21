@@ -1,0 +1,89 @@
+# Apollo Automation M-1 pinned to PS Fire, one of the 2D particle effects.
+#
+# PS Fire is the busiest end of this: five sliders, three checkmarks and a
+# palette, which as eight generic entities plus a line of text is exactly the
+# thing that is hard to use. Named, it is Speed, Intensity, Flame Height,
+# Wind, Spread, Smooth, Cylinder and Turbulence.
+#
+# This one also shows the mapping form of `controls:`: a prefix on every name,
+# the three checkmarks filed under the diagnostic category so they sit apart
+# from the sliders in Home Assistant, one control renamed and one left out.
+
+esphome:
+  name: wled-fx-m1-particle
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+display:
+  - platform: hub75
+    id: matrix
+    board: apollo-automation-m1-rev6
+    panel_width: 64
+    panel_height: 64
+    update_interval: never
+    auto_clear_enabled: false
+    double_buffer: true
+    gamma_correct: LINEAR
+    brightness: 128
+
+wled_fx:
+  id: fx
+  display_id: matrix
+  update_interval: 23ms
+  effect: PS Fire
+  controls:
+    name_prefix: Fire
+    # A control is addressed here by its slot, not by the name WLED gives it,
+    # because two controls of one effect can share a name: Matrix has both a
+    # slider and a colour slot called Trail. An error naming a slot this
+    # effect does not use lists every slot it does, with WLED's name beside it.
+    #
+    # The two sliders anybody reaches for keep their value across a reboot;
+    # the rest come back at PS Fire's own defaults.
+    speed:
+      restore_value: true
+      icon: mdi:speedometer
+    intensity:
+      restore_value: true
+    # check2 is Cylinder, which wraps the panel left to right. A 64x64 square
+    # panel on a wall is never going to want it.
+    check2: false
+    # Smooth and Turbulence, filed where Home Assistant keeps settings so they
+    # sit apart from the sliders.
+    check1:
+      entity_category: config
+    check3:
+      entity_category: config
+    # WLED's own word for this is "Color palette", which under a prefix reads
+    # badly. The prefix goes on a name given here too.
+    palette:
+      name: Palette
+    # The one light this builds is the panel's master brightness and its
+    # on/off, called Panel because PS Fire paints entirely from the palette and
+    # uses no colour slot of its own.

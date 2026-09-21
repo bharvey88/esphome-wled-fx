@@ -1,0 +1,66 @@
+# Apollo Automation M-1 (ESP32-S3, 64x64 HUB75 panel) pinned to one effect,
+# with the controls that effect actually has.
+#
+# `controls: true` reads Matrix's own WLED metadata at compile time and builds
+# one entity per control it uses, named what WLED names it. There is no Effect
+# select, no Custom 1 slider and no "Effect controls" text sensor explaining
+# what Custom 1 means today, because the answer is fixed: this firmware runs
+# Matrix and nothing else.
+#
+# Pinning also decides what gets compiled. With no `effects:` list of its own
+# this build carries Matrix alone, which is about 105 KB less flash than the
+# 64 effects a 64x64 panel would otherwise offer. See
+# docs/NAMED-CONTROLS-REVIEW.md for the measurements.
+
+esphome:
+  name: wled-fx-m1-matrix
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+display:
+  - platform: hub75
+    id: matrix
+    board: apollo-automation-m1-rev6
+    panel_width: 64
+    panel_height: 64
+    update_interval: never
+    auto_clear_enabled: false
+    double_buffer: true
+    # wled_fx does the gamma; the driver stays out of the way. m1-hub75.yaml
+    # has the long version of why.
+    gamma_correct: LINEAR
+    brightness: 128
+
+wled_fx:
+  id: fx
+  display_id: matrix
+  update_interval: 23ms
+  gamma_correct: 2.2
+  effect: Matrix
+  controls: true

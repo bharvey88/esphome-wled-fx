@@ -15,6 +15,10 @@ substitutions:
   # Which tour group this firmware starts on. tour.yaml lists them; on a
   # panel "Panel" is the effects a 2D output offers without the 1D opt-in.
   tour_default_group: Panel
+  # Which effects the "Effect" dropdown lists, by the same rule. The 1D-only
+  # ones this build also carries are on the separate "Strip effect (mapped)"
+  # dropdown that panel-effects.yaml adds.
+  tour_effect_scope: panel
   # The access point this board offers when it has no network to join. Distinct
   # per config so two boards can be on the bench at once.
   ap_ssid: WLED FX M-1 test
@@ -51,6 +55,8 @@ packages:
   # the API, OTA and the web server. No secrets file involved.
   network: !include network.yaml
   tour: !include tour.yaml
+  # The second effect dropdown, for the effects this panel maps from 1D.
+  panel_effects: !include panel-effects.yaml
 
 display:
   - platform: hub75
@@ -92,14 +98,18 @@ number:
     # The panel's hardware duty, which is the one to dim with: it shortens the
     # drive time rather than scaling the frame, so it keeps shadow detail that
     # scaling an 8 bit frame throws away. Colour 1's brightness is the other
-    # one, and it does scale the frame. 128 is the driver's default and WLED's
-    # factory default of 127; a WLED device somebody has turned up will look
-    # brighter than this until you move it. See PORTING.md deviation 36.
+    # one, and it does scale the frame.
+    #
+    # 220, not the hub75 driver's own default of 128. The reference WLED unit
+    # this port is compared against runs at 220, and a side by side at 128
+    # against 220 says nothing about the engine and everything about the duty
+    # cycle: the port simply looks dim. Start where the thing being compared
+    # against starts. See PORTING.md deviation 36.
     name: Panel brightness
     min_value: 1
     max_value: 255
     step: 1
-    initial_value: 128
+    initial_value: 220
     optimistic: true
     restore_value: false
     mode: slider

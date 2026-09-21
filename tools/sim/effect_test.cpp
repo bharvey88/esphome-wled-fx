@@ -1017,6 +1017,69 @@ void test_simulated_peak() {
   }
 }
 
+/* --- what each output shape offers -----------------------------------------
+ *
+ * effect_available() is the one rule three separate things now read: the
+ * component's own select and set_effect_by_name(), the `scope:` option on the
+ * effect select, and the "Panel" and "Strip" groups of the hardware test tour
+ * (examples/hardware-test/hwtest.h, matches()). Because all three call it
+ * rather than keep a list, pinning the sizes here pins all three.
+ *
+ * The count matters on its own. The two panel test firmwares set
+ * `include_1d_effects: true` so the tour and the profile run can reach every
+ * effect, which means their Effect dropdown used to hold all 223 and their
+ * "Panel" tour group holds however many this says. A 1D-only effect reached by
+ * accident on a 64x64 panel is a short band crawling along a 4096 pixel strip
+ * wrapped across it, which looks like a broken panel to anybody who does not
+ * already know what WLED's 1D to 2D mapping does. Gradient and Fireworks
+ * Starburst are the two that were reported that way, so they are named. */
+void test_output_availability() {
+  printf("\n-- what each output shape offers --\n");
+  size_t panel = 0;      // an untouched 2D output: the "Panel" group
+  size_t strip = 0;      // a 1D output: the "Strip" group
+  size_t panel_opt = 0;  // a 2D output with include_1d_effects: true
+  const size_t total = EffectRegistry::count();
+  for (size_t i = 0; i < total; i++) {
+    const EffectInfo *info = EffectRegistry::at(i);
+    if (effect_available(*info, true, false))
+      panel++;
+    if (effect_available(*info, false, false))
+      strip++;
+    if (effect_available(*info, true, true))
+      panel_opt++;
+  }
+  printf("      %zu registered, panel %zu, strip %zu, panel with the opt-in %zu\n", total, panel, strip,
+         panel_opt);
+  check(total == 223, "223 effects are registered");
+  check(panel == 64, "a 2D output offers 64 effects, which is what the tour's Panel group walks");
+  check(panel_opt == total, "include_1d_effects offers every one of them, which is why Panel is needed");
+  check(panel + strip >= total, "every effect runs on at least one shape");
+
+  /* A 1D-only effect is, exactly, one the Panel group leaves out and the Strip
+   * group keeps. The tour marks these "(strip effect, mapped)" and the effect
+   * select puts them behind `scope: strip`. */
+  size_t mapped = 0;
+  for (size_t i = 0; i < total; i++) {
+    const EffectInfo *info = EffectRegistry::at(i);
+    if (!effect_available(*info, true, false) && effect_available(*info, false, false))
+      mapped++;
+  }
+  check(mapped == total - panel, "the rest are 1D only, so the two lists partition the registry");
+
+  const char *reported_as_strip_effects[] = {"Gradient", "Fireworks Starburst"};
+  for (const char *name : reported_as_strip_effects) {
+    const EffectInfo *info = EffectRegistry::find(name);
+    if (info == nullptr) {
+      check(false, std::string(name) + " is registered");
+      continue;
+    }
+    check(!effect_available(*info, true, false), std::string(name) + " is not in the Panel group");
+    check(effect_available(*info, false, false), std::string(name) + " is in the Strip group");
+    check(effect_available(*info, true, true),
+          std::string(name) + " is still reachable on a panel that opted in");
+  }
+}
+
 }  // namespace
 
 int main() {
@@ -1029,6 +1092,7 @@ int main() {
   test_segment_data_budget();
   test_collision_bins();
   test_simulated_peak();
+  test_output_availability();
   printf("\n%d failure(s)\n", failures);
   return failures;
 }

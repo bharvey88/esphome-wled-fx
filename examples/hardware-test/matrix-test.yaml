@@ -12,6 +12,10 @@ substitutions:
   # Which tour group this firmware starts on. tour.yaml lists them; on a
   # panel "Panel" is the effects a 2D output offers without the 1D opt-in.
   tour_default_group: Panel
+  # Which effects the "Effect" dropdown lists, by the same rule. The 1D-only
+  # ones this build also carries are on the separate "Strip effect (mapped)"
+  # dropdown that panel-effects.yaml adds.
+  tour_effect_scope: panel
   led_pin: GPIO16
   matrix_width: "16"
   matrix_height: "16"
@@ -57,6 +61,8 @@ packages:
   # the API, OTA and the web server. No secrets file involved.
   network: !include network.yaml
   tour: !include tour.yaml
+  # The second effect dropdown, for the effects this panel maps from 1D.
+  panel_effects: !include panel-effects.yaml
 
 wled_fx:
 

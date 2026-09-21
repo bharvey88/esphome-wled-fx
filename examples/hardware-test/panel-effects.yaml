@@ -1,0 +1,26 @@
+# The second effect dropdown, for the matrix configs only.
+#
+# tour.yaml's "Effect" select lists `scope: panel`, the 64 effects an untouched
+# 2D output offers. These firmwares set `include_1d_effects: true` so that the
+# tour and the profile run can reach all 223, and this is where the other 159
+# live: 1D effects drawn on the panel through WLED's own 1D to 2D mapping, which
+# turns a 64x64 panel into a 4096 pixel strip wrapped across it. Gradient is a
+# band sliding along one edge, Fireworks Starburst is sparks on a line. That is
+# what WLED does with them and it is not what a panel is for, so they get their
+# own list with their own name on it rather than sitting unlabelled among the
+# 2D effects where the only way to tell them apart is to pick one.
+#
+# Included as a package by m1-test.yaml, m1-test-audio.yaml and
+# matrix-test.yaml. strip-test.yaml does not include it: on a 1D output "strip"
+# and "all" are the same set, so a second dropdown there would be a copy of the
+# first.
+
+select:
+  - platform: wled_fx
+    wled_fx_id: fx
+    type: effect
+    scope: strip
+    name: Strip effect (mapped)
+    # Picking from here is a deliberate act, so it sits with the other settings
+    # rather than beside the effect you would normally reach for.
+    entity_category: config

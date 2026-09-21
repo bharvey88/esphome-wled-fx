@@ -11,6 +11,10 @@ substitutions:
   # Which tour group this firmware starts on. tour.yaml lists them; on a
   # panel "Panel" is the effects a 2D output offers without the 1D opt-in.
   tour_default_group: Panel
+  # Which effects the "Effect" dropdown lists, by the same rule. The 1D-only
+  # ones this build also carries are on the separate "Strip effect (mapped)"
+  # dropdown that panel-effects.yaml adds.
+  tour_effect_scope: panel
   # The access point this board offers when it has no network to join. Distinct
   # per config so two boards can be on the bench at once.
   ap_ssid: WLED FX M-1 audio test
@@ -65,6 +69,8 @@ packages:
   # the API, OTA and the web server. No secrets file involved.
   network: !include network.yaml
   tour: !include tour.yaml
+  # The second effect dropdown, for the effects this panel maps from 1D.
+  panel_effects: !include panel-effects.yaml
 
 display:
   - platform: hub75
@@ -139,11 +145,14 @@ wled_fx:
 number:
   - platform: template
     id: panel_brightness
+    # 220, not the hub75 driver's own default of 128: the reference WLED unit
+    # runs at 220 and a side by side at 128 only measures the duty cycle. The
+    # note in m1-test.yaml has the detail.
     name: Panel brightness
     min_value: 1
     max_value: 255
     step: 1
-    initial_value: 128
+    initial_value: 220
     optimistic: true
     restore_value: false
     mode: slider

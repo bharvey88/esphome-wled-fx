@@ -10,28 +10,52 @@ namespace wled_fx {
 
 static const char *const TAG = "wled_fx.select";
 
+bool WledFxSelect::in_scope_(size_t index) const {
+  /* Offered first, always: `scope` narrows what this dropdown shows, it never
+   * widens it past what the output can run. */
+  if (!this->parent_->effect_offered(index))
+    return false;
+  const EffectInfo *info = EffectRegistry::at(index);
+  if (info == nullptr)
+    return false;
+  switch (this->scope_) {
+    case WledFxSelectScope::WLED_FX_SELECT_SCOPE_PANEL:
+      return effect_available(*info, true, false);
+    case WledFxSelectScope::WLED_FX_SELECT_SCOPE_STRIP:
+      return effect_available(*info, false, false);
+    default:
+      return true;
+  }
+}
+
 void WledFxSelect::setup() {
   FixedVector<const char *> options;
   if (this->type_ == WledFxSelectType::WLED_FX_SELECT_TYPE_EFFECT) {
     const size_t total = EffectRegistry::count();
-    /* Only the effects this output can actually run. A 1D-only effect on a
-     * matrix, or a 2D-only one on a strip, is not something the user can pick
-     * their way into: the rule is in effect_available(), and the same rule
-     * rejects it at config time and ignores it at runtime. */
+    /* Only the effects this output can actually run, narrowed to this select's
+     * scope. A 1D-only effect on a matrix, or a 2D-only one on a strip, is not
+     * something the user can pick their way into: the rule is in
+     * effect_available(), and the same rule rejects it at config time and
+     * ignores it at runtime. */
     size_t offered = 0;
     // Effect names are a prefix of the metadata string, so they have to be copied
     // out. One arena allocation at setup holds them all for the life of the device.
     size_t arena_size = 0;
     for (size_t i = 0; i < total; i++) {
-      if (!this->parent_->effect_offered(i))
+      if (!this->in_scope_(i))
         continue;
       offered++;
       char buffer[64];
       arena_size += effect_name(*EffectRegistry::at(i), buffer, sizeof(buffer)) + 1;
     }
     if (offered == 0) {
-      // Config validation refuses this, so it means the two rules disagree.
-      ESP_LOGE(TAG, "No compiled-in effect runs on this output, so there is nothing to select");
+      /* Config validation refuses an output that can run nothing at all, so
+       * with the default scope this means the two rules disagree. With a
+       * narrowed scope it is an ordinary mistake: `scope: strip` on a build
+       * that did not opt in to the 1D effects, say. Both deserve the same
+       * treatment, which is to fail loudly rather than publish an empty
+       * dropdown nobody can use. */
+      ESP_LOGE(TAG, "No compiled-in effect fits this select, so there is nothing to offer");
       this->mark_failed();
       return;
     }
@@ -45,7 +69,7 @@ void WledFxSelect::setup() {
     options.init(offered);
     char *cursor = this->name_arena_;
     for (size_t i = 0; i < total; i++) {
-      if (!this->parent_->effect_offered(i))
+      if (!this->in_scope_(i))
         continue;
       const size_t len = effect_name(*EffectRegistry::at(i), cursor, 64);
       options.push_back(cursor);
@@ -66,6 +90,15 @@ void WledFxSelect::setup() {
 }
 
 void WledFxSelect::publish_current_() {
+  if (this->type_ == WledFxSelectType::WLED_FX_SELECT_TYPE_EFFECT &&
+      !this->in_scope_(this->parent_->engine().effect_index())) {
+    /* Something outside this dropdown's scope is running, which on a panel
+     * with two effect selects is the normal state of one of them. Nothing to
+     * publish: the option is not on the list, and the entity keeps the last
+     * one that was. What is actually running is on the other select, and on
+     * the "Effect name" sensor the hardware-test harness adds. */
+    return;
+  }
   const std::string current = this->type_ == WledFxSelectType::WLED_FX_SELECT_TYPE_EFFECT
                                   ? this->parent_->current_effect_name()
                                   : this->parent_->current_palette_name();

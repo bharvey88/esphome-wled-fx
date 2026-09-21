@@ -83,6 +83,7 @@ CONF_PASSIVE = "passive"
 CONF_TASK_IN_PSRAM = "task_in_psram"
 CONF_OPTIMIZE = "optimize"
 CONF_CANVAS_MEMORY = "canvas_memory"
+CONF_LOOP_INTERVAL = "loop_interval"
 
 # update_interval: never is stored as uint32_t max.
 UPDATE_INTERVAL_NEVER = 4294967295
@@ -99,6 +100,19 @@ DEFAULT_FRAME_INTERVAL = cv.positive_time_period_milliseconds(FRAMETIME)
 # the same default. 1.0 turns the stage off, for an output that already applies
 # a curve of its own.
 DEFAULT_OUTPUT_GAMMA = 2.2
+
+# --- the main loop -----------------------------------------------------------
+#
+# ESPHome runs its component phase at most every 16 ms. A 23 ms frame deadline
+# against a 16 ms tick lands late as soon as a rendered tick runs long, which is
+# what turns effects whose own work is 13 ms into 29 ms frames. See
+# WledFxDisplay::apply_loop_interval_() for the mechanism.
+#
+# `auto` asks for a third of the frame period, floored here so a very fast frame
+# interval cannot ask for a 1 ms loop. It only ever lowers the interval, never
+# raises it. `never` leaves ESPHome's own setting alone.
+LOOP_INTERVAL_AUTO_DIVISOR = 3
+LOOP_INTERVAL_FLOOR_MS = 4
 
 # Where somebody who installed this with external_components can actually read
 # the effect and palette lists. A bare "see README.md" means nothing to them.
@@ -358,6 +372,12 @@ _ENTRY_SCHEMA = cv.Schema(
         cv.Optional(CONF_CANVAS_MEMORY, default="auto"): cv.enum(
             MEMORY_POLICIES, lower=True
         ),
+        # A time period pins it, `never` leaves ESPHome's own value alone, and
+        # `auto`, the default, derives it from update_interval.
+        cv.Optional(CONF_LOOP_INTERVAL, default="auto"): cv.Any(
+            cv.one_of("auto", "never", lower=True),
+            cv.positive_time_period_milliseconds,
+        ),
         **CONTROL_SCHEMA,
     }
 ).extend(cv.COMPONENT_SCHEMA)
@@ -396,6 +416,7 @@ def _validate_entry(config):
         CONF_GAMMA_CORRECT,
         CONF_INCLUDE_1D_EFFECTS,
         CONF_UPDATE_INTERVAL,
+        CONF_LOOP_INTERVAL,
         # Neither CONF_OPTIMIZE nor CONF_CANVAS_MEMORY: both are one setting for
         # the whole build, and a bare `wled_fx:` entry beside a light effect is
         # exactly where somebody would put them.
@@ -800,6 +821,17 @@ async def audio_to_code(config):
     return var
 
 
+def _loop_interval_ms(entry, frame_interval) -> int:
+    """The main loop interval this front end will ask ESPHome for, or 0."""
+    value = entry.get(CONF_LOOP_INTERVAL, "auto")
+    if value == "never":
+        return 0
+    if value != "auto":
+        return int(value.total_milliseconds)
+    period = int(frame_interval.total_milliseconds)
+    return max(LOOP_INTERVAL_FLOOR_MS, period // LOOP_INTERVAL_AUTO_DIVISOR)
+
+
 async def to_code(config):
     _add_effect_selection()
     for entry in config:
@@ -826,11 +858,9 @@ async def to_code(config):
         cg.add(
             var.set_include_1d_effects(entry.get(CONF_INCLUDE_1D_EFFECTS, False))
         )
-        cg.add(
-            var.set_frame_interval(
-                entry.get(CONF_UPDATE_INTERVAL, DEFAULT_FRAME_INTERVAL)
-            )
-        )
+        frame_interval = entry.get(CONF_UPDATE_INTERVAL, DEFAULT_FRAME_INTERVAL)
+        cg.add(var.set_frame_interval(frame_interval))
+        cg.add(var.set_loop_interval(_loop_interval_ms(entry, frame_interval)))
         await apply_controls(var, entry)
 
 

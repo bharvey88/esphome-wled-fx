@@ -238,8 +238,21 @@ void WledFxDisplay::setup() {
     return;
   }
   this->rebuild_output_lut_();
+  this->apply_loop_interval_();
   this->engine_.set_text(this->text_.c_str());
   this->ensure_offered_effect();
+}
+
+void WledFxDisplay::apply_loop_interval_() {
+  if (this->loop_interval_ == 0)
+    return;
+  const uint32_t current = App.get_loop_interval();
+  if (this->loop_interval_ >= current)
+    return;  // already at least this responsive, so leave it where it is
+  ESP_LOGI(TAG, "Main loop interval %" PRIu32 " ms -> %" PRIu32 " ms, so the %" PRIu32
+                " ms frame deadline is not rounded up to the next tick",
+           current, this->loop_interval_, this->frame_interval());
+  App.set_loop_interval(this->loop_interval_);
 }
 
 void WledFxDisplay::rebuild_output_lut_() {
@@ -340,6 +353,7 @@ void WledFxDisplay::dump_config() {
                 "  Canvas: %dx%d\n"
                 "  Frame interval: %" PRIu32 " ms\n"
                 "  Output gamma: %.2f\n"
+                "  Main loop interval: %" PRIu32 " ms\n"
                 "  Optimised for: %s\n"
                 "  Memory policy: %s (canvas in %s RAM, frame buffer in %s RAM)\n"
                 "  Internal heap free: %u bytes, largest block %u\n"
@@ -347,7 +361,7 @@ void WledFxDisplay::dump_config() {
                 "  Effects compiled in: %u\n"
                 "  Effect: %s\n"
                 "  Palette: %s",
-                this->width_, this->height_, this->frame_interval(), this->gamma_,
+                this->width_, this->height_, this->frame_interval(), this->gamma_, App.get_loop_interval(),
 #ifdef WLED_FX_OPTIMIZE_SPEED
                 "speed",
 #else

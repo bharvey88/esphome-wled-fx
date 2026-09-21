@@ -123,6 +123,60 @@ attributing anything and prints "attribution unavailable" when they differ.
 control the reference recorded, passes `--step-ms 23` and turns the pacing
 table off.
 
+## The noise floor, which is where the thresholds come from
+
+The device disagrees with itself. The whole reference set was captured twice
+from the same board, the same firmware and the same settings four hours apart,
+and the two runs differ by up to 170 counts of mean brightness, 0.61 of
+coverage and a hue distance of 1.00; 15 of 216 effects flip the `frozen` flag
+between them and 3 flip `all_black`. `verification/round-2/NOISE.md` has the
+whole table.
+
+`NOISE_FLOORS` in [`compare.py`](compare.py) is the p95 of that, per effect
+class, and nothing is scored unless it clears the floor for its class:
+
+| Metric | other | particle | audio |
+|---|---:|---:|---:|
+| mean brightness, of 255 | 24 | 8 | not scored |
+| fraction lit | 0.05 | 0.06 | 0.40 |
+| mean frame change | 2.5 | 1.4 | not scored |
+| hue distance | 0.78 | 0.82 | 0.60 |
+| speed ratio, away from 1.0 | 0.55 | 0.55 | not scored |
+
+Every flag in the report says how far outside its floor it is, so a reader
+does not have to re-derive it. The class comes from the registry's own flags
+for audio and from the files that register the particle effects, not from a
+name prefix.
+
+An audio effect has no brightness or frame change floor at all. That is not
+timidity: the device's own two runs of the audio effects differ by 107 counts
+of brightness and 0.40 of coverage at p95, which is a microphone in a room
+against itself twenty minutes later. Black, frozen for the whole window and
+the wrong axis are the only audio findings that mean anything.
+
+The three constants these replaced, 40 counts of brightness, 0.25 of coverage
+and a hue distance of 0.35, all sat below the p95 of the device against
+itself, so they could not separate a port defect from a second run of WLED.
+Re-measure the floors by capturing the device twice again.
+
+## Pooling, and windows
+
+Both sides are pooled by default. Point `--reference` or `--port` at a folder
+that holds several run folders and all of them are used; each metric becomes
+the per-effect median with its range, a difference smaller than a side's own
+spread is not scored, and the hue distance is the closest of every pairing of
+runs rather than the first. The report says so, loudly, when either side has
+only one run, because one run is a sample and not a measurement.
+
+`SLOW_EFFECTS` in [`metrics.py`](metrics.py) gives twelve effects a thirty
+second window on both sides, derived from the pacing expression in each body
+rather than from a list of effects that looked odd: Lightning's
+`hw_random8(255 - speed) * 100` is up to 12.6 s between strikes, PS Starburst's
+`10 + hw_random16(255 - speed)` frames is a mean of 62 between explosions, and
+the wipes and Slow Transition take longer than six seconds to cross the strip.
+Both capture tools consult the table, and the comparison says so when the two
+sides were captured over different windows anyway.
+
 ## Thresholds that are relative, and things that are not findings
 
 * A hue histogram built from a handful of lit pixels swings from run to run.
@@ -141,11 +195,9 @@ table off.
 
 ## Still known to be weak
 
-* **A capture shorter than the effect.** Sweep, Wipe, Tartan, Slow Transition,
-  PS Galaxy and Halloween Eyes all have periods longer than six seconds, so
-  where in the period each capture started decides the coverage and brightness
-  numbers. Capture those for 30 s, or capture twice and believe a flag only
-  when it reproduces in both windows.
+* **A capture shorter than the effect**, for anything not in `SLOW_EFFECTS`.
+  The table covers the twelve the bodies point at; an effect whose pacing
+  depends on a control the capture moves could still outrun its window.
 * **A single reference capture treated as ground truth.** Game Of Life's
   reference frame did not reproduce on two later attempts. `--reference` and
   `--port` are both repeatable now, and with more than one folder each metric

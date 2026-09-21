@@ -45,7 +45,7 @@ sys.path.insert(0, str(REPO / "components" / "wled_fx"))
 sys.path.insert(0, str(REPO / "tools" / "compare"))
 
 from effect_index import effect_names  # noqa: E402
-from metrics import compute_metrics  # noqa: E402
+from metrics import SLOW_EFFECTS, capture_seconds, compute_metrics  # noqa: E402
 
 CONFIG = REPO / "tools" / "snapshot" / "port.yaml"
 BINARY = CONFIG.parent / ".esphome" / "build" / "wfx-snap" / ".pioenvs" / "wfx-snap" / "program"
@@ -470,11 +470,37 @@ def main() -> int:
         apply_file = workdir / "applied.tsv"
         count = write_apply_file(matched, apply_file)
         log(f"matching {count} effect(s) to the state the device was in")
+        if not args.effects:
+            # A seven effect reference folder used to produce a 223 effect port
+            # run, because --match-reference matched the controls and said
+            # nothing about the list. An explicit --effects still wins.
+            in_reference = [n for n in names if n in matched]
+            if in_reference and len(in_reference) < len(names):
+                log(f"capturing the {len(in_reference)} effect(s) the reference has, not all "
+                    f"{len(names)}; pass --effects to override")
+                names = in_reference
 
     workers = args.workers or min(len(names), os.cpu_count() or 4)
     started = time.time()
-    dirs = run_workers(names, workdir, workers, args.seconds, args.settle_ms, args.period_ms,
-                       apply_file)
+    # A worker runs one window for its whole slice, so the effects that need a
+    # longer one go round a second time. The device tool consults the same
+    # table, so the two sides end up with the same window per effect and the
+    # comparison is not a 6 s capture against a 30 s one. See SLOW_EFFECTS in
+    # tools/compare/metrics.py.
+    normal = [n for n in names if capture_seconds(n, args.seconds) == args.seconds]
+    slow: dict[float, list[str]] = {}
+    for name in names:
+        seconds = capture_seconds(name, args.seconds)
+        if seconds != args.seconds:
+            slow.setdefault(seconds, []).append(name)
+    dirs = []
+    if normal:
+        dirs += run_workers(normal, workdir, min(workers, len(normal)), args.seconds,
+                            args.settle_ms, args.period_ms, apply_file)
+    for seconds, group in sorted(slow.items()):
+        log(f"{len(group)} effect(s) need a {seconds:.0f} s window: {', '.join(sorted(group))}")
+        dirs += run_workers(group, workdir / f"slow{int(seconds)}", min(workers, len(group)),
+                            seconds, args.settle_ms, args.period_ms, apply_file)
     log(f"capture finished in {time.time() - started:.0f} s, packing")
 
     applied = {
@@ -485,6 +511,7 @@ def main() -> int:
         "master_brightness": 255,
         "frame_interval_ms": 23,
         "capture_seconds": args.seconds,
+        "slow_effect_seconds": {k: v for k, v in SLOW_EFFECTS.items() if k in set(names)},
         "settle_ms": args.settle_ms,
         "capture_period_ms": args.period_ms,
     }

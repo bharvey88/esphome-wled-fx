@@ -355,6 +355,51 @@ def compute_metrics(frames: np.ndarray, timestamps: np.ndarray) -> dict:
 REFERENCE_VIEW = (32, 32)
 
 
+# ---------------------------------------------------------------------------
+# Effects a six second window cannot see
+# ---------------------------------------------------------------------------
+#
+# Some effects are paced by an interval longer than the capture window, so a
+# six second capture is two or three samples of a Bernoulli trial and its mean
+# brightness is counting noise. Round 2 measured this the hard way: PS Starburst
+# was carried out of round 1 as "the first thing to attack" at half the device's
+# brightness, and at thirty seconds at matched controls it is 1.17 with its lit
+# pixels a frame agreeing to within 2 percent. The device's own two six second
+# runs of it measure 8.2 and 2.8.
+#
+# Derived from the pacing expression in each body, not from a list of effects
+# that looked odd:
+#
+#   Lightning        SEGENV.aux0 = hw_random8(255 - speed) * 100, which at the
+#                    default speed is 0 to 12.6 s between strikes, mean 6.3 s
+#   PS Starburst     10 + hw_random16(255 - speed) frames between explosions,
+#                    mean 62 frames, so two to four in a six second window
+#   Slow Transition  the speed slider is the whole cycle length
+#   the wipes        one pass of the strip per cycle at the default speed
+#
+# Both capture tools consult this, so the two sides use the same window, and
+# the comparison says so when they do not.
+SLOW_EFFECTS = {
+    "Lightning": 30.0,
+    "PS Starburst": 30.0,
+    "PS Galaxy": 30.0,
+    "Slow Transition": 30.0,
+    "Sweep": 30.0,
+    "Sweep Random": 30.0,
+    "Wipe": 30.0,
+    "Wipe Random": 30.0,
+    "Tri Wipe": 30.0,
+    "Tartan": 30.0,
+    "Halloween Eyes": 30.0,
+    "Fill Noise": 30.0,
+}
+
+
+def capture_seconds(name: str, default: float) -> float:
+    """The window this effect needs, never shorter than the one asked for."""
+    return max(default, SLOW_EFFECTS.get(name, 0.0))
+
+
 def subsample(frames: np.ndarray, width: int, height: int) -> np.ndarray:
     """Take every n-th pixel, the way WLED's live view does.
 

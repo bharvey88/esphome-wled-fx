@@ -58,10 +58,45 @@ from metrics import (  # noqa: E402
 )
 
 # How far off each thing has to be before it is worth a human's attention.
-SPEED_RATIO_TOLERANCE = 0.25  # the task's "off by more than about 25 percent"
-HUE_DISTANCE_LIMIT = 0.35
-COVERAGE_LIMIT = 0.25
-BRIGHTNESS_LIMIT = 40.0  # out of 255
+#
+# These are measured, not chosen. The whole reference set was captured twice
+# from the same device with the same firmware and the same settings, four hours
+# apart (`esphome-wled-fx-ref` and `esphome-wled-fx-ref2`), and these are the
+# p95 of what those two runs disagree about, per effect class. The working is in
+# verification/round-2/NOISE.md. Anything inside them is the instrument, not the
+# port: round 2's numbers were 40 counts of brightness, 0.25 of coverage and a
+# hue distance of 0.35, three of which sat below the device's disagreement with
+# itself, so they could not separate a defect from a second run of WLED.
+#
+# Re-measure them by capturing the device twice again and rerunning
+# tools/compare/compare.py with both runs as --reference and no --port.
+NOISE_FLOORS = {
+    "other": {
+        "mean_brightness": 24.0,
+        "fraction_lit": 0.05,
+        "mean_frame_change": 2.5,
+        "hue_distance": 0.78,
+        "speed_ratio": 0.55,
+    },
+    "particle": {
+        "mean_brightness": 8.0,
+        "fraction_lit": 0.06,
+        "mean_frame_change": 1.4,
+        "hue_distance": 0.82,
+        "speed_ratio": 0.55,
+    },
+    # A real microphone in a real room against itself twenty minutes later
+    # disagrees by 107 counts of brightness and 0.40 of coverage, so brightness,
+    # coverage and frame change are not scorable on an audio effect at all. Only
+    # black, frozen for the whole window and the wrong axis mean anything.
+    "audio": {
+        "mean_brightness": None,
+        "fraction_lit": 0.40,
+        "mean_frame_change": None,
+        "hue_distance": 0.60,
+        "speed_ratio": None,
+    },
+}
 
 # The motion estimator's own confidence has to clear this before a direction or
 # a speed is worth reporting. See metrics.estimate_motion.
@@ -86,6 +121,49 @@ AUDIO_FLAGS = (1 << 3) | (1 << 4)
 
 def log(msg: str) -> None:
     print(msg, flush=True)
+
+
+def margin_text(value: float, floor: float | None) -> str:
+    """How far outside the noise floor a flag is, which is the whole point.
+
+    A flag that does not say what it is being compared against is a flag the
+    reader has to re-derive.
+    """
+    if floor is None:
+        return "not scorable against a noise floor for this class"
+    if floor <= 0:
+        return f"floor {floor:.2f}"
+    return f"{value / floor:.1f}x the {floor:g} noise floor"
+
+
+def particle_effect_names() -> set[str]:
+    """The `PS *` family, read from the files that register them.
+
+    From the sources rather than from a name prefix, so an effect that is
+    renamed or a particle effect that never had `PS ` in its name still lands
+    in the class its noise floor was measured on.
+    """
+    root = Path(__file__).resolve().parents[2] / "components" / "wled_fx"
+    names: set[str] = set()
+    import re as _re
+
+    pattern = _re.compile(r'\{"([^"\\]+?)(?:@[^"\\]*)?",\s*mode_')
+    for source in ("wf_effects_particle_1d.cpp", "wf_effects_particle_2d.cpp",
+                   "wf_effects_audio_particle.cpp"):
+        path = root / source
+        if not path.exists():
+            continue
+        names |= set(pattern.findall(path.read_text(encoding="utf-8")))
+    return names
+
+
+def effect_class(name: str, audio_names: set[str], particle_names: set[str]) -> str:
+    """Which noise floor applies. Audio wins: it is the loosest of the three."""
+    if name in audio_names:
+        return "audio"
+    if name in particle_names:
+        return "particle"
+    return "other"
 
 
 # ---------------------------------------------------------------------------
@@ -115,6 +193,17 @@ class Capture:
         # nothing, and round 1 had no such floor.
         self.spread: dict[str, float] = {}
         self.runs = 1
+        # Every run's hue histogram, so the comparison can take the closest
+        # pairing rather than the first. An effect that draws a random colour
+        # agrees with the other side sometimes; a broken one never does.
+        self.hue_runs: list[list[float]] = [self.metrics["dominant_hue_histogram_12bin"]]
+        # Every run's window length in seconds. Comparing a 6 s capture against
+        # a 30 s one is not a comparison.
+        self.durations: list[float] = [self.duration]
+        # Every run's motion reading. The direction word disagrees between two
+        # runs of the same WLED firmware on 22 of 216 effects, so a single
+        # pairing of it is not evidence either.
+        self.motion_runs: list[dict] = [self.metrics["motion"]]
 
     @property
     def duration(self) -> float:
@@ -140,6 +229,9 @@ def merge_runs(runs: list[dict[str, Capture]]) -> dict[str, Capture]:
     for name, first in runs[0].items():
         present = [r[name] for r in runs if name in r]
         first.runs = len(present)
+        first.hue_runs = [c.metrics["dominant_hue_histogram_12bin"] for c in present]
+        first.durations = [c.duration for c in present]
+        first.motion_runs = [c.metrics["motion"] for c in present]
         for key in SPREAD_KEYS:
             values = [float(c.metrics[key]) for c in present if key in c.metrics]
             if not values:
@@ -268,7 +360,25 @@ def speed_ratio(a: float, b: float) -> float | None:
     return b / a
 
 
-def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
+def pooled_hue_distance(ref: Capture, port: Capture) -> tuple[float, float]:
+    """The closest and the widest hue distance over every pair of runs.
+
+    Twelve of round 2's twenty-five surviving flags were hue, and every one was
+    at or below the same effect's hue distance between two runs of the device.
+    Blink Rainbow is the clean illustration: its three port runs score 0.75,
+    0.04 and 0.24 against the same device run, and the report used to quote the
+    first. What is scored is the minimum, because two runs that ever agree are
+    two runs that can agree.
+    """
+    distances = [hue_distance(a, b) for a in ref.hue_runs for b in port.hue_runs]
+    if not distances:
+        return 0.0, 0.0
+    return min(distances), max(distances)
+
+
+def compare_one(ref: Capture, port: Capture, cls: str) -> dict:
+    audio = cls == "audio"
+    floors = NOISE_FLOORS[cls]
     rm, pm = ref.metrics, port.metrics
     findings = []
     # Things a reader needs in order to judge a finding, which are not
@@ -281,21 +391,97 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
     # reads.
     if rm["frozen"] != pm["frozen"]:
         moving, still = ("WLED", "the port") if pm["frozen"] else ("the port", "WLED")
-        findings.append(f"{moving} animates and {still} does not")
-        score += 100
+        change = (
+            f"mean frame change {rm['mean_frame_change']:.2f} against "
+            f"{pm['mean_frame_change']:.2f}"
+        )
+        change_floor = floors["mean_frame_change"]
+        gap = abs(rm["mean_frame_change"] - pm["mean_frame_change"])
+        if change_floor is None or gap <= max(change_floor, ref.spread.get("mean_frame_change", 0.0),
+                                              port.spread.get("mean_frame_change", 0.0)):
+            # Fifteen of 216 effects flip this boolean between two runs of the
+            # same firmware, so on its own it is a coin toss.
+            notes.append(
+                f"the frozen flag differs ({change}), but that is inside the "
+                "noise floor for this class, so it is not scored"
+            )
+        else:
+            findings.append(
+                f"{moving} animates and {still} does not: {change}, "
+                + margin_text(gap, change_floor)
+            )
+            score += 100
 
     if rm["all_black"] != pm["all_black"]:
         lit, dark = ("WLED", "the port") if pm["all_black"] else ("the port", "WLED")
-        findings.append(f"{lit} renders something and {dark} is black")
-        score += 100
+        brightness_gap = abs(rm["mean_brightness"] - pm["mean_brightness"])
+        black_floor = floors["mean_brightness"]
+        numbers = (
+            f"mean brightness {rm['mean_brightness']:.1f} against {pm['mean_brightness']:.1f}"
+        )
+        if black_floor is not None and brightness_gap <= black_floor:
+            # Three of 216 effects flip this between two runs of the same
+            # firmware, all of them on frames that are nearly black anyway.
+            notes.append(
+                f"the all-black flag differs ({numbers}), but that is inside the "
+                "noise floor for this class, so it is not scored"
+            )
+        else:
+            findings.append(f"{lit} renders something and {dark} is black ({numbers})")
+            score += 100
+
+    # A six second window against a thirty second one measures two different
+    # things, and round 2 had to take the long ones by hand. See SLOW_EFFECTS.
+    if ref.durations and port.durations:
+        shortest = min(min(ref.durations), min(port.durations))
+        longest = max(max(ref.durations), max(port.durations))
+        if shortest > 0 and longest / shortest > 1.25:
+            notes.append(
+                f"the two sides were captured over different windows, "
+                f"{min(ref.durations):.0f} s against {min(port.durations):.0f} s, "
+                "so nothing below is a like for like comparison"
+            )
 
     rdir = rm["motion"]["direction"]
     pdir = pm["motion"]["direction"]
+    # Phase correlation on a frame with a handful of lit pixels answers with
+    # whatever the noise did. PS Sparkler measures 0.0 px/s on the device and
+    # 4.9 on the port at a mean brightness of 0.3 on both, which is not a
+    # difference in the animation. The same sample count the hue reading uses.
+    ref_lit = (rm.get("hue_samples_per_frame") or 0.0)
+    port_lit = (pm.get("hue_samples_per_frame") or 0.0)
+    lit_enough = min(ref_lit, port_lit) >= HUE_MIN_SAMPLES_PER_FRAME
     confident = (
         rm["motion"].get("confidence", 0) > MOTION_CONFIDENCE_LIMIT
         and pm["motion"].get("confidence", 0) > MOTION_CONFIDENCE_LIMIT
+        and lit_enough
     )
-    if confident and rdir != pdir and "none/unclear" not in (rdir, pdir):
+    if not lit_enough:
+        notes.append(
+            f"both sides light about {min(ref_lit, port_lit):.0f} pixels a frame, which is too "
+            "few for the motion estimate to mean anything, so direction and speed are not scored"
+        )
+    # Every confident direction word each side produced, so a disagreement has
+    # to hold for every pairing of runs before it is scored. The estimator's
+    # own word flips between two runs of the same firmware on one effect in
+    # ten, which is more often than most of the findings it used to raise.
+    def direction_set(cap: Capture) -> set[str]:
+        return {
+            m["direction"]
+            for m in cap.motion_runs
+            if m.get("confidence", 0) > MOTION_CONFIDENCE_LIMIT and m["direction"] != "none/unclear"
+        }
+
+    ref_dirs, port_dirs = direction_set(ref), direction_set(port)
+    directions_disjoint = bool(ref_dirs) and bool(port_dirs) and not (ref_dirs & port_dirs)
+    if confident and rdir != pdir and "none/unclear" not in (rdir, pdir) and not directions_disjoint:
+        notes.append(
+            f"motion reads {rdir} on WLED and {pdir} on the port, but the two "
+            f"sides' runs overlap ({sorted(ref_dirs)} against {sorted(port_dirs)}), "
+            "and the direction word flips between two runs of the same firmware "
+            "on one effect in ten"
+        )
+    elif confident and rdir != pdir and "none/unclear" not in (rdir, pdir):
         # The estimator reports one of eight compass points, so two readings 45
         # degrees apart can be the same motion landing either side of a
         # boundary. Neighbours are noted and scored low; anything further is a
@@ -315,26 +501,66 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
             score += 60
 
     ratio = speed_ratio(rm["motion"]["speed_px_per_s"], pm["motion"]["speed_px_per_s"])
-    if ratio is not None and confident:
+    speed_floor = floors["speed_ratio"]
+    if ratio is not None and confident and speed_floor is not None:
         if ratio == float("inf"):
-            findings.append("one side moves and the other is still")
-            score += 40
-        elif abs(ratio - 1.0) > SPEED_RATIO_TOLERANCE:
+            # One side measured zero. Four effects do this between two runs of
+            # the same device, so it is only a finding when every run on one
+            # side moves and every run on the other does not.
+            def speeds(cap: Capture) -> list[float]:
+                return [
+                    m["speed_px_per_s"]
+                    for m in cap.motion_runs
+                    if m.get("confidence", 0) > MOTION_CONFIDENCE_LIMIT
+                ]
+
+            ref_speeds, port_speeds = speeds(ref), speeds(port)
+            moving = [v for v in ref_speeds + port_speeds if v > 0]
+            every_run_agrees = (
+                bool(ref_speeds)
+                and bool(port_speeds)
+                and (all(v == 0 for v in ref_speeds) or all(v == 0 for v in port_speeds))
+                and not (all(v == 0 for v in ref_speeds) and all(v == 0 for v in port_speeds))
+            )
+            numbers = (
+                f"WLED {rm['motion']['speed_px_per_s']:.1f} px/s against the port's "
+                f"{pm['motion']['speed_px_per_s']:.1f}"
+            )
+            if every_run_agrees and moving and max(moving) > 2.0:
+                findings.append(f"one side moves and the other is still: {numbers}")
+                score += 40
+            else:
+                notes.append(
+                    f"one side's motion estimate is zero and the other's is not ({numbers}), "
+                    "and the runs on the two sides do not agree about which, so it is not scored"
+                )
+        elif abs(ratio - 1.0) > speed_floor:
             findings.append(
                 f"speed is {ratio:.2f}x WLED's "
-                f"({rm['motion']['speed_px_per_s']:.1f} vs {pm['motion']['speed_px_per_s']:.1f} px/s)"
+                f"({rm['motion']['speed_px_per_s']:.1f} vs {pm['motion']['speed_px_per_s']:.1f} px/s), "
+                + margin_text(abs(ratio - 1.0), speed_floor)
             )
             score += 30 * min(3.0, abs(ratio - 1.0))
 
-    hue = hue_distance(rm["dominant_hue_histogram_12bin"], pm["dominant_hue_histogram_12bin"])
+    hue, hue_worst = pooled_hue_distance(ref, port)
     hue_samples = min(
         rm.get("hue_samples_per_frame", 1e9) or 0.0,
         pm.get("hue_samples_per_frame", 1e9) or 0.0,
     )
     hue_is_solid = hue_samples >= HUE_MIN_SAMPLES_PER_FRAME
-    if hue > HUE_DISTANCE_LIMIT:
+    hue_floor = floors["hue_distance"]
+    spread_text = (
+        f" (closest of {len(ref.hue_runs)}x{len(port.hue_runs)} run pairings; "
+        f"the widest is {hue_worst:.2f})"
+        if len(ref.hue_runs) * len(port.hue_runs) > 1
+        else ""
+    )
+    if hue > hue_floor:
         if hue_is_solid:
-            findings.append(f"the colours are far apart, hue distance {hue:.2f}")
+            findings.append(
+                f"the colours are far apart, hue distance {hue:.2f}{spread_text}, "
+                + margin_text(hue, hue_floor)
+            )
             score += 40 * hue
         else:
             notes.append(
@@ -355,22 +581,29 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
 
     # A difference smaller than the side's own run-to-run spread is not a
     # difference. With one capture a side the spread is 0 and nothing changes.
-    def floor(key: str, fixed: float) -> float:
+    def floor(key: str) -> float | None:
+        fixed = floors[key]
+        if fixed is None:
+            return None
         return max(fixed, ref.spread.get(key, 0.0), port.spread.get(key, 0.0))
 
     coverage = abs(rm["fraction_lit"] - pm["fraction_lit"])
-    if coverage > floor("fraction_lit", COVERAGE_LIMIT):
+    coverage_floor = floor("fraction_lit")
+    if coverage_floor is not None and coverage > coverage_floor:
         findings.append(
             f"coverage differs: {rm['fraction_lit']:.0%} of WLED's frame is lit "
-            f"and {pm['fraction_lit']:.0%} of the port's"
+            f"and {pm['fraction_lit']:.0%} of the port's, "
+            + margin_text(coverage, coverage_floor)
         )
         score += 30 * coverage
 
     brightness = abs(rm["mean_brightness"] - pm["mean_brightness"])
-    if brightness > floor("mean_brightness", BRIGHTNESS_LIMIT):
+    brightness_floor = floor("mean_brightness")
+    if brightness_floor is not None and brightness > brightness_floor:
         findings.append(
             f"mean brightness differs by {brightness:.0f} of 255 "
-            f"({rm['mean_brightness']:.0f} vs {pm['mean_brightness']:.0f})"
+            f"({rm['mean_brightness']:.0f} vs {pm['mean_brightness']:.0f}), "
+            + margin_text(brightness, brightness_floor)
         )
         score += 20 * (brightness / 255.0)
 
@@ -380,7 +613,14 @@ def compare_one(ref: Capture, port: Capture, audio: bool) -> dict:
         "findings": findings,
         "notes": notes,
         "audio": audio,
+        "class": cls,
+        "floors": {k: v for k, v in floors.items()},
         "hue_distance": round(hue, 3),
+        "hue_distance_worst": round(hue_worst, 3),
+        "window_seconds": {
+            "reference": round(min(ref.durations), 1) if ref.durations else None,
+            "port": round(min(port.durations), 1) if port.durations else None,
+        },
         "speed_ratio": None if ratio in (None, float("inf")) else round(ratio, 3),
         "coverage_delta": round(coverage, 4),
         "brightness_delta": round(brightness, 2),
@@ -563,6 +803,19 @@ def write_report(results: list[dict], out: Path, ref_only: list[str], port_only:
         "",
     ]
 
+    lines += [
+        "Every flag below says how far outside the noise floor it is. The floors "
+        "are the p95 of what two runs of the same WLED firmware, four hours "
+        "apart, disagree about, per effect class: 24 counts of mean brightness "
+        "for a non-particle effect and 8 for a particle one, 0.05 and 0.06 of "
+        "coverage, 2.5 and 1.4 of mean frame change, and a hue distance of 0.78 "
+        "and 0.82. An audio effect is not scored on brightness or frame change "
+        "at all, because the device's own two runs of those differ by more than "
+        "any port ever could. verification/round-2/NOISE.md has the table and "
+        "how it was measured.",
+        "",
+    ]
+
     if capture_facts:
         lines += ["The settings both sides were captured at:", ""]
         lines += [f"* {fact}" for fact in capture_facts]
@@ -706,24 +959,45 @@ def main() -> int:
     (out / "images").mkdir(parents=True, exist_ok=True)
 
     log("loading captures")
+
+    def runs_under(folder: str) -> list[Path]:
+        """Every capture run under a path, so pooling is the default.
+
+        A folder with its own `captures/` is one run. A folder whose children
+        have `captures/` is a set of runs and all of them are used, which is
+        what makes `--reference <parent>` do the right thing without anybody
+        having to remember to repeat the flag. Round 2's whole re-ranking came
+        from having a second run of the device, and the tool did nothing to
+        ask for one.
+        """
+        root = Path(folder)
+        if (root / "captures").is_dir():
+            return [root]
+        children = sorted(d for d in root.iterdir() if (d / "captures").is_dir()) if root.is_dir() else []
+        if children:
+            log(f"  {root.name}: pooling {len(children)} run(s) found underneath it")
+        return children or [root]
+
     # The reference is 8 bit and already at live-view resolution, so it only
     # needs the colour-depth half of the normalisation.
     ref_runs, skipped_ref = [], []
     for folder in args.reference:
-        loaded, skipped = load_side(Path(folder), quantise=True, label="device")
-        ref_runs.append(loaded)
-        skipped_ref += skipped
+        for run in runs_under(folder):
+            loaded, skipped = load_side(run, quantise=True, label="device")
+            ref_runs.append(loaded)
+            skipped_ref += skipped
     ref = merge_runs(ref_runs)
     log(f"  device: {len(ref)} usable over {len(ref_runs)} run(s), {len(skipped_ref)} not")
     metric_problems = check_metrics_agree(ref_runs[0], Path(args.reference[0]))
 
-    port, skipped_port = {}, []
+    port, skipped_port, port_runs = {}, [], []
     if args.port:
         port_runs = []
         for folder in args.port:
-            loaded, skipped = load_side(Path(folder), quantise=False, label="port")
-            port_runs.append(loaded)
-            skipped_port += skipped
+            for run in runs_under(folder):
+                loaded, skipped = load_side(run, quantise=False, label="port")
+                port_runs.append(loaded)
+                skipped_port += skipped
         port = merge_runs(port_runs)
         log(f"  port: {len(port)} usable over {len(port_runs)} run(s), {len(skipped_port)} not")
     engine, skipped_engine = (
@@ -737,9 +1011,11 @@ def main() -> int:
     subject_label = "port" if args.port else "engine"
 
     audio_names = audio_effect_names()
+    particle_names = particle_effect_names()
     results = []
     for name in sorted(set(ref) & set(subject)):
-        r = compare_one(ref[name], subject[name], name in audio_names)
+        r = compare_one(ref[name], subject[name],
+                        effect_class(name, audio_names, particle_names))
         r["slug"] = slugify(name)
         if args.port and args.engine and name in engine:
             r["attribution"] = attribute(ref[name], port[name], engine[name])
@@ -784,6 +1060,20 @@ def main() -> int:
     capture_facts.append(
         f"{matched} of {len(results)} effects were captured at the same controls on both sides"
     )
+    single_sided = [
+        label
+        for label, count in (("device", len(ref_runs)), (subject_label, len(port_runs) if args.port else 1))
+        if count < 2
+    ]
+    if single_sided:
+        capture_facts.append(
+            "**"
+            + " and ".join(single_sided)
+            + " has only one capture run, which is a sample and not a measurement.** "
+            "Two runs of the same WLED firmware disagree by up to 170 counts of mean "
+            "brightness and flip the frozen flag on 15 of 216 effects. Capture that "
+            "side again into a second folder and pass both"
+        )
 
     write_report(results, out, ref_only, port_only, skipped_ref,
                  skipped_port or skipped_engine, metric_problems, bool(args.engine), capture_facts)

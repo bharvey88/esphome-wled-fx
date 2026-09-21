@@ -334,7 +334,7 @@ def capture_one_effect(host: str, effect: dict, seconds: float, colors=None, ext
 # animation and never a difference in how it was measured.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "compare"))
 
-from metrics import compute_metrics, estimate_motion  # noqa: E402,F401
+from metrics import capture_seconds, compute_metrics, estimate_motion  # noqa: E402,F401
 
 
 # ---------------------------------------------------------------------------
@@ -734,8 +734,11 @@ def main() -> int:
             if not force_this and is_already_captured(effect_dir):
                 n_skipped += 1
                 continue
-            meta = process_effect(args.host, effect, args.seconds, captures_dir, audio_present,
-                                   colors=colors, extra_fields=extra_fields)
+            # A handful of effects are paced slower than the window; see
+            # SLOW_EFFECTS in tools/compare/metrics.py.
+            seconds = capture_seconds(effect.get("name", ""), args.seconds)
+            meta = process_effect(args.host, effect, seconds, captures_dir, audio_present,
+                                  colors=colors, extra_fields=extra_fields)
             if meta.get("status") == "failed":
                 n_failed += 1
             else:

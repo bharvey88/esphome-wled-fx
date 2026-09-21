@@ -39,6 +39,16 @@ using esphome::wled_fx::WledFxController;
  * so the two lists have to stay in step. */
 enum Filter : int {
   FILTER_ALL = 0,
+  /* What a panel and a strip offer with no opt-in, which is the same rule the
+   * component applies to a configuration that did not set
+   * `include_1d_effects`. These firmwares do set it, so that the tour and the
+   * profile run can reach all 223, and the price is that a 1D effect like
+   * Gradient on a 64x64 panel is a short line crawling along a 4096 pixel
+   * strip: faithful to WLED, and not what anybody wants to see first. "Panel"
+   * is the group that hides those, and it is the default on the two matrix
+   * configs. */
+  FILTER_PANEL,
+  FILTER_STRIP,
   FILTER_1D,
   FILTER_2D,
   FILTER_PARTICLE_2D,
@@ -86,6 +96,16 @@ inline const char *group_of(size_t index) {
   return "?";
 }
 
+/* True when this effect is only offered here because the firmware opted in to
+ * the 1D effects on a 2D output. Those are the ones that look broken on a
+ * panel until you know what they are, so the tour says so. */
+inline bool strip_only_on_panel(const WledFxController *ctrl, size_t index) {
+  if (ctrl == nullptr || !ctrl->layout_2d())
+    return false;
+  const EffectInfo *info = EffectRegistry::at(index);
+  return info != nullptr && !esphome::wled_fx::effect_available(*info, true, false);
+}
+
 inline bool on_checklist(size_t index) {
   const EffectInfo *info = EffectRegistry::at(index);
   if (info == nullptr)
@@ -109,8 +129,15 @@ inline bool on_checklist(size_t index) {
 inline bool matches(const WledFxController *ctrl, int filter, size_t index) {
   if (ctrl != nullptr && !ctrl->effect_offered(index))
     return false;
+  const EffectInfo *info = EffectRegistry::at(index);
   const char *group = group_of(index);
   switch (filter) {
+    case FILTER_PANEL:
+      // The 2D-capable effects, read from the same effect_available() the
+      // component uses, not from a list typed out here.
+      return info != nullptr && esphome::wled_fx::effect_available(*info, true, false);
+    case FILTER_STRIP:
+      return info != nullptr && esphome::wled_fx::effect_available(*info, false, false);
     case FILTER_1D:
       // 1d_a through 1d_e, and 1d2d, whose effects all run on a strip too.
       return strncmp(group, "1d", 2) == 0;

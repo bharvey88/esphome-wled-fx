@@ -196,7 +196,18 @@ component will not select the others and the **Effect** select does not list
 them. All four test firmwares set `include_1d_effects: true` on purpose, which
 is what makes `All` mean 223 on the two panel builds and the matrix build; a
 panel firmware you would actually want to look at should leave that out and
-offer the 64 effects written for a matrix. On `strip-test.yaml`, a real one
+offer the 64 effects written for a matrix.
+
+That opt-in is why the panel and matrix firmwares start on the **Panel** group
+rather than on `All`. A 1D effect on a 64x64 panel is drawn on a 4096 pixel
+strip wrapped across the panel, so `Gradient` is a short line crawling along
+it: exactly what WLED does, and not what a panel looks like when it is working.
+**Panel** is the 64 effects a 2D output offers without the opt-in, read from
+the same rule the component itself applies, and **Strip** is the other side of
+it, which is what `strip-test.yaml` starts on. Switch to `All` whenever you
+want the mapped ones; the **Effect group** sensor marks them
+`(strip effect, mapped)` so it is clear which is which, and **Profile run**
+always covers all 223 whatever group you were on. On `strip-test.yaml`, a real one
 dimensional strip, `All` is 167 and the `2D` and `Particle 2D` groups are
 empty: picking one logs
 
@@ -211,7 +222,7 @@ and leaves the current effect on screen. That is the rule working, not a fault.
 |---|---|
 | Tour auto advance | On steps forward on a timer, off pauses. |
 | Tour dwell | Seconds per effect, 1 to 120. Eight is a sensible first pass. |
-| Tour group | `All`, `1D`, `2D`, `Particle 2D`, `Particle 1D`, `Audio`, `MM`, `Checklist`. |
+| Tour group | `All`, `Panel`, `Strip`, `1D`, `2D`, `Particle 2D`, `Particle 1D`, `Audio`, `MM`, `Checklist`. Panel builds start on `Panel` and the strip build on `Strip`. |
 | Next effect / Previous effect | Step by hand. Both respect the group filter. |
 | Restart effect | Back to frame zero without changing effect. This is the one to use on the startup transient questions, PS Galaxy and Blobs. |
 | Pin controls | Off by default. See [Controls](#controls). |
@@ -223,7 +234,7 @@ and leaves the current effect on screen. That is the rule working, not a fault.
 | Color 1, Color 2, Color 3 | The three WLED colour slots, one colour picker each. |
 | Effect controls / Effect colours | Text sensors naming what the controls above do in the running effect. |
 | Panel brightness | hub75 brightness, panel builds only. On the strip builds this is the light entity's own slider. |
-| Effect name / Effect group | Text sensors mirroring the current effect. |
+| Effect name / Effect group | Text sensors mirroring the current effect. The group reads `(strip effect, mapped)` after the group name when a 1D effect is being shown on a panel. |
 | Effect render time / Frame output time | Microseconds per frame. See [Profile run](#profile-run). |
 
 `Checklist` is the group worth knowing about: it filters the tour down to the 30
@@ -241,17 +252,19 @@ all on Metaballs. The page cannot rename its own entities, so it publishes the
 labels instead, in two text sensors that change every time the effect changes.
 
 **Effect controls** names the controls the running effect actually uses, in
-WLED's own words. For Matrix:
+WLED's own words, which is why the first two read `Effect speed` and
+`Effect intensity` where the entities beside them are named Speed and
+Intensity. For Matrix:
 
 ```
-Speed · Intensity: Spawning rate · Custom 1: Trail · Check 1: Custom color
+Effect speed · Effect intensity: Spawning rate · Custom 1: Trail · Check 1: Custom color
 ```
 
-Read it as: Speed does what Speed always does, the Intensity slider is the
+Read it as: the Speed entity does what speed always does, the Intensity slider is the
 spawning rate, Custom 1 is the trail length, Check 1 turns the custom colour on.
 Custom 2, Custom 3, Check 2 and Check 3 are not listed, so on this effect they
 do nothing at all. For Fire 2012 the same sensor reads
-`Speed: Cooling · Intensity: Spark rate · Custom 2: 2D Blur · Custom 3: Boost`,
+`Effect speed: Cooling · Effect intensity: Spark rate · Custom 2: 2D Blur · Custom 3: Boost`,
 and for PS Fireworks it names all eight.
 
 **Effect colours** does the same for the palette and the three colour slots.

@@ -100,10 +100,15 @@ script:
           ctrl->notify_state_change();
 
           const std::string name = ctrl->current_effect_name();
-          const char *group = wledfx_hwtest::group_of(index);
+          // A 1D effect on a panel reaches it through WLED's own 1D to 2D
+          // mapping and looks like a short line crawling along a long strip,
+          // which is right and surprising. Say which ones those are.
+          const std::string group =
+              std::string(wledfx_hwtest::group_of(index)) +
+              (wledfx_hwtest::strip_only_on_panel(ctrl, index) ? " (strip effect, mapped)" : "");
           const unsigned position = (unsigned) wledfx_hwtest::position(ctrl, filter, index);
           ESP_LOGI("tour", "[tour] %u/%u \"%s\" group=%s",
-                   position, (unsigned) wledfx_hwtest::count(ctrl, filter), name.c_str(), group);
+                   position, (unsigned) wledfx_hwtest::count(ctrl, filter), name.c_str(), group.c_str());
           id(tour_effect).publish_state(name);
           id(tour_group).publish_state(group);
 
@@ -244,10 +249,15 @@ select:
     id: tour_group_filter
     name: Tour group
     optimistic: true
-    initial_option: All
+    # "Panel" on the two matrix configs and "Strip" on the strip, so the tour
+    # starts on the effects that output actually shows well. See
+    # docs/HARDWARE-TESTING.md.
+    initial_option: ${tour_default_group}
     restore_value: false
     options:
       - All
+      - Panel
+      - Strip
       - 1D
       - 2D
       - Particle 2D

@@ -9,6 +9,9 @@
 # No secrets.yaml is needed to build or flash this. See network.yaml.
 
 substitutions:
+  # Which tour group this firmware starts on. tour.yaml lists them; on a
+  # panel "Panel" is the effects a 2D output offers without the 1D opt-in.
+  tour_default_group: Panel
   led_pin: GPIO16
   matrix_width: "16"
   matrix_height: "16"
@@ -61,6 +64,12 @@ light:
     num_leds: ${led_count}
     rgb_order: GRB
     chipset: WS2812
+    # ESPHome's light default is 2.8, WLED's output gamma is 2.2. This is the
+    # closest an ESPHome light gets to what a WLED strip emits. It is not
+    # identical: ESPHome gamma-corrects after its own brightness scaling and
+    # WLED corrects first, so a dimmed strip is darker here than on WLED. See
+    # PORTING.md deviation 33.
+    gamma_correct: 2.2
     effects:
       - wled_fx:
           id: fx

@@ -8,6 +8,9 @@
 # No secrets.yaml is needed to build or flash this. See network.yaml.
 
 substitutions:
+  # Which tour group this firmware starts on. tour.yaml lists them; on a
+  # panel "Panel" is the effects a 2D output offers without the 1D opt-in.
+  tour_default_group: Panel
   # The access point this board offers when it has no network to join. Distinct
   # per config so two boards can be on the bench at once.
   ap_ssid: WLED FX M-1 audio test
@@ -74,6 +77,12 @@ display:
     update_interval: never
     auto_clear_enabled: false
     double_buffer: true
+    # WLED's HUB75 builds compile the panel library with -D NO_CIE1931, so the
+    # only curve on a WLED panel is the gamma 2.2 that show() applies. This
+    # driver applies CIE1931 unless it is told not to, and two curves in a row
+    # is a much darker panel than a WLED device. wled_fx does the gamma, the
+    # driver stays out of the way.
+    gamma_correct: LINEAR
 
 i2s_audio:
   - id: i2s_mic_bus
@@ -96,6 +105,10 @@ wled_fx:
   id: fx
   display_id: matrix
   update_interval: 23ms
+  # WLED applies gamma 2.2 to the finished frame in show(), and so does this.
+  # It is the default; 1.0 turns the stage off for a display that already
+  # applies a curve of its own.
+  gamma_correct: 2.2
   # Most of the audio reactive effects are 1D, so a tour of them on a panel
   # needs the 1D effects offered here. See m1-test.yaml.
   include_1d_effects: true

@@ -41,14 +41,18 @@ bool Segment::set_canvas(Canvas *canvas) {
   if (canvas == nullptr || !canvas->is_allocated())
     return false;
   const size_t words = canvas->width() > canvas->height() ? canvas->width() : canvas->height();
-  this->scratch_ = static_cast<uint32_t *>(platform_alloc(words * sizeof(uint32_t)));
+  /* One row or column, and two rays of Bresenham coordinates. A few hundred
+   * bytes each, walked once or twice a frame by move_x / move_y and by the
+   * pinwheel mapping, so they go with the canvas rather than with the effect
+   * scratch block: see MemoryPolicy in wf_platform.h. */
+  this->scratch_ = static_cast<uint32_t *>(platform_alloc_fast(words * sizeof(uint32_t)));
   if (this->scratch_ == nullptr)
     return false;
   // Pixels drawn along a ray is always fewer than dx or dy, plus one pair for
   // rounding. Two rays, x and y interleaved.
   this->pinwheel_max_line_ = words + 2;
   this->pinwheel_coords_ =
-      static_cast<uint16_t *>(platform_alloc(4 * this->pinwheel_max_line_ * sizeof(uint16_t)));
+      static_cast<uint16_t *>(platform_alloc_fast(4 * this->pinwheel_max_line_ * sizeof(uint16_t)));
   return this->pinwheel_coords_ != nullptr;
 }
 

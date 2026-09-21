@@ -82,6 +82,7 @@ CONF_BANDPASS = "bandpass"
 CONF_PASSIVE = "passive"
 CONF_TASK_IN_PSRAM = "task_in_psram"
 CONF_OPTIMIZE = "optimize"
+CONF_CANVAS_MEMORY = "canvas_memory"
 
 # update_interval: never is stored as uint32_t max.
 UPDATE_INTERVAL_NEVER = 4294967295
@@ -132,6 +133,15 @@ SetCheckAction = wled_fx_ns.class_("SetCheckAction", automation.Action)
 SetColorAction = wled_fx_ns.class_("SetColorAction", automation.Action)
 ControlSlider = wled_fx_ns.enum("ControlSlider", is_class=True)
 ControlCheck = wled_fx_ns.enum("ControlCheck", is_class=True)
+
+# Where the canvas and the small per-frame buffers go. MemoryPolicy in
+# wf_platform.h is the same three values and explains the trade.
+MemoryPolicy = wled_fx_ns.enum("MemoryPolicy", is_class=True)
+MEMORY_POLICIES = {
+    "auto": MemoryPolicy.AUTO,
+    "internal": MemoryPolicy.INTERNAL,
+    "psram": MemoryPolicy.PSRAM,
+}
 
 SLIDERS = {
     CONF_SPEED: ControlSlider.CONTROL_SLIDER_SPEED,
@@ -342,6 +352,12 @@ _ENTRY_SCHEMA = cv.Schema(
         cv.Optional(CONF_OPTIMIZE, default="speed"): cv.one_of(
             *OPTIMIZE_MODES, lower=True
         ),
+        # Also build-wide: the policy is a process-wide static read at
+        # allocation time, so there is one of it however many front ends there
+        # are, and _final_validate() checks that they agree.
+        cv.Optional(CONF_CANVAS_MEMORY, default="auto"): cv.enum(
+            MEMORY_POLICIES, lower=True
+        ),
         **CONTROL_SCHEMA,
     }
 ).extend(cv.COMPONENT_SCHEMA)
@@ -380,9 +396,9 @@ def _validate_entry(config):
         CONF_GAMMA_CORRECT,
         CONF_INCLUDE_1D_EFFECTS,
         CONF_UPDATE_INTERVAL,
-        # Not CONF_OPTIMIZE: it is one compiler flag for the whole build, and a
-        # bare `wled_fx:` entry beside a light effect is where somebody would
-        # naturally put it.
+        # Neither CONF_OPTIMIZE nor CONF_CANVAS_MEMORY: both are one setting for
+        # the whole build, and a bare `wled_fx:` entry beside a light effect is
+        # exactly where somebody would put them.
         *_CONTROL_KEYS,
     ):
         if key in config:
@@ -403,6 +419,7 @@ _LAYOUT_DATA_KEY = "wled_fx_layouts"
 _ALLOW_LIST_KEY = "wled_fx_allow_list"
 _SELECTION_DONE_KEY = "wled_fx_selection_emitted"
 _OPTIMIZE_KEY = "wled_fx_optimize"
+_MEMORY_KEY = "wled_fx_canvas_memory"
 
 
 def _all_entries(full_config):
@@ -510,9 +527,9 @@ def _final_validate(config):
         allow_list.extend(entry.get(CONF_EFFECTS, []))
     CORE.data[_ALLOW_LIST_KEY] = allow_list
 
-    # One compiler flag for the whole build, so two entries cannot ask for
-    # different things. Saying so is better than quietly taking whichever one
-    # codegen happened to reach last.
+    # One compiler flag and one allocation policy for the whole build, so two
+    # entries cannot ask for different things. Saying so is better than quietly
+    # taking whichever one codegen happened to reach last.
     modes = {str(entry.get(CONF_OPTIMIZE, "speed")) for entry in entries}
     if len(modes) > 1:
         raise cv.Invalid(
@@ -522,6 +539,21 @@ def _final_validate(config):
             "which is one setting for the whole firmware."
         )
     CORE.data[_OPTIMIZE_KEY] = modes.pop() if modes else "speed"
+
+    # cv.enum validates to the spelling from the YAML, carrying the C++ symbol
+    # alongside it, so this compares words and codegen emits the symbol.
+    policies = {str(entry.get(CONF_CANVAS_MEMORY, "auto")) for entry in entries}
+    if len(policies) > 1:
+        raise cv.Invalid(
+            f"Every wled_fx entry has to agree on '{CONF_CANVAS_MEMORY}': this "
+            f"configuration asks for {' and '.join(sorted(policies))}. There is "
+            "one allocation policy in the component, whatever the number of "
+            "front ends."
+        )
+    for entry in entries:
+        if CONF_CANVAS_MEMORY in entry:
+            CORE.data[_MEMORY_KEY] = entry[CONF_CANVAS_MEMORY]
+            break
 
     for entry in config:
         if (audio_config := entry.get(CONF_AUDIO)) is not None:
@@ -631,6 +663,14 @@ def _add_effect_selection():
     # file includes first and nothing else in the firmware includes at all.
     if CORE.data.get(_OPTIMIZE_KEY, "speed") == "speed":
         cg.add_build_flag("-DWLED_FX_OPTIMIZE_SPEED")
+
+    # Emitted into the generated setup(), which runs before any component's
+    # setup(), so every canvas and frame buffer is allocated under it. The
+    # default is left out: it is the C++ default too, and a line that says
+    # nothing is a line to read.
+    policy = CORE.data.get(_MEMORY_KEY)
+    if policy is not None and str(policy) != "auto":
+        cg.add(wled_fx_ns.platform_set_memory_policy(policy))
 
     # The lists of every entry merged into one, worked out in final validation
     # because that is the only place all the entries are in view at once.

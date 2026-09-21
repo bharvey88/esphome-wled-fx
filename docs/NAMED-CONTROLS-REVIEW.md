@@ -326,17 +326,39 @@ with the ESPHome 2026.8.2 in `C:\Users\bharv\esphome-venv`:
   the allow-list defaults to the pinned effects.
 * **69,700 bytes**, about 68 KB, between the two ends.
 
-A build that does not use `controls:` is unchanged to the byte: the platforms
-it pulls in are pulled in only when it is used, and ESPHome only emits
-`USE_NUMBER` and its neighbours once an entity of that kind exists.
+A build that does not use `controls:` pays almost nothing for it. The entity
+platforms are pulled in only when a configuration asks for them, and ESPHome
+emits `USE_NUMBER` and its neighbours only once an entity of that kind exists.
+What is left is the `restore_value` machinery on the number and the select
+classes, which is one flag and one preference handle each:
+
+| `examples/m1-hub75.yaml` | Flash | RAM |
+|---|---:|---:|
+| this branch | 883,279 | 110,059 |
+| the same configuration on the component tree this branch started from | 883,027 | 110,027 |
+
+**252 bytes of flash and 32 bytes of RAM** across the three numbers, two
+selects and one switch that configuration has. Open question 4 below is
+whether that machinery should also be reachable from the generic platforms,
+since it is being paid for either way.
 
 ## Verification
 
-* `esphome config` and `esphome compile` pass for the three new examples, the
-  four existing examples and the four hardware-test configurations, from the
-  venv above, with the configs staged at a short path and the component path
-  pointed at this worktree.
-* `pytest tests` passes: 28 tests over the metadata parsing and 19 over the
+* `esphome config` passes for the three new examples, the four existing
+  examples and the four hardware-test configurations, from the venv above,
+  with the configs staged at a short path and the component path pointed at
+  this worktree and no secrets file.
+* `esphome compile` passes for ten of those eleven. `examples/host.yaml` is
+  the exception and not because of anything here: the ESPHome host platform
+  needs a native C++ toolchain, and this machine's MinGW linker is quarantined
+  by Windows Defender, which is the whole reason `tools/wsl/` exists. It was
+  compiled in WSL instead, in a virtualenv of its own under `/root/wfx-named`,
+  and links: "Successfully compiled program".
+* One configuration that is not shipped was compiled as well: a light front
+  end with `use_light_color: false` pinned to an effect that uses colour
+  slots, which is the path where `controls:` has to add `wled_fx` colour
+  lights to a `light:` block that already exists.
+* `pytest tests` passes: 28 tests over the metadata parsing and 20 over the
   schema, the entities it builds and the errors above.
 * `tools/check_effect_names.py`, against a simulator built in WSL, reports
   "name scanner agrees with the registry: 223 effects, 72 palettes" with the

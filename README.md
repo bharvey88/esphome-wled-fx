@@ -915,6 +915,12 @@ bytes**, about 68 KB, between the two ends. The canvas is sized from the panel
 rather than from the effect list, so the 96 bytes of RAM between the last two
 rows is the registry tables and nothing else.
 
+A configuration that does not use `controls:` pays almost nothing for it: the
+entity platforms are only pulled into a build that asked for them. Measured on
+`examples/m1-hub75.yaml`, which uses none of this, the difference is **252
+bytes of flash and 32 bytes of RAM**, which is the optional `restore_value`
+storage on the three numbers and two selects that configuration does have.
+
 `docs/NAMED-CONTROLS-REVIEW.md` has the full entity list for each of the three
 examples and the exact error messages.
 

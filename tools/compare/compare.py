@@ -376,6 +376,24 @@ def pooled_hue_distance(ref: Capture, port: Capture) -> tuple[float, float]:
     return min(distances), max(distances)
 
 
+def internal_hue_spread(cap: Capture) -> float:
+    """How far one side's own runs are from each other, in hue distance.
+
+    NOISE.md's third rule: the per-effect spread is the threshold, not a class
+    constant. TV Simulator, Wipe Random and Sweep Random each score 1.00
+    against themselves between two runs of the same device, because they draw
+    a random colour, while PS Vortex agrees with itself to 0.1 counts. A class
+    p95 clears one and wrongly flags the other.
+    """
+    if len(cap.hue_runs) < 2:
+        return 0.0
+    return max(
+        hue_distance(cap.hue_runs[i], cap.hue_runs[j])
+        for i in range(len(cap.hue_runs))
+        for j in range(i + 1, len(cap.hue_runs))
+    )
+
+
 def compare_one(ref: Capture, port: Capture, cls: str) -> dict:
     audio = cls == "audio"
     floors = NOISE_FLOORS[cls]
@@ -385,6 +403,24 @@ def compare_one(ref: Capture, port: Capture, cls: str) -> dict:
     # themselves findings and do not score.
     notes: list[str] = []
     score = 0.0
+
+    # A six second window against a thirty second one measures two different
+    # things: where in its cycle a slow effect was caught decides its
+    # brightness and its coverage. Those are not scored when the windows
+    # differ, and the report says why. Capture both sides with the same
+    # SLOW_EFFECTS table and this never fires.
+    windows_match = True
+    if ref.durations and port.durations:
+        shortest = min(min(ref.durations), min(port.durations))
+        longest = max(max(ref.durations), max(port.durations))
+        if shortest > 0 and longest / shortest > 1.25:
+            windows_match = False
+            notes.append(
+                f"the two sides were captured over different windows, "
+                f"{min(ref.durations):.0f} s against {min(port.durations):.0f} s, so "
+                "brightness, coverage and frame change are not scored. Recapture the "
+                "device side with the same SLOW_EFFECTS window"
+            )
 
     # Ordered worst first, which is also the order the task asks the report to
     # rank in. The score is what sorts the report; the wording is what a person
@@ -397,8 +433,9 @@ def compare_one(ref: Capture, port: Capture, cls: str) -> dict:
         )
         change_floor = floors["mean_frame_change"]
         gap = abs(rm["mean_frame_change"] - pm["mean_frame_change"])
-        if change_floor is None or gap <= max(change_floor, ref.spread.get("mean_frame_change", 0.0),
-                                              port.spread.get("mean_frame_change", 0.0)):
+        if (change_floor is None or not windows_match
+                or gap <= max(change_floor, ref.spread.get("mean_frame_change", 0.0),
+                              port.spread.get("mean_frame_change", 0.0))):
             # Fifteen of 216 effects flip this boolean between two runs of the
             # same firmware, so on its own it is a coin toss.
             notes.append(
@@ -430,17 +467,6 @@ def compare_one(ref: Capture, port: Capture, cls: str) -> dict:
             findings.append(f"{lit} renders something and {dark} is black ({numbers})")
             score += 100
 
-    # A six second window against a thirty second one measures two different
-    # things, and round 2 had to take the long ones by hand. See SLOW_EFFECTS.
-    if ref.durations and port.durations:
-        shortest = min(min(ref.durations), min(port.durations))
-        longest = max(max(ref.durations), max(port.durations))
-        if shortest > 0 and longest / shortest > 1.25:
-            notes.append(
-                f"the two sides were captured over different windows, "
-                f"{min(ref.durations):.0f} s against {min(port.durations):.0f} s, "
-                "so nothing below is a like for like comparison"
-            )
 
     rdir = rm["motion"]["direction"]
     pdir = pm["motion"]["direction"]
@@ -548,7 +574,9 @@ def compare_one(ref: Capture, port: Capture, cls: str) -> dict:
         pm.get("hue_samples_per_frame", 1e9) or 0.0,
     )
     hue_is_solid = hue_samples >= HUE_MIN_SAMPLES_PER_FRAME
-    hue_floor = floors["hue_distance"]
+    hue_floor = max(
+        floors["hue_distance"], internal_hue_spread(ref), internal_hue_spread(port)
+    )
     spread_text = (
         f" (closest of {len(ref.hue_runs)}x{len(port.hue_runs)} run pairings; "
         f"the widest is {hue_worst:.2f})"
@@ -583,7 +611,7 @@ def compare_one(ref: Capture, port: Capture, cls: str) -> dict:
     # difference. With one capture a side the spread is 0 and nothing changes.
     def floor(key: str) -> float | None:
         fixed = floors[key]
-        if fixed is None:
+        if fixed is None or not windows_match:
             return None
         return max(fixed, ref.spread.get(key, 0.0), port.spread.get(key, 0.0))
 

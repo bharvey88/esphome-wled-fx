@@ -27,6 +27,12 @@ BUILD_PLAIN="$WFX_HOME/sim-plain"
 
 jobs="$(nproc)"
 
+# The Python checks need numpy and Pillow, which the distribution's own python3
+# does not have; the ESPHome virtualenv bootstrap.sh builds does. Prefer it and
+# fall back to python3, which is what CI has, with the packages installed.
+PY="$WFX_HOME/esphome-venv/bin/python"
+[ -x "$PY" ] || PY="python3"
+
 configure_and_build() {
   local dir="$1" sanitize="$2"
   cmake -S "$REPO/tools/sim" -B "$dir" -G Ninja \
@@ -94,11 +100,11 @@ case "$cmd" in
       "$BUILD_PLAIN/wled_fx_sim" --size "$size" --no-images --out "$OUT"
     done
     echo "=== python side ==="
-    python3 "$REPO/tools/compare/test_metrics.py"
-    python3 "$REPO/tools/gen_readme_effects.py" --check
+    "$PY" "$REPO/tools/compare/test_metrics.py"
+    "$PY" "$REPO/tools/gen_readme_effects.py" --check
     # Against the build that was just made, not the stale wled_fx_sim.exe left in
     # the checkout, which WSL would happily run through binfmt interop.
-    WLED_FX_SIM="$BUILD_ASAN/wled_fx_sim" python3 "$REPO/tools/check_effect_names.py"
+    WLED_FX_SIM="$BUILD_ASAN/wled_fx_sim" "$PY" "$REPO/tools/check_effect_names.py"
     echo
     echo "SWEEP OK"
     ;;

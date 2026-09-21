@@ -117,7 +117,7 @@ bool Engine::set_palette_by_name(const char *name) {
 void Engine::render(uint32_t now) {
   if (this->effect_ == nullptr || !this->canvas_.is_allocated())
     return;
-  this->random_palette_.step(now);
+  this->random_palette_.step(now, this->frame_time_);
   this->seg_.now = now;
   this->seg_.now_us = now * 1000u;
   this->seg_.begin_draw(this->random_palette_.current());

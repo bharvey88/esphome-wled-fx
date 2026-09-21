@@ -576,6 +576,10 @@ int main(int argc, char **argv) {
           continue;
         }
         engine.set_text(text.c_str());
+        /* The rate this run advances the clock at, which is what the front
+         * ends hand over from `update_interval`. "* Random Cycle" sizes its
+         * palette blend from it. */
+        engine.set_frame_time(static_cast<uint16_t>(step_ms > 0xFFFF ? 0xFFFF : step_ms));
         if (palette >= 0)
           engine.set_palette(static_cast<uint8_t>(palette));
         if (speed >= 0)

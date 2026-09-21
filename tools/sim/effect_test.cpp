@@ -415,6 +415,211 @@ void test_palette_defaults() {
   }
 }
 
+// --- the whole palette list -------------------------------------------------
+
+/* Two rounds of verification compared every effect against a real WLED device
+ * on that effect's own default palette, which left 71 of the 72 palettes
+ * unmeasured. This is the part of that gap a host test can close: every
+ * palette index resolves to the table upstream's tables say it should, the
+ * four dynamic palettes follow the segment colours, and a palette-driven
+ * effect renders at a brightness tied to the palette it was given. The other
+ * part, the same sweep against a device, is tools/compare/palette_sweep.py. */
+void test_palette_sweep() {
+  printf("Palette sweep\n");
+
+  uint32_t colors[3] = {0xFFA000, 0x000000, 0x000000};  // WLED's DEFAULT_COLOR and two empty slots
+  const CRGBPalette16 no_random{};
+
+  auto entry_is = [](const CRGBPalette16 &pal, int i, uint32_t rgb) {
+    return pal[i].r == R(rgb) && pal[i].g == G(rgb) && pal[i].b == B(rgb);
+  };
+  /* The far end of a gradient is one accumulated fixed point step short of the
+   * colour it was built from: upstream's fill_gradient_RGB walks a 16.16 delta
+   * that it floors, so a green of 160 over seven steps arrives as 159. Exact
+   * for a flat fill, within a couple of counts for an endpoint. */
+  auto entry_near = [](const CRGBPalette16 &pal, int i, uint32_t rgb) {
+    return std::abs(pal[i].r - static_cast<int>(R(rgb))) <= 2 &&
+           std::abs(pal[i].g - static_cast<int>(G(rgb))) <= 2 &&
+           std::abs(pal[i].b - static_cast<int>(B(rgb))) <= 2;
+  };
+
+  /* What a palette is worth, as the mean of its own 256 interpolated samples
+   * measured the way the capture harness measures a frame: the largest of the
+   * three channels. This is the number a render of that palette is held
+   * against below, so a palette that loads as black, as Party, or as a
+   * quarter of itself cannot pass. */
+  auto palette_value = [](const CRGBPalette16 &pal) {
+    uint32_t sum = 0;
+    for (int i = 0; i < 256; i++) {
+      const CRGBW c = ColorFromPalette(pal, static_cast<unsigned>(i), 255, LINEARBLEND);
+      sum += std::max(c.r, std::max(c.g, c.b));
+    }
+    return static_cast<double>(sum) / 256.0;
+  };
+
+  // Every palette the select offers resolves to something, and to something
+  // different from its neighbours.
+  {
+    const size_t count = palette_count();
+    check(count == 72, "the select offers upstream's 72 palettes");
+    size_t black = 0;
+    size_t flat = 0;
+    size_t same_as_party = 0;
+    CRGBPalette16 party{};
+    load_palette(party, 6, colors, no_random, 6);
+    for (size_t p = 0; p < count; p++) {
+      CRGBPalette16 pal{};
+      load_palette(pal, static_cast<uint8_t>(p), colors, no_random, 6);
+      if (palette_value(pal) < 1.0)
+        black++;
+      bool varies = false;
+      for (int i = 1; i < 16; i++) {
+        if (pal[i].r != pal[0].r || pal[i].g != pal[0].g || pal[i].b != pal[0].b)
+          varies = true;
+      }
+      if (!varies)
+        flat++;
+      if (p >= 6 && p != 6 && pal == party)
+        same_as_party++;
+    }
+    /* Palette 1 is the random palette, which is black when none has been
+     * generated, and palette 2 is one colour by definition. Nothing else may
+     * be black or flat, and no named palette may collapse onto Party, which
+     * is what a lost `_default_palette` or a dropped table would look like. */
+    check(black == 1, "only the ungenerated random palette resolves to black");
+    check(flat == 2, "only the random palette and \"* Color 1\" are one flat colour");
+    check(same_as_party == 0, "no other palette resolves to Party");
+  }
+
+  // The four dynamic palettes are built from the segment colours, and follow
+  // them when they change.
+  {
+    CRGBPalette16 pal{};
+    load_palette(pal, 2, colors, no_random, 6);
+    bool all_primary = true;
+    for (int i = 0; i < 16; i++)
+      all_primary &= entry_is(pal, i, 0xFFA000);
+    check(all_primary, "\"* Color 1\" is the primary colour in all sixteen entries");
+
+    load_palette(pal, 3, colors, no_random, 6);
+    check(entry_is(pal, 0, 0xFFA000) && entry_is(pal, 15, 0x000000),
+          "\"* Colors 1&2\" runs from the primary to the secondary");
+
+    load_palette(pal, 4, colors, no_random, 6);
+    check(entry_is(pal, 0, 0x000000) && entry_near(pal, 15, 0xFFA000),
+          "\"* Color Gradient\" runs from the tertiary to the primary");
+
+    load_palette(pal, 5, colors, no_random, 6);
+    check(entry_is(pal, 0, 0xFFA000) && entry_is(pal, 15, 0x000000),
+          "\"* Colors Only\" is the primary then the secondary, with no tertiary set");
+
+    uint32_t moved[3] = {0x00FF00, 0x0000FF, 0x000000};
+    load_palette(pal, 2, moved, no_random, 6);
+    check(entry_is(pal, 0, 0x00FF00), "and a new primary colour moves them");
+    load_palette(pal, 3, moved, no_random, 6);
+    check(entry_is(pal, 0, 0x00FF00) && entry_near(pal, 15, 0x0000FF), "including the two colour one");
+
+    CRGBPalette16 marker{};
+    for (int i = 0; i < 16; i++)
+      marker[i] = CRGB(1 + i, 2, 3);
+    load_palette(pal, 1, colors, marker, 6);
+    check(pal == marker, "\"* Random Cycle\" is the shared random palette, not a copy of something else");
+  }
+
+  /* "* Random Cycle" reaches each palette it generates and then holds it,
+   * which is what upstream's blend budget buys. Blending once a frame instead
+   * takes longer than the five second change interval, so the palette never
+   * arrives and the effect is a permanent half-blended drift. */
+  {
+    RandomPalette rp;
+    uint32_t now = 0;
+    for (int i = 0; i < 44; i++) {  // just past the 750 ms blend window
+      rp.step(now, 23);
+      now += 23;
+    }
+    const CRGBPalette16 settled = rp.current();
+    for (int i = 0; i < 100; i++) {  // on to about 3.3 s, still before the change
+      rp.step(now, 23);
+      now += 23;
+    }
+    check(rp.current() == settled, "\"* Random Cycle\" arrives at a palette and holds it");
+    while (now < 6200) {  // past the five second change, and its blend window
+      rp.step(now, 23);
+      now += 23;
+    }
+    check(!(rp.current() == settled), "and has moved to a new one five seconds later");
+  }
+
+  // Names and IDs agree in both directions, which is what the select's
+  // name-to-index lookup relies on.
+  {
+    size_t bad = 0;
+    for (size_t p = 0; p < palette_count(); p++) {
+      if (palette_id_by_name(PALETTE_NAMES[p]) != static_cast<int>(p))
+        bad++;
+    }
+    check(bad == 0, "every palette name resolves back to its own index");
+    check(palette_id_by_name("oCeAn") == 9, "and the lookup is case insensitive");
+    check(palette_id_by_name("Nonesuch") < 0, "an unknown name is rejected rather than guessed at");
+  }
+
+  /* The render. "Palette" lays the palette straight across the panel and
+   * "Noise 1" reads it through a noise field, so between them they sample
+   * every entry. What each one draws has to track the palette it was handed:
+   * the bounds are wide because an effect is free to weight the palette
+   * unevenly, and narrow enough that a palette rendering at a fraction of
+   * itself, or not at all, fails. */
+  {
+    const char *effects[] = {"Palette", "Noise 1"};
+    for (const char *name : effects) {
+      if (EffectRegistry::find(name) == nullptr) {
+        check(false, std::string(name) + " is registered");
+        continue;
+      }
+      double worst_low = 99.0, worst_high = 0.0;
+      int worst_low_pal = -1, worst_high_pal = -1;
+      size_t outside = 0;
+      for (size_t p = 6; p < palette_count(); p++) {  // the 66 named palettes
+        Engine engine;
+        engine.init(32, 32);
+        engine.set_effect(name);
+        engine.set_palette(static_cast<uint8_t>(p));
+        uint32_t now = 1000;
+        for (int f = 0; f < 40; f++) {
+          engine.render(now);
+          now += 23;
+        }
+        const Canvas &canvas = engine.canvas();
+        uint64_t sum = 0;
+        for (size_t i = 0; i < canvas.size(); i++) {
+          const uint32_t c = canvas.get(i);
+          sum += std::max(R(c), std::max(G(c), B(c)));
+        }
+        const double drawn = static_cast<double>(sum) / static_cast<double>(canvas.size());
+        CRGBPalette16 pal{};
+        load_palette(pal, static_cast<uint8_t>(p), colors, no_random, 6);
+        const double expected = palette_value(pal);
+        const double ratio = expected > 0.0 ? drawn / expected : 0.0;
+        if (ratio < worst_low) {
+          worst_low = ratio;
+          worst_low_pal = static_cast<int>(p);
+        }
+        if (ratio > worst_high) {
+          worst_high = ratio;
+          worst_high_pal = static_cast<int>(p);
+        }
+        if (ratio < 0.70 || ratio > 1.30)
+          outside++;
+      }
+      printf("  %s: dimmest %.2f of its palette (%s), brightest %.2f (%s)\n", name, worst_low,
+             worst_low_pal >= 0 ? PALETTE_NAMES[worst_low_pal] : "-", worst_high,
+             worst_high_pal >= 0 ? PALETTE_NAMES[worst_high_pal] : "-");
+      check(outside == 0,
+            std::string(name) + " renders every named palette at 0.70 to 1.30 of that palette's own value");
+    }
+  }
+}
+
 // --- control labels ---------------------------------------------------------
 
 void test_labels() {
@@ -818,6 +1023,7 @@ int main() {
   test_scrolling_text();
   test_control_defaults();
   test_palette_defaults();
+  test_palette_sweep();
   test_labels();
   test_gamma();
   test_segment_data_budget();

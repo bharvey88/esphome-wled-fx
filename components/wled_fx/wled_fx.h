@@ -125,7 +125,12 @@ class WledFxController {
    *
    * Both front ends use this, so the light effect and the display front end run
    * at the same rate from the same code. */
-  void set_frame_interval(uint32_t interval_ms) { this->frame_interval_ = interval_ms; }
+  void set_frame_interval(uint32_t interval_ms) {
+    this->frame_interval_ = interval_ms;
+    // The engine needs it too: "* Random Cycle" sizes its palette blend from
+    // the frame period. WLED reads the same number out of the strip.
+    this->engine_.set_frame_time(static_cast<uint16_t>(interval_ms > 0xFFFF ? 0xFFFF : interval_ms));
+  }
   uint32_t frame_interval() const { return this->frame_interval_; }
 
   // Restarts the clock so the next call to due_() renders immediately.

@@ -202,20 +202,48 @@ void load_palette(CRGBPalette16 &target, uint8_t pal, const uint32_t colors[3], 
   }
 }
 
-void RandomPalette::step(uint32_t now) {
+void RandomPalette::step(uint32_t now, uint16_t frame_time_ms) {
+  /* WLED FX_fcn.cpp:435, Segment::handleRandomPalette.
+   *
+   * `randomPaletteChangeTime` is 5 seconds (wled00/wled.h:613) and
+   * `transitionDelay` is 750 ms (wled00/wled.h:609). The port has no segment
+   * transitions, but the transition time is the only thing upstream uses here
+   * and it is not used as a transition: it is the window the blend has to
+   * finish inside. Upstream works out how many frames fit in that window and
+   * runs enough 48-step blends per frame to cover all 255 of them, then stops
+   * until the next change. Blending once a frame instead, which is what this
+   * did, needs about 5.9 s at a 23 ms frame and so never reaches the palette
+   * it is heading for before the next one is drawn: "* Random Cycle" came out
+   * as a permanent half-blended drift rather than upstream's sequence of
+   * whole harmonic palettes. */
   constexpr uint32_t change_interval_ms = 5000;
+  constexpr uint32_t transition_ms = 750;
+
   if (!this->started_) {
     this->current_ = generate_random_palette();
     this->target_ = generate_random_palette();
     this->last_change_ = now;
+    this->next_blend_ = now;
     this->started_ = true;
     return;
   }
   if (now - this->last_change_ > change_interval_ms) {
     this->target_ = generate_harmonic_random_palette(this->current_);
     this->last_change_ = now;
+    this->next_blend_ = now;
   }
-  nblendPaletteTowardPalette(this->current_, this->target_, 48);
+
+  const uint32_t frame_time = frame_time_ms > 0 ? frame_time_ms : 1;
+  // Not yet time, or past the window and already arrived. Signed, so the
+  // first test survives the millis() wrap.
+  if (static_cast<int32_t>(now - this->next_blend_) < 0 ||
+      now > this->last_change_ + transition_ms + 2 * frame_time)
+    return;
+  const uint32_t transition_frames = frame_time > transition_ms ? 1 : transition_ms / frame_time;
+  const uint32_t blends = transition_frames > 255 ? 1 : (255 + (transition_frames >> 1)) / transition_frames;
+  for (uint32_t i = 0; i < blends; i++)
+    nblendPaletteTowardPalette(this->current_, this->target_, 48);
+  this->next_blend_ = now + (transition_frames >> 8) * frame_time;
 }
 
 }  // namespace wled_fx

@@ -46,10 +46,13 @@ void load_palette(CRGBPalette16 &target, uint8_t pal, const uint32_t colors[3], 
 CRGBPalette16 generate_random_palette();
 CRGBPalette16 generate_harmonic_random_palette(const CRGBPalette16 &basepalette);
 
-// Shared "Random Cycle" palette. Morphed once per frame by the front end.
+/* Shared "Random Cycle" palette, stepped once per frame by the engine.
+ * `frame_time_ms` is the output's frame period: upstream sizes the blend from
+ * it so that a new palette arrives within the transition time whatever rate
+ * the strip runs at. */
 class RandomPalette {
  public:
-  void step(uint32_t now);
+  void step(uint32_t now, uint16_t frame_time_ms = 23);
   const CRGBPalette16 &current() const { return this->current_; }
 
  protected:

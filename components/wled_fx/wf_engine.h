@@ -54,6 +54,12 @@ class Engine {
    * can offer the choice, because a slider that silently follows you into the
    * next effect leaves that effect in a state its author never meant. */
   void set_sticky_controls(bool sticky) { this->sticky_ = sticky; }
+
+  /* The output's frame period, which "* Random Cycle" needs: upstream sizes
+   * its palette blend from the frame time so the new palette lands inside the
+   * transition time whatever rate the output runs at. WLED's own FRAMETIME
+   * until a front end says otherwise. */
+  void set_frame_time(uint16_t ms) { this->frame_time_ = ms > 0 ? ms : 1; }
   bool sticky_controls() const { return this->sticky_; }
 
   // Setting a control applies it now, and keeps it across effect changes while
@@ -100,6 +106,7 @@ class Engine {
   const EffectInfo *effect_{nullptr};
   size_t effect_index_{0};
   uint16_t overrides_{0};
+  uint16_t frame_time_{23};
   bool sticky_{true};
 };
 

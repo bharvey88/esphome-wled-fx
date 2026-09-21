@@ -20,7 +20,9 @@
     <p class="standfirst">
       Every effect the <a href="https://github.com/bharvey88/esphome-wled-fx">wled_fx ESPHome component</a>
       registers, animated. Each preview is a five second render from the host simulator, at the effect's own
-      default settings, on a 64 by 32 panel or a 64 pixel strip. They are renders, not photographs of hardware.
+      default settings, on a 64 by 32 panel or a 64 pixel strip. They are renders, not photographs of hardware:
+      the engine's own frame, before the gamma 2.2 that both WLED and this component apply on the way out, so a
+      real panel shows the same picture with deeper shadows and more contrast than these.
     </p>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
       <span class="theme-dot" aria-hidden="true"></span>

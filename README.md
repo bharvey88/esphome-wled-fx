@@ -35,6 +35,11 @@ records why.
 
 ## Known limitations
 
+* **ESP32 family boards only.** Config validation refuses the ESP8266 with a
+  message saying so. WLED runs there, on a build that gives one effect 384
+  bytes of scratch against the 4096 an ESP32-S3 gets, and nothing here has ever
+  been compiled or measured on one. An untested branch that half works is worse
+  than a clear no.
 * **Barely any of this has run on real hardware.** One session on an Apollo M-1,
   a 64x64 HUB75 panel on an ESP32-S3, is the whole of it. Everything else is
   verified in a host simulator, and every example config is verified by
@@ -62,7 +67,7 @@ records why.
   also takes `gamma_correct`. That option is WLED's output gamma stage and
   nothing else; the gamma effects and the particle renderer apply while drawing
   is the engine's and is always on, because it is part of the picture rather
-  than a preference.
+  than a preference. See [Gamma and what the panel emits](#gamma-and-what-the-panel-emits).
 
 [docs/HARDWARE-TESTING.md](docs/HARDWARE-TESTING.md) is the session guide for
 changing that first line, with four ready to flash test firmwares in
@@ -450,7 +455,7 @@ on the light effect instead.
 | `include_1d_effects` | bool | `false` | offer the 1D-only effects on this display too, through WLED's 1D-to-2D mapping. See [Which effects an output offers](#which-effects-an-output-offers) |
 | `width` / `height` | int | from the display | canvas size override |
 | `update_interval` | time | `23ms` | one rendered frame per interval, WLED's own 42 fps |
-| `gamma_correct` | 0.1 to 10.0 | `1.0` | this is WLED's `show()` stage: the whole frame on its way to the display. Set it to `2.2` for the factory WLED look, which is WLED's own default. It is not the gamma effects and the particle renderer do while drawing, which the engine always does with WLED's real tables. See PORTING.md deviation 33 |
+| `gamma_correct` | 0.1 to 10.0 | `2.2` | this is WLED's `show()` stage: the whole frame on its way to the display, at WLED's own default. Set it to `1.0` for an output that already applies a curve of its own, and see [Gamma and what the panel emits](#gamma-and-what-the-panel-emits) before doing that on a hub75 panel. It is not the gamma effects and the particle renderer do while drawing, which the engine always does with WLED's real tables. See PORTING.md deviation 33 |
 | `effect` | name | first registered | |
 | `palette` | name | effect default | |
 | `speed`, `intensity` | 0 to 255 | effect default | |
@@ -495,6 +500,45 @@ Each `wled_fx:` entry in a light's `effects:` list owns a canvas of its own, and
 keeps it once it has run, so two of them on one light hold two canvases. Turning
 the light off puts the effect back to frame zero but does not hand the memory
 back; see the memory note under Licence.
+
+### Gamma and what the panel emits
+
+WLED corrects the finished frame once, with gamma 2.2, in `show()`, and the
+LED driver gets the corrected bytes. This component's display front end is that
+stage, and since v0.4.0 it carries the same default. A mid grey of 128 in the
+engine buffer leaves as 56, which is what a WLED device sends.
+
+Two things sit either side of it and both matter.
+
+**A hub75 panel.** WLED's HUB75 builds compile the panel library with
+`-D NO_CIE1931`, so nothing after `show()` touches the value. ESPHome's hub75
+driver applies CIE1931 by default, which on top of gamma 2.2 is two curves and
+a panel far darker than a WLED one. The four shipped matrix configurations set
+`gamma_correct: LINEAR` on the display for that reason, and a configuration
+that does not gets a warning at validation naming both curves. The other way
+round, `gamma_correct: 1.0` on `wled_fx` with the driver left on CIE1931, is a
+reasonable look and is not WLED's.
+
+**A light.** ESPHome owns the output stage of a light, its `gamma_correct`
+defaults to 2.8, and it corrects *after* its own brightness scaling where WLED
+corrects before. Set `gamma_correct: 2.2` on the light, as the strip examples
+now do, and a full brightness strip matches a WLED one. A dimmed strip does
+not: at half brightness a buffer value of 128 reaches a WLED strip as 28
+(`gamma2.2(128) * 128/255`) and an ESPHome strip as 5 (`gamma2.8(64)`). There
+is no setting that fixes the ordering, because the light applies the curve
+itself after this component has handed over the frame.
+
+| engine buffer | WLED, and this display front end at 2.2 | display front end at 1.0 | light at ESPHome's 2.8 |
+|---:|---:|---:|---:|
+| 32 | 3 | 32 | 1 |
+| 64 | 12 | 64 | 5 |
+| 128 | 56 | 128 | 37 |
+| 192 | 137 | 192 | 115 |
+| 215 | 175 | 215 | 158 |
+
+The last row is Matrix's spawn pixel. The effect builds it as
+`gamma8inv(175)` so that the output stage turns it back into 175, which is the
+round trip this table is really about.
 
 ### Audio reactive effects
 
@@ -690,7 +734,7 @@ light:
 # What those generic controls are called in the effect that is running, read
 # out of its WLED metadata and republished on every effect change. Controls the
 # effect does not use are left out.
-#   Speed · Intensity: Spawning rate · Custom 1: Trail · Check 1: Custom color
+#   Effect speed · Effect intensity: Spawning rate · Custom 1: Trail · Check 1: Custom color
 #   Color 1: Spawn · Color 2: Trail
 text_sensor:
   - platform: wled_fx

@@ -14,6 +14,18 @@ docs/gallery/
   previews/       generated: <effect>.webp animated, <effect>.still.webp poster
 ```
 
+## What the previews are, and are not
+
+The engine's frame, exactly as the simulator renders it, with no output gamma.
+A real panel applies gamma 2.2 after this, as WLED does in `show()` and as the
+display front end now does by default, so hardware looks more contrasty than
+the gallery: a preview pixel at 128 is 56 on the panel.
+
+Applying that curve here was considered and rejected. A dozen sparse effects
+have a mean brightness under 5 of 255, and gamma 2.2 would put them under 1,
+which is a black thumbnail in a catalogue whose job is to let somebody pick an
+effect. The page says which it is showing instead.
+
 ## Look at it locally
 
 Anything that serves static files will do, as long as it is a server: the page

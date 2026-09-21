@@ -406,8 +406,11 @@ for these when an effect looks right in a contact sheet and wrong on hardware.
   `gamma32inv` are real lookup tables here at WLED's default gamma of 2.2. Copy
   the calls as upstream writes them and expect them to do something. This was
   wrong until v0.3.1 and it cost twenty particle effects between 15 and 57 percent
-  of their brightness. If you want the whole stack to look like a factory WLED,
-  set the front end's `gamma_correct` to 2.2, which is what WLED's `show()` uses.
+  of their brightness. The output stage was still an identity by default until
+  v0.4.0, which cost the same effects the other half of the round trip: the
+  display front end now defaults to 2.2, which is what WLED's `show()` uses.
+  Deviation 33 has the numbers and what a hub75 panel and an ESPHome light each
+  do with them.
 * **`strip.isMatrix` has no equivalent.** Upstream distinguishes "the whole strip
   is a matrix" from "this segment happens to be 2D". Here there is one canvas and
   one segment, so both become `seg.is_2d()`. Every `if (!strip.isMatrix || !SEGMENT.is2D())`
@@ -970,25 +973,42 @@ specified.
     all four of its mode bodies are copied line for line. One line outside the
     switch is not: upstream raises the beat flag with
     `samplePeak = hw_random8() > 250;` (`wled00/util.cpp:662`), five draws out
-    of 256, about 2 percent of frames. Puddlepeak, Ripple Peak and Waterfall
-    draw nothing except on that flag, so with upstream's line all three are to
-    all intents blank; Puddlepeak measured a mean brightness of 0.01 against a
-    real device's 2.46. Because the line sits outside the switch it is the same
-    in all four modes, and all three effects pin `si=0` in their metadata, so
-    no choice of simulation mode changes it.
+    of 256, about 2 percent of frames, and because that is a draw per frame
+    rather than per second its rate follows the frame rate: about 0.85 peaks a
+    second at a 23 ms frame and 0.39 at the simulator's 50 ms.
 
-    Here it is one peak per beat of 120 bpm, the tempo the simulated spectrum's
-    own `beatsin8_t(120 / (i + 1), ...)` calls are already built on, counted off
-    the frame timestamp rather than the frame number so the rate is the same at
-    the simulator's 50 ms and either front end's 23 ms. Visible consequence: the
-    three peak-driven effects animate with no microphone, at two flashes a
-    second, where upstream's simulation leaves them dark. With a real microphone
-    attached nothing here runs at all.
+    Puddlepeak is the effect that needs it. It draws nothing except on the
+    flag, and measured a mean brightness of 0.01 against a real device's 2.46.
+    Ripple Peak is dimmed rather than blanked, 0.39 against the device's 1.28,
+    and Waterfall is not peak-gated at all: its `else` branch
+    (`wf_effects_audio_fft.cpp:259-261`, upstream `wled00/FX.cpp:7524-7526`)
+    paints a column on every `secondHand` tick whatever the flag says, and the
+    flag only picks the colour of the newest column. Round 1 recorded all three
+    as blank, which was wrong about two of them. Because the line sits outside
+    the switch it is the same in all four modes, and all three effects pin
+    `si=0` in their metadata, so no choice of simulation mode changes it.
+
+    Here the flag is one peak per beat of 120 bpm, the tempo the simulated
+    spectrum's own `beatsin8_t(120 / (i + 1), ...)` calls are already built on,
+    counted off the frame timestamp rather than the frame number so the rate is
+    the same at the simulator's 50 ms and either front end's 23 ms.
+
+    The flag is the port's. The draw is upstream's and is still made:
+    `hw_random8()` is called and its value thrown away, because the generator
+    is shared with every effect and consuming one fewer random number per frame
+    would put every audio effect on a different random sequence from
+    upstream's. Round 1 dropped the draw and the repository noticed indirectly,
+    through the simulator's black allowance for Fw Starburst audio, which had
+    to be widened from two pixels to three when the shared sequence moved.
+
+    Visible consequence: Puddlepeak and Ripple Peak animate with no microphone,
+    at two flashes a second, where upstream's simulation leaves Puddlepeak
+    dark. With a real microphone attached nothing here runs at all.
 
 28. **`CRGBW` zeroes its white channel; upstream leaves it uninitialised.**
     `hsv2rgb_rainbow(..., raw, true)` writes three bytes, and upstream's
     `//rgbdata[3] = 0; // white` is commented out
-    (`wled00/src/dependencies/fastled_slim/fastled_slim.cpp:100-104`), so
+    (`wled00/src/dependencies/fastled_slim/fastled_slim.cpp:105`), so
     `CRGBW(CHSV32(...))` at `wled00/colors.h:165` carries whatever was on the
     stack in `w`. Every such constructor and assignment here sets `w = 0`.
 
@@ -1004,13 +1024,16 @@ specified.
     reporting it as a coverage difference.
 
 29. **Fire 2012 clamps its ignition area to the segment length.** Upstream is
-    `const uint8_t ignition = max(3, SEGLEN/10);` with no upper bound, and then
-    indexes the heat array with `hw_random8(ignition)`. On a two pixel segment
-    that reads and writes the third element of a two element array. One
-    comparison here caps it at `seg_len`. Visible consequence: none above three
-    pixels, where the two are identical; below it, a defined picture instead of
-    whatever was next in the scratch block. A 1 or 2 pixel light is a real
-    configuration for this component in a way it is not for WLED.
+    `const uint8_t ignition = MAX(3,SEGLEN/10);` (`wled00/FX.cpp:2168`) with no
+    upper bound, and then indexes the heat array with `hw_random8(ignition)`.
+    On a two pixel segment that reads and writes the third element of a two
+    element array. One comparison here caps it at `seg_len`. Visible
+    consequence: none above three pixels, where the two are identical; at two
+    pixels, a defined picture instead of whatever was next in the scratch
+    block. Two pixels and not one, because both sides return early at one
+    (`wled00/FX.cpp:2158`, `if (SEGLEN <= 1) FX_FALLBACK_STATIC;`). A two pixel
+    light is a real configuration for this component in a way it is not for
+    WLED.
 
 30. **Multi Comet audio's `m12` default is renumbered from MoonModules' 7 to
     stock WLED's 4.** MM inserts Circle and Block into the 1D-to-2D mapping
@@ -1018,14 +1041,31 @@ specified.
     where stock WLED's is 4 (`wf_segment.h`, `Mapping1D2D`). The port uses stock
     WLED's numbering throughout, so the one MM metadata string that names
     Pinwheel is translated. It is the only `m12` in the `mm` group outside the
-    0 to 3 range the two agree on, and it is the only metadata string in the
-    port that differs from its upstream other than Scrolling Text's. Do not
-    change it back.
+    0 to 3 range the two agree on. Do not change it back.
 
-31. **Scrolling Text's metadata drops `rev=0,mi=0,rY=0,mY=0`.** Those four keys
-    set segment reverse and mirror, which deviation 2 says do not exist here.
-    Recorded separately because deviation 4 talks only about fonts and time
-    tokens, and a future upstream merge would otherwise put them back.
+    It is not the only metadata string that differs from its upstream, which is
+    what this said until round 2 checked all 223 against both sources. Of those
+    223, 221 match byte for byte; this one and Scrolling Text's (deviation 31)
+    differ as described, and seven MM strings have the trailing moon glyph
+    stripped from the effect name: Fireworks audio, Fw Starburst audio, GEQ 3D,
+    Paintbrush, Popcorn audio, Snow Fall, and Multi Comet audio, which drops it
+    on top of the `m12` change. The removal is deliberate and the reason is at
+    `wf_effects_mm.cpp:1178-1179`: the glyph is MoonModules' marker for its own
+    effects in its own UI, it is not part of a name anyone types in YAML, and a
+    multi-byte glyph in a name is one more thing between an effect and a Home
+    Assistant entity id.
+
+31. **Scrolling Text's metadata drops `rev=0,mi=0,rY=0,mY=0` and blanks one
+    slider name.** Those four keys set segment reverse and mirror, which
+    deviation 2 says do not exist here. Recorded separately because deviation 4
+    talks only about fonts and time tokens, and a future upstream merge would
+    otherwise put them back.
+
+    The fifth change in the same string is the seventh slider name: upstream's
+    `Custom Font` (`wled00/FX.cpp:6567`) is empty here
+    (`wf_effects_2d_a.cpp:267`), which is how a metadata string hides a control
+    that does nothing. Deviation 4 covers the font handling; this is what the
+    control layer shows for it.
 
 32. **Fw Starburst audio counts its stars in an `unsigned`, not MoonModules'
     `uint8_t`.** MM has `uint8_t numStars = 1 + (SEGLEN >> 3);`
@@ -1033,21 +1073,60 @@ specified.
     2040 and renders nothing at all above it. Stock WLED 16.0.1 fixed exactly
     this (`WLED/wled00/FX.cpp:3621`) and the port takes the fixed form. Visible
     consequence: identical below 2040 pixels, where both clamp to the same
-    `maxStars`; above it the MM original goes dark and this does not.
+    `maxStars`; from 2040 to 2047 pixels the MM original goes dark and this
+    does not, and the same again at 4088 to 4095 and every 2048 pixels after
+    that, because a `uint8_t` wraps rather than saturating.
 
-33. **The engine reproduces WLED's in-effect gamma and not its output stage.**
-    WLED uses gamma in two places: `gamma32()` over the finished frame inside
-    `show()` (`wled00/FX_fcn.cpp:1713`), and `gamma8()` / `gamma8inv()` /
-    `gamma32inv()` inside effect and particle bodies, to pre-compensate a value
-    so that the output stage lands where the author wanted. The second kind is
-    visible in WLED's own pre-output buffer and is reproduced here with WLED's
-    real tables at its default gamma of 2.2 (`wled00/wled.h:414`), independent
-    of any option. The first is not: it belongs to the ESPHome light layer's
-    `gamma_correct` or to the display front end's own, which is where an
-    ESPHome user expects to find it and where it can also be turned off.
+33. **Both of WLED's gamma stages are here, and the output stage is the front
+    end's option.** WLED uses gamma in two places. `gamma8()`, `gamma8inv()`
+    and `gamma32inv()` are called inside effect and particle bodies, to
+    pre-compensate a value so that the output stage lands where the author
+    wanted; that kind is visible in WLED's own pre-output buffer and is
+    reproduced here with WLED's real tables at its default gamma of 2.2
+    (`wled00/wled.h:414`), independent of any option. `gamma32()` over the
+    finished frame in `show()` (`wled00/FX_fcn.cpp:1723`) is the other, and
+    here it is the display front end's `gamma_correct`, or the ESPHome light's
+    own on the light path.
 
-    Consequence for anyone matching a WLED device pixel for pixel: WLED's own
-    output gamma is 2.2, and ESPHome's light default is 2.8. Set
-    `gamma_correct: 2.2` for the factory WLED look. The defaults are left alone
-    here, because an ESPHome light's gamma is the user's to set and a component
-    that quietly changes it is worse than one that documents it.
+    Since v0.4.0 the display front end defaults that option to 2.2, WLED's
+    value, because 1.0 is not a neutral choice: it is the one value that leaves
+    the engine's pre-compensation uncancelled, so Matrix's spawn pixel reaches
+    the panel at the 215 that `gamma8inv(175)` produced instead of the 175 the
+    effect asked for.
+
+    Three things a reader matching a device needs.
+
+    *The gate.* Upstream's output gamma is conditional on `gammaCorrectCol`
+    (`wled00/FX_fcn.cpp:1713`), which defaults to true (`wled00/wled.h:412`)
+    and is a setting a user can turn off. This port pins it true, so a WLED
+    device with colour gamma switched off cannot be matched by any setting
+    here. `gammaCorrectBri`, the separate stage at `wled00/FX_fcn.cpp:1800`
+    (`if (gammaCorrectBri) b = gamma8(b);`), defaults to false and has no
+    equivalent here either.
+
+    *A hub75 panel.* WLED's HUB75 builds define `-D NO_CIE1931` (WLED
+    `platformio.ini`, the shared `[hub75]` flags), so the panel library adds no
+    curve of its own and gamma 2.2 is the only one. ESPHome's hub75 driver
+    applies CIE1931 unless told otherwise (esp-hub75
+    `include/hub75_config.h`, `HUB75_GAMMA_MODE 1`). Matching a WLED panel
+    therefore takes both halves: `gamma_correct: 2.2` on `wled_fx` and
+    `gamma_correct: LINEAR` on the display. The shipped matrix configurations
+    do both and config validation warns when a hub75 display is left on its own
+    curve underneath this one.
+
+    *A light.* ESPHome applies the light's own `gamma_correct`, default 2.8,
+    and applies it after its brightness scaling
+    (`light/esp_color_correction.h:33-36`), where WLED corrects first and lets
+    the bus scale afterwards (`wled00/FX_fcn.cpp:1802`). Setting the light to
+    2.2 matches WLED at full brightness. It does not match a dimmed one, and
+    that is not fixable from this side: at half brightness a buffer value of
+    128 leaves a WLED strip as `gamma2.2(128) * 128/255` = 28 and an ESPHome
+    strip as `gamma2.8(64)` = 5. Buffer to LED at full brightness, for the
+    three paths: 32 becomes 3, 3 and 1; 128 becomes 56, 56 and 37; 215 becomes
+    175, 175 and 158, reading WLED, the display front end at 2.2 and an
+    ESPHome light at 2.8.
+
+    The component's own master brightness, the Colour 1 light, is applied after
+    the gamma table on the display front end, which is WLED's order. On the
+    light front end it is applied before `set_rgbw()` and ESPHome's curve then
+    bends it, for the same reason: the light owns the stage after this one.

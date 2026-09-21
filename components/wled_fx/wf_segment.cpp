@@ -29,6 +29,14 @@ Segment::~Segment() {
 
 bool Segment::set_canvas(Canvas *canvas) {
   this->canvas_ = canvas;
+  /* The geometry cache the inline accessors in wf_segment.h read. Filled here
+   * and nowhere else, because this is the only moment the canvas can change:
+   * it is allocated once at setup and never resized under a running effect. */
+  this->canvas_pixels_ = nullptr;
+  this->vw_ = 0;
+  this->vh_ = 0;
+  this->is_2d_ = false;
+  this->raw_len_ = 0;
   if (this->scratch_ != nullptr) {
     platform_free(this->scratch_);
     this->scratch_ = nullptr;
@@ -40,6 +48,11 @@ bool Segment::set_canvas(Canvas *canvas) {
   this->pinwheel_max_line_ = 0;
   if (canvas == nullptr || !canvas->is_allocated())
     return false;
+  this->canvas_pixels_ = canvas->pixels();
+  this->vw_ = canvas->width();
+  this->vh_ = canvas->height();
+  this->is_2d_ = this->vw_ > 1 && this->vh_ > 1;
+  this->raw_len_ = static_cast<uint32_t>(canvas->size());
   const size_t words = canvas->width() > canvas->height() ? canvas->width() : canvas->height();
   /* One row or column, and two rays of Bresenham coordinates. A few hundred
    * bytes each, walked once or twice a frame by move_x / move_y and by the
@@ -139,28 +152,6 @@ void Segment::deallocate_data() {
   }
   this->data_len_ = 0;
   this->data_cap_ = 0;
-}
-
-unsigned Segment::length() const {
-  const unsigned w = this->width();
-  const unsigned h = this->height();
-  if (w == 0)
-    return 0;
-  if (this->is_2d()) {
-    switch (this->map1d2d) {
-      case M12_P_BAR:
-        return h;
-      case M12_P_CORNER:
-        return w > h ? w : h;
-      case M12_P_ARC:
-        return sqrt32_bw(w * w + h * h);
-      case M12_S_PINWHEEL:
-        return pinwheel_length(w, h);
-      default:
-        return w * h;
-    }
-  }
-  return w * h;
 }
 
 void Segment::set_pixel_color(int n, uint32_t c) const {
@@ -387,22 +378,6 @@ uint32_t Segment::get_pixel_color(int i) const {
   }
 
   return this->get_pixel_color_raw(i);
-}
-
-void Segment::set_pixel_color_xy(int x, int y, uint32_t c) const {
-  if (!this->is_active())
-    return;
-  if (static_cast<unsigned>(x) >= this->width() || static_cast<unsigned>(y) >= this->height())
-    return;
-  this->set_pixel_color_xy_raw(x, y, c);
-}
-
-uint32_t Segment::get_pixel_color_xy(int x, int y) const {
-  if (!this->is_active())
-    return 0;
-  if (static_cast<unsigned>(x) >= this->width() || static_cast<unsigned>(y) >= this->height())
-    return 0;
-  return this->get_pixel_color_xy_raw(x, y);
 }
 
 void Segment::fill(uint32_t c) const {

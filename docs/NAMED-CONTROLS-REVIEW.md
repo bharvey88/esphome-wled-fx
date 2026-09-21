@@ -312,19 +312,19 @@ with the ESPHome 2026.8.2 in `C:\Users\bharv\esphome-venv`:
 
 | Build | Flash | RAM |
 |---|---:|---:|
-| Pinned to Matrix, named controls, Matrix compiled in | 828,759 | 110,163 |
-| Pinned to Matrix, the generic entity set, Matrix compiled in | 836,771 | 110,947 |
-| Pinned to Matrix, the generic entity set, all 64 matrix effects | 898,459 | 111,043 |
+| Pinned to Matrix, named controls, Matrix compiled in | 830,963 | 110,443 |
+| Pinned to Matrix, the generic entity set, Matrix compiled in | 840,539 | 111,227 |
+| Pinned to Matrix, the generic entity set, all 64 matrix effects | 910,959 | 111,323 |
 
-* The six named entities are **8,012 bytes of flash and 784 bytes of RAM**
+* The six named entities are **9,576 bytes of flash and 784 bytes of RAM**
   less than the seventeen generic ones they replace, which is mostly just
   eleven fewer entities.
 * Compiling Matrix alone rather than the 64 a 64x64 panel offers is another
-  **61,688 bytes of flash** and 96 bytes of RAM. That saving comes free with
+  **70,420 bytes of flash** and 96 bytes of RAM. That saving comes free with
   pinning: when every output in the configuration is pinned with `controls:`
   and no `effects:` list is written, nothing else could ever be selected, so
   the allow-list defaults to the pinned effects.
-* **69,700 bytes**, about 68 KB, between the two ends.
+* **79,996 bytes**, about 78 KB, between the two ends.
 
 A build that does not use `controls:` pays almost nothing for it. The entity
 platforms are pulled in only when a configuration asks for them, and ESPHome
@@ -334,10 +334,10 @@ classes, which is one flag and one preference handle each:
 
 | `examples/m1-hub75.yaml` | Flash | RAM |
 |---|---:|---:|
-| this branch | 883,279 | 110,059 |
-| the same configuration on the component tree this branch started from | 883,027 | 110,027 |
+| this branch | 895,079 | 110,339 |
+| the same configuration on `origin/main` | 894,643 | 110,307 |
 
-**252 bytes of flash and 32 bytes of RAM** across the three numbers, two
+**436 bytes of flash and 32 bytes of RAM** across the three numbers, two
 selects and one switch that configuration has. Open question 4 below is
 whether that machinery should also be reachable from the generic platforms,
 since it is being paid for either way.
@@ -348,7 +348,10 @@ since it is being paid for either way.
   examples and the four hardware-test configurations, from the venv above,
   with the configs staged at a short path and the component path pointed at
   this worktree and no secrets file.
-* `esphome compile` passes for ten of those eleven. `examples/host.yaml` is
+* `esphome compile` passed for ten of those eleven before `origin/main` was
+  merged in, and for the three new examples, `m1-hub75.yaml` and
+  `hardware-test/m1-test.yaml` again afterwards, which is every file the merge
+  touched on both sides. `examples/host.yaml` is
   the exception and not because of anything here: the ESPHome host platform
   needs a native C++ toolchain, and this machine's MinGW linker is quarantined
   by Windows Defender, which is the whole reason `tools/wsl/` exists. It was
@@ -360,6 +363,13 @@ since it is being paid for either way.
   lights to a `light:` block that already exists.
 * `pytest tests` passes: 28 tests over the metadata parsing and 20 over the
   schema, the entities it builds and the errors above.
+* `origin/main` is merged in, with v0.5.0's performance work on top. The three
+  conflicts were all two features adding lines in the same place: the entry
+  schema, the list of keys that only apply to a display, and the `select`
+  platform, where `scope:` and the named controls both wanted the file.
+  Everything on both sides is kept. The measurements above are from after the
+  merge, so they carry `optimize: speed` and are not comparable with the ones
+  taken before it.
 * `tools/check_effect_names.py`, against a simulator built in WSL, reports
   "name scanner agrees with the registry: 223 effects, 72 palettes" with the
   two new comparisons in it.

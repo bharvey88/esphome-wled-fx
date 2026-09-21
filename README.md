@@ -917,20 +917,20 @@ esp-idf builds:
 
 | Build | Flash | RAM |
 |---|---:|---:|
-| Pinned to Matrix, named controls | 828,759 | 110,163 |
-| Pinned to Matrix, generic entities | 836,771 | 110,947 |
-| All 64 matrix effects, generic entities | 898,459 | 111,043 |
+| Pinned to Matrix, named controls | 830,963 | 110,443 |
+| Pinned to Matrix, generic entities | 840,539 | 111,227 |
+| All 64 matrix effects, generic entities | 910,959 | 111,323 |
 
-So the six named entities are **8,012 bytes** of flash and **784 bytes** of
+So the six named entities are **9,576 bytes** of flash and **784 bytes** of
 RAM less than the seventeen generic ones they replace, and compiling Matrix
-alone instead of the 64 a panel offers is another **61,688 bytes**: **69,700
-bytes**, about 68 KB, between the two ends. The canvas is sized from the panel
+alone instead of the 64 a panel offers is another **70,420 bytes**: **79,996
+bytes**, about 78 KB, between the two ends. The canvas is sized from the panel
 rather than from the effect list, so the 96 bytes of RAM between the last two
 rows is the registry tables and nothing else.
 
 A configuration that does not use `controls:` pays almost nothing for it: the
 entity platforms are only pulled into a build that asked for them. Measured on
-`examples/m1-hub75.yaml`, which uses none of this, the difference is **252
+`examples/m1-hub75.yaml`, which uses none of this, the difference is **436
 bytes of flash and 32 bytes of RAM**, which is the optional `restore_value`
 storage on the three numbers and two selects that configuration does have.
 

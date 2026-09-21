@@ -272,6 +272,12 @@ FLOORS = {
                  "fraction_lit": 0.06, "hue_distance": 0.82},
 }
 
+# A twelve bin histogram built from a handful of pixels swings from one run to
+# the next whatever is rendering them, so hue is not scored below this, the
+# same guard `compare.py` uses. A sparse particle effect on a dark palette is
+# exactly the case: PS Fireworks lights under one pixel a frame on average.
+HUE_MIN_SAMPLES_PER_FRAME = 40.0
+
 
 def class_of(effect: str) -> str:
     return "particle" if effect.startswith("PS ") else "other"
@@ -292,6 +298,8 @@ def compare_rows(device: dict, port: dict) -> list[dict]:
         db, pb = d["mean_brightness"], p["mean_brightness"]
         ratio = (pb / db) if db > 0.5 else None
         hue = hue_distance(d.get("hue_histogram"), p.get("hue_histogram"))
+        hue_scorable = min(d.get("hue_samples_per_frame", 0.0),
+                           p.get("hue_samples_per_frame", 0.0)) >= HUE_MIN_SAMPLES_PER_FRAME
         flags = []
         if abs(pb - db) > floors["mean_brightness"] and (
             ratio is None or ratio < floors["ratio_lo"] or ratio > floors["ratio_hi"]
@@ -299,7 +307,7 @@ def compare_rows(device: dict, port: dict) -> list[dict]:
             flags.append("brightness")
         if abs(p["fraction_lit"] - d["fraction_lit"]) > floors["fraction_lit"]:
             flags.append("coverage")
-        if hue > floors["hue_distance"]:
+        if hue_scorable and hue > floors["hue_distance"]:
             flags.append("hue")
         rows.append({
             "effect": effect,
@@ -313,6 +321,7 @@ def compare_rows(device: dict, port: dict) -> list[dict]:
             "device_lit": d["fraction_lit"],
             "port_lit": p["fraction_lit"],
             "hue_distance": round(hue, 3),
+            "hue_scorable": hue_scorable,
             "flags": flags,
         })
     return rows
@@ -345,8 +354,10 @@ def report(device_dir: Path, port_dir: Path, out: Path) -> int:
         # The ratio furthest from 1.0 in either direction.
         worst = max(ratios, key=lambda t: abs(np.log(max(t[0], 1e-6)))) if ratios else (float("nan"), "-")
         med = float(np.median([t[0] for t in ratios])) if ratios else float("nan")
-        hues = [(r["hue_distance"], r["palette_name"]) for r in sub]
-        wh = max(hues, key=lambda t: t[0])
+        # The worst hue distance that is worth reading, which means one with
+        # enough lit pixels behind the histogram on both sides.
+        hues = [(r["hue_distance"], r["palette_name"]) for r in sub if r.get("hue_scorable")]
+        wh = max(hues, key=lambda t: t[0]) if hues else (float("nan"), "too few lit pixels")
         lines.append(
             f"| {effect} | {len(sub)} | "
             f"{worst[0]:.2f} ({worst[1]}) | {med:.2f} | {wh[0]:.2f} ({wh[1]}) | "

@@ -1,0 +1,8319 @@
+[
+  {
+    "effect": "Fire 2012",
+    "palette": 0,
+    "palette_name": "Default",
+    "device_brightness": 134.644,
+    "port_brightness": 119.041,
+    "ratio": 0.884,
+    "device_channels": [
+      134.644,
+      47.112,
+      11.491
+    ],
+    "port_channels": [
+      119.041,
+      43.707,
+      10.764
+    ],
+    "device_lit": 0.84,
+    "port_lit": 0.7298,
+    "hue_distance": 0.018,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 1,
+    "palette_name": "* Random Cycle",
+    "device_brightness": 120.362,
+    "port_brightness": 109.783,
+    "ratio": 0.912,
+    "device_channels": [
+      60.135,
+      69.788,
+      86.338
+    ],
+    "port_channels": [
+      107.445,
+      12.817,
+      39.418
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.853,
+    "hue_scorable": true,
+    "flags": [
+      "hue"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 2,
+    "palette_name": "* Color 1",
+    "device_brightness": 248.063,
+    "port_brightness": 248.063,
+    "ratio": 1.0,
+    "device_channels": [
+      248.063,
+      155.438,
+      0.0
+    ],
+    "port_channels": [
+      248.063,
+      155.438,
+      0.0
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 3,
+    "palette_name": "* Colors 1&2",
+    "device_brightness": 153.443,
+    "port_brightness": 164.757,
+    "ratio": 1.074,
+    "device_channels": [
+      153.443,
+      96.107,
+      0.0
+    ],
+    "port_channels": [
+      164.757,
+      103.206,
+      0.0
+    ],
+    "device_lit": 0.7898,
+    "port_lit": 0.8212,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 4,
+    "palette_name": "* Color Gradient",
+    "device_brightness": 34.847,
+    "port_brightness": 32.584,
+    "ratio": 0.935,
+    "device_channels": [
+      34.847,
+      21.491,
+      0.0
+    ],
+    "port_channels": [
+      32.584,
+      20.115,
+      0.0
+    ],
+    "device_lit": 0.3301,
+    "port_lit": 0.3018,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 5,
+    "palette_name": "* Colors Only",
+    "device_brightness": 155.213,
+    "port_brightness": 164.911,
+    "ratio": 1.062,
+    "device_channels": [
+      155.213,
+      97.297,
+      0.0
+    ],
+    "port_channels": [
+      164.911,
+      103.373,
+      0.0
+    ],
+    "device_lit": 0.764,
+    "port_lit": 0.7872,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 6,
+    "palette_name": "Party",
+    "device_brightness": 213.155,
+    "port_brightness": 211.972,
+    "ratio": 0.994,
+    "device_channels": [
+      198.592,
+      58.338,
+      94.312
+    ],
+    "port_channels": [
+      189.565,
+      47.53,
+      115.065
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.134,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 7,
+    "palette_name": "Cloud",
+    "device_brightness": 183.069,
+    "port_brightness": 194.305,
+    "ratio": 1.061,
+    "device_channels": [
+      38.829,
+      51.442,
+      183.069
+    ],
+    "port_channels": [
+      35.791,
+      47.178,
+      194.305
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.034,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 8,
+    "palette_name": "Lava",
+    "device_brightness": 128.135,
+    "port_brightness": 111.395,
+    "ratio": 0.869,
+    "device_channels": [
+      128.135,
+      27.211,
+      11.991
+    ],
+    "port_channels": [
+      111.395,
+      24.593,
+      11.071
+    ],
+    "device_lit": 0.8418,
+    "port_lit": 0.7245,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 9,
+    "palette_name": "Ocean",
+    "device_brightness": 156.183,
+    "port_brightness": 148.219,
+    "ratio": 0.949,
+    "device_channels": [
+      29.363,
+      78.791,
+      150.669
+    ],
+    "port_channels": [
+      28.437,
+      69.558,
+      143.705
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.087,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 10,
+    "palette_name": "Forest",
+    "device_brightness": 142.786,
+    "port_brightness": 137.134,
+    "ratio": 0.96,
+    "device_channels": [
+      49.099,
+      142.786,
+      39.872
+    ],
+    "port_channels": [
+      42.456,
+      137.134,
+      34.721
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.084,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 11,
+    "palette_name": "Rainbow",
+    "device_brightness": 219.026,
+    "port_brightness": 223.135,
+    "ratio": 1.019,
+    "device_channels": [
+      132.919,
+      115.429,
+      82.581
+    ],
+    "port_channels": [
+      152.107,
+      94.04,
+      71.336
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.132,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 12,
+    "palette_name": "Rainbow Bands",
+    "device_brightness": 124.447,
+    "port_brightness": 142.323,
+    "ratio": 1.144,
+    "device_channels": [
+      77.501,
+      54.227,
+      38.94
+    ],
+    "port_channels": [
+      103.236,
+      44.186,
+      34.07
+    ],
+    "device_lit": 0.9618,
+    "port_lit": 0.9675,
+    "hue_distance": 0.124,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 13,
+    "palette_name": "Sunset",
+    "device_brightness": 193.538,
+    "port_brightness": 190.391,
+    "ratio": 0.984,
+    "device_channels": [
+      170.169,
+      46.251,
+      83.433
+    ],
+    "port_channels": [
+      168.882,
+      38.102,
+      73.035
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.084,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 14,
+    "palette_name": "Rivendell",
+    "device_brightness": 105.0,
+    "port_brightness": 100.059,
+    "ratio": 0.953,
+    "device_channels": [
+      75.93,
+      105.0,
+      71.192
+    ],
+    "port_channels": [
+      68.773,
+      100.059,
+      67.189
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.068,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 15,
+    "palette_name": "Breeze",
+    "device_brightness": 156.615,
+    "port_brightness": 139.791,
+    "ratio": 0.893,
+    "device_channels": [
+      67.03,
+      145.872,
+      156.615
+    ],
+    "port_channels": [
+      58.687,
+      129.946,
+      139.791
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 16,
+    "palette_name": "Red & Blue",
+    "device_brightness": 129.407,
+    "port_brightness": 124.134,
+    "ratio": 0.959,
+    "device_channels": [
+      115.714,
+      31.777,
+      83.938
+    ],
+    "port_channels": [
+      103.536,
+      28.672,
+      86.155
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.11,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 17,
+    "palette_name": "Yellowout",
+    "device_brightness": 174.847,
+    "port_brightness": 180.607,
+    "ratio": 1.033,
+    "device_channels": [
+      174.847,
+      130.248,
+      2.725
+    ],
+    "port_channels": [
+      180.607,
+      137.989,
+      3.045
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.003,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 18,
+    "palette_name": "Analogous",
+    "device_brightness": 231.287,
+    "port_brightness": 232.96,
+    "ratio": 1.007,
+    "device_channels": [
+      114.422,
+      0.0,
+      209.755
+    ],
+    "port_channels": [
+      105.114,
+      0.0,
+      212.47
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.048,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 19,
+    "palette_name": "Splash",
+    "device_brightness": 218.58,
+    "port_brightness": 222.787,
+    "ratio": 1.019,
+    "device_channels": [
+      205.678,
+      61.008,
+      171.909
+    ],
+    "port_channels": [
+      202.04,
+      61.37,
+      183.808
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.103,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 20,
+    "palette_name": "Pastel",
+    "device_brightness": 216.614,
+    "port_brightness": 211.097,
+    "ratio": 0.975,
+    "device_channels": [
+      177.616,
+      195.555,
+      147.018
+    ],
+    "port_channels": [
+      159.966,
+      185.734,
+      151.546
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.118,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 21,
+    "palette_name": "Sunset 2",
+    "device_brightness": 150.293,
+    "port_brightness": 152.523,
+    "ratio": 1.015,
+    "device_channels": [
+      140.341,
+      127.21,
+      85.18
+    ],
+    "port_channels": [
+      143.649,
+      124.616,
+      80.989
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.052,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 22,
+    "palette_name": "Beach",
+    "device_brightness": 219.96,
+    "port_brightness": 223.529,
+    "ratio": 1.016,
+    "device_channels": [
+      128.147,
+      212.767,
+      204.304
+    ],
+    "port_channels": [
+      144.313,
+      216.892,
+      207.71
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.115,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 23,
+    "palette_name": "Vintage",
+    "device_brightness": 92.844,
+    "port_brightness": 83.596,
+    "ratio": 0.9,
+    "device_channels": [
+      92.83,
+      43.181,
+      29.839
+    ],
+    "port_channels": [
+      83.584,
+      38.479,
+      28.339
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.043,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 24,
+    "palette_name": "Departure",
+    "device_brightness": 158.36,
+    "port_brightness": 140.228,
+    "ratio": 0.886,
+    "device_channels": [
+      110.252,
+      139.699,
+      63.659
+    ],
+    "port_channels": [
+      98.269,
+      122.128,
+      51.97
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.063,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 25,
+    "palette_name": "Landscape",
+    "device_brightness": 155.033,
+    "port_brightness": 131.173,
+    "ratio": 0.846,
+    "device_channels": [
+      90.308,
+      143.634,
+      78.158
+    ],
+    "port_channels": [
+      76.308,
+      121.137,
+      67.582
+    ],
+    "device_lit": 0.8661,
+    "port_lit": 0.7384,
+    "hue_distance": 0.013,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 26,
+    "palette_name": "Beech",
+    "device_brightness": 121.763,
+    "port_brightness": 107.572,
+    "ratio": 0.883,
+    "device_channels": [
+      80.703,
+      113.105,
+      51.189
+    ],
+    "port_channels": [
+      67.8,
+      100.611,
+      42.637
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.133,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 27,
+    "palette_name": "Sherbet",
+    "device_brightness": 247.385,
+    "port_brightness": 247.367,
+    "ratio": 1.0,
+    "device_channels": [
+      234.097,
+      147.731,
+      117.855
+    ],
+    "port_channels": [
+      235.173,
+      141.98,
+      106.187
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.076,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 28,
+    "palette_name": "Hult",
+    "device_brightness": 227.385,
+    "port_brightness": 229.43,
+    "ratio": 1.009,
+    "device_channels": [
+      170.995,
+      159.579,
+      226.971
+    ],
+    "port_channels": [
+      179.998,
+      167.705,
+      229.078
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.119,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 29,
+    "palette_name": "Hult 64",
+    "device_brightness": 158.455,
+    "port_brightness": 161.357,
+    "ratio": 1.018,
+    "device_channels": [
+      56.625,
+      158.455,
+      100.922
+    ],
+    "port_channels": [
+      50.52,
+      161.357,
+      111.313
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.064,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 30,
+    "palette_name": "Drywet",
+    "device_brightness": 198.808,
+    "port_brightness": 184.355,
+    "ratio": 0.927,
+    "device_channels": [
+      103.8,
+      154.896,
+      137.62
+    ],
+    "port_channels": [
+      102.942,
+      143.12,
+      121.501
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.097,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 31,
+    "palette_name": "Jul",
+    "device_brightness": 147.843,
+    "port_brightness": 159.708,
+    "ratio": 1.08,
+    "device_channels": [
+      127.003,
+      83.029,
+      51.766
+    ],
+    "port_channels": [
+      142.619,
+      70.54,
+      44.678
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.121,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 32,
+    "palette_name": "Grintage",
+    "device_brightness": 111.923,
+    "port_brightness": 100.031,
+    "ratio": 0.894,
+    "device_channels": [
+      111.66,
+      77.379,
+      22.589
+    ],
+    "port_channels": [
+      99.788,
+      68.365,
+      19.966
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.062,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 33,
+    "palette_name": "Rewhi",
+    "device_brightness": 189.339,
+    "port_brightness": 189.518,
+    "ratio": 1.001,
+    "device_channels": [
+      186.199,
+      126.925,
+      137.942
+    ],
+    "port_channels": [
+      183.726,
+      130.931,
+      146.874
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.148,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 34,
+    "palette_name": "Tertiary",
+    "device_brightness": 194.728,
+    "port_brightness": 202.333,
+    "ratio": 1.039,
+    "device_channels": [
+      73.554,
+      133.619,
+      91.267
+    ],
+    "port_channels": [
+      65.9,
+      116.671,
+      112.143
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.103,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 35,
+    "palette_name": "Fire",
+    "device_brightness": 136.347,
+    "port_brightness": 119.041,
+    "ratio": 0.873,
+    "device_channels": [
+      136.347,
+      47.755,
+      11.562
+    ],
+    "port_channels": [
+      119.041,
+      43.707,
+      10.764
+    ],
+    "device_lit": 0.8454,
+    "port_lit": 0.7298,
+    "hue_distance": 0.017,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 36,
+    "palette_name": "Icefire",
+    "device_brightness": 155.594,
+    "port_brightness": 135.018,
+    "ratio": 0.868,
+    "device_channels": [
+      27.312,
+      89.564,
+      155.594
+    ],
+    "port_channels": [
+      25.56,
+      79.178,
+      135.018
+    ],
+    "device_lit": 0.8557,
+    "port_lit": 0.7366,
+    "hue_distance": 0.022,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 37,
+    "palette_name": "Cyane",
+    "device_brightness": 180.249,
+    "port_brightness": 176.496,
+    "ratio": 0.979,
+    "device_channels": [
+      137.567,
+      165.75,
+      118.868
+    ],
+    "port_channels": [
+      125.85,
+      164.256,
+      108.774
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.071,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 38,
+    "palette_name": "Light Pink",
+    "device_brightness": 173.908,
+    "port_brightness": 164.848,
+    "ratio": 0.948,
+    "device_channels": [
+      141.85,
+      117.766,
+      173.751
+    ],
+    "port_channels": [
+      133.31,
+      106.088,
+      164.685
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.058,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 39,
+    "palette_name": "Autumn",
+    "device_brightness": 148.005,
+    "port_brightness": 138.048,
+    "ratio": 0.933,
+    "device_channels": [
+      147.262,
+      86.318,
+      34.489
+    ],
+    "port_channels": [
+      137.471,
+      74.697,
+      29.782
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.052,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 40,
+    "palette_name": "Magenta",
+    "device_brightness": 172.009,
+    "port_brightness": 149.379,
+    "ratio": 0.868,
+    "device_channels": [
+      85.514,
+      14.883,
+      172.009
+    ],
+    "port_channels": [
+      77.631,
+      14.456,
+      149.379
+    ],
+    "device_lit": 0.8697,
+    "port_lit": 0.7452,
+    "hue_distance": 0.031,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 41,
+    "palette_name": "Magred",
+    "device_brightness": 159.352,
+    "port_brightness": 134.907,
+    "ratio": 0.847,
+    "device_channels": [
+      158.321,
+      0.0,
+      119.482
+    ],
+    "port_channels": [
+      134.096,
+      0.0,
+      99.38
+    ],
+    "device_lit": 0.8698,
+    "port_lit": 0.7366,
+    "hue_distance": 0.026,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 42,
+    "palette_name": "Yelmag",
+    "device_brightness": 176.234,
+    "port_brightness": 148.822,
+    "ratio": 0.844,
+    "device_channels": [
+      176.234,
+      15.739,
+      73.702
+    ],
+    "port_channels": [
+      148.822,
+      14.456,
+      62.572
+    ],
+    "device_lit": 0.8756,
+    "port_lit": 0.7452,
+    "hue_distance": 0.022,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 43,
+    "palette_name": "Yelblu",
+    "device_brightness": 247.425,
+    "port_brightness": 247.344,
+    "ratio": 1.0,
+    "device_channels": [
+      32.392,
+      157.509,
+      210.289
+    ],
+    "port_channels": [
+      30.63,
+      137.239,
+      212.47
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.138,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 44,
+    "palette_name": "Orange & Teal",
+    "device_brightness": 158.971,
+    "port_brightness": 158.219,
+    "ratio": 0.995,
+    "device_channels": [
+      84.287,
+      118.654,
+      56.879
+    ],
+    "port_channels": [
+      75.572,
+      121.458,
+      60.075
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.068,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 45,
+    "palette_name": "Tiamat",
+    "device_brightness": 117.157,
+    "port_brightness": 103.014,
+    "ratio": 0.879,
+    "device_channels": [
+      48.608,
+      75.041,
+      103.284
+    ],
+    "port_channels": [
+      42.183,
+      65.506,
+      90.907
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.124,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 46,
+    "palette_name": "April Night",
+    "device_brightness": 80.461,
+    "port_brightness": 74.884,
+    "ratio": 0.931,
+    "device_channels": [
+      37.932,
+      39.879,
+      44.34
+    ],
+    "port_channels": [
+      33.0,
+      34.22,
+      43.842
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.076,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 47,
+    "palette_name": "Orangery",
+    "device_brightness": 218.449,
+    "port_brightness": 222.395,
+    "ratio": 1.018,
+    "device_channels": [
+      218.449,
+      60.269,
+      7.441
+    ],
+    "port_channels": [
+      222.395,
+      64.149,
+      9.38
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 48,
+    "palette_name": "C9",
+    "device_brightness": 139.122,
+    "port_brightness": 142.632,
+    "ratio": 1.025,
+    "device_channels": [
+      116.553,
+      32.177,
+      6.433
+    ],
+    "port_channels": [
+      121.378,
+      28.885,
+      6.442
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.016,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 49,
+    "palette_name": "Sakura",
+    "device_brightness": 224.909,
+    "port_brightness": 219.868,
+    "ratio": 0.978,
+    "device_channels": [
+      224.909,
+      47.189,
+      47.719
+    ],
+    "port_channels": [
+      219.868,
+      42.62,
+      41.736
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.057,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 50,
+    "palette_name": "Aurora",
+    "device_brightness": 152.565,
+    "port_brightness": 136.577,
+    "ratio": 0.895,
+    "device_channels": [
+      0.0,
+      147.105,
+      22.968
+    ],
+    "port_channels": [
+      0.0,
+      126.553,
+      25.406
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.118,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 51,
+    "palette_name": "Atlantica",
+    "device_brightness": 168.268,
+    "port_brightness": 157.681,
+    "ratio": 0.937,
+    "device_channels": [
+      11.774,
+      120.966,
+      118.833
+    ],
+    "port_channels": [
+      10.005,
+      105.891,
+      115.993
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.083,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 52,
+    "palette_name": "C9 2",
+    "device_brightness": 150.615,
+    "port_brightness": 146.891,
+    "ratio": 0.975,
+    "device_channels": [
+      91.334,
+      64.715,
+      22.309
+    ],
+    "port_channels": [
+      81.525,
+      72.564,
+      18.255
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.098,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 53,
+    "palette_name": "C9 New",
+    "device_brightness": 189.376,
+    "port_brightness": 195.245,
+    "ratio": 1.031,
+    "device_channels": [
+      158.74,
+      44.43,
+      8.738
+    ],
+    "port_channels": [
+      167.233,
+      39.661,
+      8.472
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.023,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 54,
+    "palette_name": "Temperature",
+    "device_brightness": 214.988,
+    "port_brightness": 208.653,
+    "ratio": 0.971,
+    "device_channels": [
+      124.64,
+      163.047,
+      116.855
+    ],
+    "port_channels": [
+      106.119,
+      151.76,
+      126.519
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.094,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 55,
+    "palette_name": "Aurora 2",
+    "device_brightness": 193.85,
+    "port_brightness": 190.812,
+    "ratio": 0.984,
+    "device_channels": [
+      88.47,
+      172.129,
+      59.276
+    ],
+    "port_channels": [
+      78.608,
+      171.182,
+      52.955
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.06,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 56,
+    "palette_name": "Retro Clown",
+    "device_brightness": 217.944,
+    "port_brightness": 220.497,
+    "ratio": 1.012,
+    "device_channels": [
+      216.398,
+      101.549,
+      82.764
+    ],
+    "port_channels": [
+      219.045,
+      110.315,
+      77.141
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.115,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 57,
+    "palette_name": "Candy",
+    "device_brightness": 172.605,
+    "port_brightness": 183.245,
+    "ratio": 1.062,
+    "device_channels": [
+      149.003,
+      85.303,
+      98.559
+    ],
+    "port_channels": [
+      163.293,
+      111.069,
+      85.399
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.146,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 58,
+    "palette_name": "Toxy Reaf",
+    "device_brightness": 190.979,
+    "port_brightness": 197.162,
+    "ratio": 1.032,
+    "device_channels": [
+      53.989,
+      154.13,
+      156.341
+    ],
+    "port_channels": [
+      47.552,
+      163.452,
+      152.015
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.06,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 59,
+    "palette_name": "Fairy Reaf",
+    "device_brightness": 206.951,
+    "port_brightness": 208.485,
+    "ratio": 1.007,
+    "device_channels": [
+      121.77,
+      130.645,
+      199.959
+    ],
+    "port_channels": [
+      136.798,
+      113.839,
+      197.251
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.129,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 60,
+    "palette_name": "Semi Blue",
+    "device_brightness": 101.398,
+    "port_brightness": 86.752,
+    "ratio": 0.856,
+    "device_channels": [
+      34.716,
+      28.89,
+      101.398
+    ],
+    "port_channels": [
+      30.358,
+      24.79,
+      86.752
+    ],
+    "device_lit": 0.8381,
+    "port_lit": 0.7291,
+    "hue_distance": 0.017,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 61,
+    "palette_name": "Pink Candy",
+    "device_brightness": 224.313,
+    "port_brightness": 227.696,
+    "ratio": 1.015,
+    "device_channels": [
+      172.234,
+      88.292,
+      214.492
+    ],
+    "port_channels": [
+      185.348,
+      115.392,
+      219.7
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.15,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 62,
+    "palette_name": "Red Reaf",
+    "device_brightness": 183.649,
+    "port_brightness": 172.354,
+    "ratio": 0.938,
+    "device_channels": [
+      131.114,
+      95.68,
+      130.703
+    ],
+    "port_channels": [
+      116.888,
+      89.733,
+      125.918
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.046,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 63,
+    "palette_name": "Aqua Flash",
+    "device_brightness": 172.263,
+    "port_brightness": 143.271,
+    "ratio": 0.832,
+    "device_channels": [
+      129.744,
+      171.728,
+      120.458
+    ],
+    "port_channels": [
+      107.62,
+      142.849,
+      100.596
+    ],
+    "device_lit": 0.8849,
+    "port_lit": 0.7502,
+    "hue_distance": 0.027,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 64,
+    "palette_name": "Yelblu Hot",
+    "device_brightness": 123.131,
+    "port_brightness": 113.936,
+    "ratio": 0.925,
+    "device_channels": [
+      109.442,
+      39.627,
+      63.482
+    ],
+    "port_channels": [
+      100.703,
+      39.402,
+      60.916
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.139,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 65,
+    "palette_name": "Lite Light",
+    "device_brightness": 33.598,
+    "port_brightness": 28.178,
+    "ratio": 0.839,
+    "device_channels": [
+      30.957,
+      15.451,
+      33.598
+    ],
+    "port_channels": [
+      25.978,
+      12.807,
+      28.178
+    ],
+    "device_lit": 0.8055,
+    "port_lit": 0.6839,
+    "hue_distance": 0.018,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 66,
+    "palette_name": "Red Flash",
+    "device_brightness": 140.174,
+    "port_brightness": 117.748,
+    "ratio": 0.84,
+    "device_channels": [
+      140.174,
+      32.897,
+      22.699
+    ],
+    "port_channels": [
+      117.748,
+      27.318,
+      18.836
+    ],
+    "device_lit": 0.8642,
+    "port_lit": 0.7371,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 67,
+    "palette_name": "Blink Red",
+    "device_brightness": 121.874,
+    "port_brightness": 106.312,
+    "ratio": 0.872,
+    "device_channels": [
+      103.635,
+      42.54,
+      99.46
+    ],
+    "port_channels": [
+      89.479,
+      37.575,
+      87.122
+    ],
+    "device_lit": 0.8442,
+    "port_lit": 0.7271,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 68,
+    "palette_name": "Red Shift",
+    "device_brightness": 156.809,
+    "port_brightness": 147.855,
+    "ratio": 0.943,
+    "device_channels": [
+      156.809,
+      54.946,
+      57.36
+    ],
+    "port_channels": [
+      147.855,
+      49.695,
+      61.677
+    ],
+    "device_lit": 0.9996,
+    "port_lit": 0.9997,
+    "hue_distance": 0.092,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 69,
+    "palette_name": "Red Tide",
+    "device_brightness": 223.862,
+    "port_brightness": 226.8,
+    "ratio": 1.013,
+    "device_channels": [
+      223.862,
+      114.439,
+      38.67
+    ],
+    "port_channels": [
+      226.8,
+      102.834,
+      32.79
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.049,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 70,
+    "palette_name": "Candy2",
+    "device_brightness": 132.925,
+    "port_brightness": 128.126,
+    "ratio": 0.964,
+    "device_channels": [
+      128.378,
+      102.824,
+      63.46
+    ],
+    "port_channels": [
+      124.452,
+      102.326,
+      68.871
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.096,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Fire 2012",
+    "palette": 71,
+    "palette_name": "Traffic Light",
+    "device_brightness": 174.326,
+    "port_brightness": 150.136,
+    "ratio": 0.861,
+    "device_channels": [
+      84.273,
+      158.591,
+      0.0
+    ],
+    "port_channels": [
+      75.744,
+      134.841,
+      0.0
+    ],
+    "device_lit": 0.8713,
+    "port_lit": 0.7451,
+    "hue_distance": 0.023,
+    "hue_scorable": true,
+    "flags": [
+      "coverage"
+    ]
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 0,
+    "palette_name": "Default",
+    "device_brightness": 255.0,
+    "port_brightness": 255.0,
+    "ratio": 1.0,
+    "device_channels": [
+      255.0,
+      160.0,
+      0.0
+    ],
+    "port_channels": [
+      255.0,
+      160.0,
+      0.0
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 1,
+    "palette_name": "* Random Cycle",
+    "device_brightness": 170.929,
+    "port_brightness": 113.33,
+    "ratio": 0.663,
+    "device_channels": [
+      63.548,
+      86.175,
+      169.294
+    ],
+    "port_channels": [
+      112.383,
+      25.946,
+      32.508
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.992,
+    "hue_scorable": true,
+    "flags": [
+      "brightness",
+      "hue"
+    ]
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 2,
+    "palette_name": "* Color 1",
+    "device_brightness": 255.0,
+    "port_brightness": 255.0,
+    "ratio": 1.0,
+    "device_channels": [
+      255.0,
+      160.0,
+      0.0
+    ],
+    "port_channels": [
+      255.0,
+      160.0,
+      0.0
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 3,
+    "palette_name": "* Colors 1&2",
+    "device_brightness": 127.497,
+    "port_brightness": 127.741,
+    "ratio": 1.002,
+    "device_channels": [
+      127.497,
+      80.06,
+      0.0
+    ],
+    "port_channels": [
+      127.741,
+      80.214,
+      0.0
+    ],
+    "device_lit": 0.6038,
+    "port_lit": 0.6046,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 4,
+    "palette_name": "* Color Gradient",
+    "device_brightness": 77.553,
+    "port_brightness": 76.701,
+    "ratio": 0.989,
+    "device_channels": [
+      77.553,
+      48.485,
+      0.0
+    ],
+    "port_channels": [
+      76.701,
+      47.951,
+      0.0
+    ],
+    "device_lit": 0.4727,
+    "port_lit": 0.4682,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 5,
+    "palette_name": "* Colors Only",
+    "device_brightness": 129.816,
+    "port_brightness": 127.914,
+    "ratio": 0.985,
+    "device_channels": [
+      129.816,
+      81.467,
+      0.0
+    ],
+    "port_channels": [
+      127.914,
+      80.274,
+      0.0
+    ],
+    "device_lit": 0.5319,
+    "port_lit": 0.524,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 6,
+    "palette_name": "Party",
+    "device_brightness": 221.666,
+    "port_brightness": 221.509,
+    "ratio": 0.999,
+    "device_channels": [
+      174.868,
+      43.319,
+      136.335
+    ],
+    "port_channels": [
+      175.285,
+      44.052,
+      135.477
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 7,
+    "palette_name": "Cloud",
+    "device_brightness": 197.754,
+    "port_brightness": 197.288,
+    "ratio": 0.998,
+    "device_channels": [
+      69.614,
+      90.736,
+      197.754
+    ],
+    "port_channels": [
+      68.716,
+      89.281,
+      197.288
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 8,
+    "palette_name": "Lava",
+    "device_brightness": 146.577,
+    "port_brightness": 147.548,
+    "ratio": 1.007,
+    "device_channels": [
+      146.577,
+      31.2,
+      13.079
+    ],
+    "port_channels": [
+      147.548,
+      31.792,
+      13.225
+    ],
+    "device_lit": 0.9249,
+    "port_lit": 0.9247,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 9,
+    "palette_name": "Ocean",
+    "device_brightness": 173.817,
+    "port_brightness": 173.612,
+    "ratio": 0.999,
+    "device_channels": [
+      38.936,
+      105.207,
+      167.537
+    ],
+    "port_channels": [
+      38.833,
+      104.549,
+      167.434
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 10,
+    "palette_name": "Forest",
+    "device_brightness": 154.277,
+    "port_brightness": 153.549,
+    "ratio": 0.995,
+    "device_channels": [
+      56.362,
+      154.277,
+      49.063
+    ],
+    "port_channels": [
+      56.211,
+      153.549,
+      48.917
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.004,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 11,
+    "palette_name": "Rainbow",
+    "device_brightness": 226.085,
+    "port_brightness": 226.237,
+    "ratio": 1.001,
+    "device_channels": [
+      162.371,
+      89.241,
+      92.688
+    ],
+    "port_channels": [
+      162.573,
+      87.765,
+      93.744
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.011,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 12,
+    "palette_name": "Rainbow Bands",
+    "device_brightness": 116.595,
+    "port_brightness": 116.077,
+    "ratio": 0.996,
+    "device_channels": [
+      81.815,
+      40.328,
+      44.593
+    ],
+    "port_channels": [
+      81.08,
+      39.948,
+      44.231
+    ],
+    "device_lit": 0.9824,
+    "port_lit": 0.9807,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 13,
+    "palette_name": "Sunset",
+    "device_brightness": 200.329,
+    "port_brightness": 200.372,
+    "ratio": 1.0,
+    "device_channels": [
+      143.9,
+      39.12,
+      106.761
+    ],
+    "port_channels": [
+      144.274,
+      39.227,
+      106.005
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.008,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 14,
+    "palette_name": "Rivendell",
+    "device_brightness": 123.717,
+    "port_brightness": 124.627,
+    "ratio": 1.007,
+    "device_channels": [
+      98.464,
+      123.717,
+      88.709
+    ],
+    "port_channels": [
+      99.677,
+      124.627,
+      89.516
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.011,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 15,
+    "palette_name": "Breeze",
+    "device_brightness": 156.428,
+    "port_brightness": 156.641,
+    "ratio": 1.001,
+    "device_channels": [
+      58.79,
+      146.261,
+      156.428
+    ],
+    "port_channels": [
+      58.836,
+      146.464,
+      156.641
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 16,
+    "palette_name": "Red & Blue",
+    "device_brightness": 129.942,
+    "port_brightness": 130.315,
+    "ratio": 1.003,
+    "device_channels": [
+      119.113,
+      38.898,
+      90.526
+    ],
+    "port_channels": [
+      119.412,
+      38.702,
+      90.271
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 17,
+    "palette_name": "Yellowout",
+    "device_brightness": 169.913,
+    "port_brightness": 169.257,
+    "ratio": 0.996,
+    "device_channels": [
+      169.913,
+      121.813,
+      3.958
+    ],
+    "port_channels": [
+      169.257,
+      120.948,
+      3.916
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.004,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 18,
+    "palette_name": "Analogous",
+    "device_brightness": 238.457,
+    "port_brightness": 238.431,
+    "ratio": 1.0,
+    "device_channels": [
+      142.037,
+      0.0,
+      175.297
+    ],
+    "port_channels": [
+      141.758,
+      0.0,
+      175.884
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.004,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 19,
+    "palette_name": "Splash",
+    "device_brightness": 220.126,
+    "port_brightness": 220.298,
+    "ratio": 1.001,
+    "device_channels": [
+      208.518,
+      61.013,
+      180.829
+    ],
+    "port_channels": [
+      208.442,
+      61.54,
+      181.458
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 20,
+    "palette_name": "Pastel",
+    "device_brightness": 226.387,
+    "port_brightness": 226.642,
+    "ratio": 1.001,
+    "device_channels": [
+      192.136,
+      207.316,
+      145.454
+    ],
+    "port_channels": [
+      192.75,
+      207.361,
+      145.22
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.009,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 21,
+    "palette_name": "Sunset 2",
+    "device_brightness": 145.516,
+    "port_brightness": 145.842,
+    "ratio": 1.002,
+    "device_channels": [
+      116.206,
+      110.863,
+      94.768
+    ],
+    "port_channels": [
+      116.728,
+      111.261,
+      94.763
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 22,
+    "palette_name": "Beach",
+    "device_brightness": 219.701,
+    "port_brightness": 219.991,
+    "ratio": 1.001,
+    "device_channels": [
+      112.554,
+      203.278,
+      207.018
+    ],
+    "port_channels": [
+      114.045,
+      203.866,
+      207.18
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.008,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 23,
+    "palette_name": "Vintage",
+    "device_brightness": 80.228,
+    "port_brightness": 80.272,
+    "ratio": 1.001,
+    "device_channels": [
+      80.21,
+      35.009,
+      29.218
+    ],
+    "port_channels": [
+      80.252,
+      35.26,
+      29.238
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.001,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 24,
+    "palette_name": "Departure",
+    "device_brightness": 148.293,
+    "port_brightness": 148.668,
+    "ratio": 1.003,
+    "device_channels": [
+      81.404,
+      132.649,
+      43.137
+    ],
+    "port_channels": [
+      81.673,
+      132.99,
+      43.341
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.002,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 25,
+    "palette_name": "Landscape",
+    "device_brightness": 170.582,
+    "port_brightness": 168.607,
+    "ratio": 0.988,
+    "device_channels": [
+      84.052,
+      138.601,
+      113.721
+    ],
+    "port_channels": [
+      83.159,
+      137.379,
+      112.06
+    ],
+    "device_lit": 0.9221,
+    "port_lit": 0.9167,
+    "hue_distance": 0.013,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 26,
+    "palette_name": "Beech",
+    "device_brightness": 106.572,
+    "port_brightness": 106.253,
+    "ratio": 0.997,
+    "device_channels": [
+      68.996,
+      99.079,
+      40.815
+    ],
+    "port_channels": [
+      68.447,
+      98.949,
+      40.986
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.006,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 27,
+    "palette_name": "Sherbet",
+    "device_brightness": 255.0,
+    "port_brightness": 255.0,
+    "ratio": 1.0,
+    "device_channels": [
+      218.631,
+      174.751,
+      117.183
+    ],
+    "port_channels": [
+      218.242,
+      174.867,
+      117.208
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 28,
+    "palette_name": "Hult",
+    "device_brightness": 223.38,
+    "port_brightness": 223.792,
+    "ratio": 1.002,
+    "device_channels": [
+      144.839,
+      171.472,
+      220.889
+    ],
+    "port_channels": [
+      146.177,
+      171.756,
+      221.337
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 29,
+    "palette_name": "Hult 64",
+    "device_brightness": 157.423,
+    "port_brightness": 157.084,
+    "ratio": 0.998,
+    "device_channels": [
+      42.519,
+      157.423,
+      114.479
+    ],
+    "port_channels": [
+      42.543,
+      157.084,
+      113.991
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 30,
+    "palette_name": "Drywet",
+    "device_brightness": 189.908,
+    "port_brightness": 190.294,
+    "ratio": 1.002,
+    "device_channels": [
+      91.448,
+      126.874,
+      137.024
+    ],
+    "port_channels": [
+      91.569,
+      127.444,
+      137.267
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.006,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 31,
+    "palette_name": "Jul",
+    "device_brightness": 158.646,
+    "port_brightness": 158.952,
+    "ratio": 1.002,
+    "device_channels": [
+      143.292,
+      69.832,
+      45.337
+    ],
+    "port_channels": [
+      143.678,
+      69.403,
+      45.195
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 32,
+    "palette_name": "Grintage",
+    "device_brightness": 117.163,
+    "port_brightness": 117.455,
+    "ratio": 1.002,
+    "device_channels": [
+      115.391,
+      88.891,
+      27.944
+    ],
+    "port_channels": [
+      115.664,
+      89.384,
+      28.099
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 33,
+    "palette_name": "Rewhi",
+    "device_brightness": 184.486,
+    "port_brightness": 184.591,
+    "ratio": 1.001,
+    "device_channels": [
+      178.403,
+      126.011,
+      147.887
+    ],
+    "port_channels": [
+      178.543,
+      125.987,
+      147.744
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 34,
+    "palette_name": "Tertiary",
+    "device_brightness": 206.36,
+    "port_brightness": 206.154,
+    "ratio": 0.999,
+    "device_channels": [
+      109.656,
+      115.579,
+      85.026
+    ],
+    "port_channels": [
+      108.067,
+      115.137,
+      86.671
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.013,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 35,
+    "palette_name": "Fire",
+    "device_brightness": 159.701,
+    "port_brightness": 161.201,
+    "ratio": 1.009,
+    "device_channels": [
+      159.701,
+      86.875,
+      27.549
+    ],
+    "port_channels": [
+      161.201,
+      88.557,
+      28.104
+    ],
+    "device_lit": 0.9161,
+    "port_lit": 0.9167,
+    "hue_distance": 0.009,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 36,
+    "palette_name": "Icefire",
+    "device_brightness": 174.974,
+    "port_brightness": 174.887,
+    "ratio": 1.0,
+    "device_channels": [
+      65.985,
+      122.36,
+      174.974
+    ],
+    "port_channels": [
+      65.403,
+      121.949,
+      174.887
+    ],
+    "device_lit": 0.9159,
+    "port_lit": 0.9167,
+    "hue_distance": 0.003,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 37,
+    "palette_name": "Cyane",
+    "device_brightness": 192.289,
+    "port_brightness": 192.277,
+    "ratio": 1.0,
+    "device_channels": [
+      131.96,
+      176.789,
+      141.056
+    ],
+    "port_channels": [
+      132.122,
+      176.994,
+      140.459
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.012,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 38,
+    "palette_name": "Light Pink",
+    "device_brightness": 178.609,
+    "port_brightness": 178.87,
+    "ratio": 1.001,
+    "device_channels": [
+      153.041,
+      115.064,
+      177.031
+    ],
+    "port_channels": [
+      153.496,
+      114.997,
+      177.217
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.012,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 39,
+    "palette_name": "Autumn",
+    "device_brightness": 141.143,
+    "port_brightness": 141.171,
+    "ratio": 1.0,
+    "device_channels": [
+      140.522,
+      73.821,
+      29.947
+    ],
+    "port_channels": [
+      140.563,
+      74.004,
+      30.003
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.004,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 40,
+    "palette_name": "Magenta",
+    "device_brightness": 189.263,
+    "port_brightness": 188.633,
+    "ratio": 0.997,
+    "device_channels": [
+      123.916,
+      51.273,
+      189.263
+    ],
+    "port_channels": [
+      122.792,
+      50.495,
+      188.633
+    ],
+    "device_lit": 0.9253,
+    "port_lit": 0.9247,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 41,
+    "palette_name": "Magred",
+    "device_brightness": 173.631,
+    "port_brightness": 174.887,
+    "ratio": 1.007,
+    "device_channels": [
+      172.483,
+      0.0,
+      96.482
+    ],
+    "port_channels": [
+      173.758,
+      0.0,
+      95.772
+    ],
+    "device_lit": 0.9166,
+    "port_lit": 0.9167,
+    "hue_distance": 0.012,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 42,
+    "palette_name": "Yelmag",
+    "device_brightness": 187.863,
+    "port_brightness": 187.916,
+    "ratio": 1.0,
+    "device_channels": [
+      187.864,
+      50.497,
+      71.245
+    ],
+    "port_channels": [
+      187.916,
+      50.495,
+      70.703
+    ],
+    "device_lit": 0.9273,
+    "port_lit": 0.9247,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 43,
+    "palette_name": "Yelblu",
+    "device_brightness": 255.0,
+    "port_brightness": 255.0,
+    "ratio": 1.0,
+    "device_channels": [
+      73.705,
+      177.854,
+      175.041
+    ],
+    "port_channels": [
+      72.902,
+      177.018,
+      175.884
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 44,
+    "palette_name": "Orange & Teal",
+    "device_brightness": 184.417,
+    "port_brightness": 185.113,
+    "ratio": 1.004,
+    "device_channels": [
+      120.052,
+      112.912,
+      48.365
+    ],
+    "port_channels": [
+      121.197,
+      112.565,
+      47.955
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 45,
+    "palette_name": "Tiamat",
+    "device_brightness": 141.737,
+    "port_brightness": 140.363,
+    "ratio": 0.99,
+    "device_channels": [
+      59.173,
+      106.91,
+      123.823
+    ],
+    "port_channels": [
+      58.989,
+      105.384,
+      122.933
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 46,
+    "palette_name": "April Night",
+    "device_brightness": 89.501,
+    "port_brightness": 89.784,
+    "ratio": 1.003,
+    "device_channels": [
+      47.436,
+      41.924,
+      54.259
+    ],
+    "port_channels": [
+      47.717,
+      41.869,
+      54.212
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 47,
+    "palette_name": "Orangery",
+    "device_brightness": 225.521,
+    "port_brightness": 225.252,
+    "ratio": 0.999,
+    "device_channels": [
+      225.521,
+      62.803,
+      9.161
+    ],
+    "port_channels": [
+      225.252,
+      62.564,
+      9.103
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 48,
+    "palette_name": "C9",
+    "device_brightness": 131.999,
+    "port_brightness": 132.444,
+    "ratio": 1.003,
+    "device_channels": [
+      95.068,
+      29.291,
+      24.386
+    ],
+    "port_channels": [
+      95.778,
+      29.337,
+      23.973
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 49,
+    "palette_name": "Sakura",
+    "device_brightness": 230.463,
+    "port_brightness": 230.483,
+    "ratio": 1.0,
+    "device_channels": [
+      230.463,
+      46.965,
+      49.276
+    ],
+    "port_channels": [
+      230.483,
+      47.019,
+      49.259
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.001,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 50,
+    "palette_name": "Aurora",
+    "device_brightness": 133.08,
+    "port_brightness": 132.829,
+    "ratio": 0.998,
+    "device_channels": [
+      0.047,
+      126.434,
+      27.412
+    ],
+    "port_channels": [
+      0.048,
+      126.058,
+      27.38
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 51,
+    "palette_name": "Atlantica",
+    "device_brightness": 173.936,
+    "port_brightness": 173.844,
+    "ratio": 0.999,
+    "device_channels": [
+      18.199,
+      130.808,
+      117.77
+    ],
+    "port_channels": [
+      18.168,
+      130.495,
+      118.265
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.006,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 52,
+    "palette_name": "C9 2",
+    "device_brightness": 151.955,
+    "port_brightness": 151.552,
+    "ratio": 0.997,
+    "device_channels": [
+      101.444,
+      76.152,
+      16.529
+    ],
+    "port_channels": [
+      100.857,
+      75.947,
+      17.038
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 53,
+    "palette_name": "C9 New",
+    "device_brightness": 180.809,
+    "port_brightness": 179.862,
+    "ratio": 0.995,
+    "device_channels": [
+      132.483,
+      43.813,
+      29.934
+    ],
+    "port_channels": [
+      130.698,
+      43.822,
+      30.878
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 54,
+    "palette_name": "Temperature",
+    "device_brightness": 213.811,
+    "port_brightness": 213.871,
+    "ratio": 1.0,
+    "device_channels": [
+      132.914,
+      136.553,
+      106.378
+    ],
+    "port_channels": [
+      131.848,
+      137.08,
+      107.489
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 55,
+    "palette_name": "Aurora 2",
+    "device_brightness": 203.929,
+    "port_brightness": 203.727,
+    "ratio": 0.999,
+    "device_channels": [
+      115.366,
+      157.815,
+      86.282
+    ],
+    "port_channels": [
+      114.957,
+      158.228,
+      85.808
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 56,
+    "palette_name": "Retro Clown",
+    "device_brightness": 220.668,
+    "port_brightness": 220.492,
+    "ratio": 0.999,
+    "device_channels": [
+      210.937,
+      98.116,
+      109.246
+    ],
+    "port_channels": [
+      210.46,
+      97.621,
+      110.324
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.006,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 57,
+    "palette_name": "Candy",
+    "device_brightness": 172.409,
+    "port_brightness": 172.615,
+    "ratio": 1.001,
+    "device_channels": [
+      132.74,
+      78.846,
+      102.855
+    ],
+    "port_channels": [
+      133.142,
+      79.291,
+      102.535
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 58,
+    "palette_name": "Toxy Reaf",
+    "device_brightness": 201.457,
+    "port_brightness": 201.396,
+    "ratio": 1.0,
+    "device_channels": [
+      72.634,
+      136.113,
+      170.603
+    ],
+    "port_channels": [
+      72.275,
+      136.619,
+      170.379
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.004,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 59,
+    "palette_name": "Fairy Reaf",
+    "device_brightness": 218.954,
+    "port_brightness": 219.299,
+    "ratio": 1.002,
+    "device_channels": [
+      150.676,
+      151.27,
+      210.495
+    ],
+    "port_channels": [
+      151.071,
+      152.684,
+      210.797
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.009,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 60,
+    "palette_name": "Semi Blue",
+    "device_brightness": 89.175,
+    "port_brightness": 88.757,
+    "ratio": 0.995,
+    "device_channels": [
+      37.697,
+      26.349,
+      89.175
+    ],
+    "port_channels": [
+      37.583,
+      26.152,
+      88.757
+    ],
+    "device_lit": 0.9211,
+    "port_lit": 0.9167,
+    "hue_distance": 0.002,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 61,
+    "palette_name": "Pink Candy",
+    "device_brightness": 230.071,
+    "port_brightness": 229.703,
+    "ratio": 0.998,
+    "device_channels": [
+      178.601,
+      111.737,
+      222.532
+    ],
+    "port_channels": [
+      178.407,
+      111.113,
+      222.246
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 62,
+    "palette_name": "Red Reaf",
+    "device_brightness": 175.555,
+    "port_brightness": 175.693,
+    "ratio": 1.001,
+    "device_channels": [
+      130.949,
+      77.407,
+      105.118
+    ],
+    "port_channels": [
+      131.676,
+      76.71,
+      104.044
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.009,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 63,
+    "palette_name": "Aqua Flash",
+    "device_brightness": 144.994,
+    "port_brightness": 144.383,
+    "ratio": 0.996,
+    "device_channels": [
+      103.423,
+      144.115,
+      109.256
+    ],
+    "port_channels": [
+      102.917,
+      143.509,
+      108.822
+    ],
+    "device_lit": 0.8787,
+    "port_lit": 0.8762,
+    "hue_distance": 0.001,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 64,
+    "palette_name": "Yelblu Hot",
+    "device_brightness": 150.239,
+    "port_brightness": 150.835,
+    "ratio": 1.004,
+    "device_channels": [
+      138.215,
+      76.266,
+      59.163
+    ],
+    "port_channels": [
+      138.88,
+      76.703,
+      58.947
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 65,
+    "palette_name": "Lite Light",
+    "device_brightness": 28.663,
+    "port_brightness": 28.625,
+    "ratio": 0.999,
+    "device_channels": [
+      26.743,
+      14.733,
+      28.663
+    ],
+    "port_channels": [
+      26.708,
+      14.693,
+      28.625
+    ],
+    "device_lit": 0.7179,
+    "port_lit": 0.7184,
+    "hue_distance": 0.002,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 66,
+    "palette_name": "Red Flash",
+    "device_brightness": 114.273,
+    "port_brightness": 113.599,
+    "ratio": 0.994,
+    "device_channels": [
+      114.273,
+      24.526,
+      16.921
+    ],
+    "port_channels": [
+      113.599,
+      23.799,
+      16.4
+    ],
+    "device_lit": 0.8569,
+    "port_lit": 0.8524,
+    "hue_distance": 0.002,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 67,
+    "palette_name": "Blink Red",
+    "device_brightness": 124.532,
+    "port_brightness": 125.255,
+    "ratio": 1.006,
+    "device_channels": [
+      97.219,
+      43.299,
+      108.787
+    ],
+    "port_channels": [
+      97.714,
+      43.466,
+      109.373
+    ],
+    "device_lit": 0.9235,
+    "port_lit": 0.9247,
+    "hue_distance": 0.003,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 68,
+    "palette_name": "Red Shift",
+    "device_brightness": 141.751,
+    "port_brightness": 142.074,
+    "ratio": 1.002,
+    "device_channels": [
+      141.751,
+      47.252,
+      53.263
+    ],
+    "port_channels": [
+      142.074,
+      47.223,
+      52.913
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 69,
+    "palette_name": "Red Tide",
+    "device_brightness": 223.409,
+    "port_brightness": 223.858,
+    "ratio": 1.002,
+    "device_channels": [
+      223.409,
+      112.12,
+      39.749
+    ],
+    "port_channels": [
+      223.858,
+      112.233,
+      39.822
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.001,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 70,
+    "palette_name": "Candy2",
+    "device_brightness": 121.294,
+    "port_brightness": 121.975,
+    "ratio": 1.006,
+    "device_channels": [
+      116.15,
+      96.33,
+      65.853
+    ],
+    "port_channels": [
+      116.956,
+      96.894,
+      65.908
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Hiphotic",
+    "palette": 71,
+    "palette_name": "Traffic Light",
+    "device_brightness": 188.64,
+    "port_brightness": 189.765,
+    "ratio": 1.006,
+    "device_channels": [
+      120.261,
+      132.55,
+      0.0
+    ],
+    "port_channels": [
+      121.521,
+      133.004,
+      0.0
+    ],
+    "device_lit": 0.9251,
+    "port_lit": 0.9247,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 0,
+    "palette_name": "Default",
+    "device_brightness": 255.0,
+    "port_brightness": 255.0,
+    "ratio": 1.0,
+    "device_channels": [
+      255.0,
+      160.0,
+      0.0
+    ],
+    "port_channels": [
+      255.0,
+      160.0,
+      0.0
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 1,
+    "palette_name": "* Random Cycle",
+    "device_brightness": 170.652,
+    "port_brightness": 119.935,
+    "ratio": 0.703,
+    "device_channels": [
+      135.604,
+      82.368,
+      97.106
+    ],
+    "port_channels": [
+      119.042,
+      24.85,
+      30.129
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.533,
+    "hue_scorable": true,
+    "flags": [
+      "brightness"
+    ]
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 2,
+    "palette_name": "* Color 1",
+    "device_brightness": 255.0,
+    "port_brightness": 255.0,
+    "ratio": 1.0,
+    "device_channels": [
+      255.0,
+      160.0,
+      0.0
+    ],
+    "port_channels": [
+      255.0,
+      160.0,
+      0.0
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 3,
+    "palette_name": "* Colors 1&2",
+    "device_brightness": 124.438,
+    "port_brightness": 118.535,
+    "ratio": 0.953,
+    "device_channels": [
+      124.438,
+      78.157,
+      0.0
+    ],
+    "port_channels": [
+      118.535,
+      74.459,
+      0.0
+    ],
+    "device_lit": 0.6067,
+    "port_lit": 0.5862,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 4,
+    "palette_name": "* Color Gradient",
+    "device_brightness": 73.856,
+    "port_brightness": 76.971,
+    "ratio": 1.042,
+    "device_channels": [
+      73.856,
+      46.139,
+      0.0
+    ],
+    "port_channels": [
+      76.971,
+      48.075,
+      0.0
+    ],
+    "device_lit": 0.4665,
+    "port_lit": 0.4982,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 5,
+    "palette_name": "* Colors Only",
+    "device_brightness": 114.959,
+    "port_brightness": 118.474,
+    "ratio": 1.031,
+    "device_channels": [
+      114.959,
+      72.15,
+      0.0
+    ],
+    "port_channels": [
+      118.474,
+      74.36,
+      0.0
+    ],
+    "device_lit": 0.481,
+    "port_lit": 0.5014,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 6,
+    "palette_name": "Party",
+    "device_brightness": 221.961,
+    "port_brightness": 221.18,
+    "ratio": 0.996,
+    "device_channels": [
+      176.304,
+      42.289,
+      135.33
+    ],
+    "port_channels": [
+      179.76,
+      47.737,
+      128.963
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.044,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 7,
+    "palette_name": "Cloud",
+    "device_brightness": 194.089,
+    "port_brightness": 199.514,
+    "ratio": 1.028,
+    "device_channels": [
+      63.202,
+      81.564,
+      194.089
+    ],
+    "port_channels": [
+      72.683,
+      93.735,
+      199.514
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.061,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 8,
+    "palette_name": "Lava",
+    "device_brightness": 141.564,
+    "port_brightness": 155.129,
+    "ratio": 1.096,
+    "device_channels": [
+      141.564,
+      32.138,
+      13.546
+    ],
+    "port_channels": [
+      155.129,
+      37.259,
+      15.255
+    ],
+    "device_lit": 0.912,
+    "port_lit": 0.9287,
+    "hue_distance": 0.016,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 9,
+    "palette_name": "Ocean",
+    "device_brightness": 168.567,
+    "port_brightness": 174.883,
+    "ratio": 1.037,
+    "device_channels": [
+      36.66,
+      97.316,
+      162.354
+    ],
+    "port_channels": [
+      39.559,
+      110.093,
+      167.882
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.108,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 10,
+    "palette_name": "Forest",
+    "device_brightness": 148.446,
+    "port_brightness": 158.972,
+    "ratio": 1.071,
+    "device_channels": [
+      51.162,
+      148.446,
+      45.814
+    ],
+    "port_channels": [
+      61.019,
+      158.972,
+      52.357
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.096,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 11,
+    "palette_name": "Rainbow",
+    "device_brightness": 226.873,
+    "port_brightness": 225.914,
+    "ratio": 0.996,
+    "device_channels": [
+      163.24,
+      93.457,
+      86.351
+    ],
+    "port_channels": [
+      150.716,
+      87.94,
+      104.133
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.097,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 12,
+    "palette_name": "Rainbow Bands",
+    "device_brightness": 115.999,
+    "port_brightness": 118.203,
+    "ratio": 1.019,
+    "device_channels": [
+      84.92,
+      44.638,
+      36.612
+    ],
+    "port_channels": [
+      76.498,
+      40.632,
+      49.828
+    ],
+    "device_lit": 0.9984,
+    "port_lit": 0.9978,
+    "hue_distance": 0.14,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 13,
+    "palette_name": "Sunset",
+    "device_brightness": 202.199,
+    "port_brightness": 197.788,
+    "ratio": 0.978,
+    "device_channels": [
+      157.576,
+      45.338,
+      87.837
+    ],
+    "port_channels": [
+      142.385,
+      35.228,
+      113.451
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.144,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 14,
+    "palette_name": "Rivendell",
+    "device_brightness": 116.116,
+    "port_brightness": 126.121,
+    "ratio": 1.086,
+    "device_channels": [
+      88.206,
+      116.116,
+      82.039
+    ],
+    "port_channels": [
+      102.098,
+      126.121,
+      90.346
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.135,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 15,
+    "palette_name": "Breeze",
+    "device_brightness": 156.404,
+    "port_brightness": 164.418,
+    "ratio": 1.051,
+    "device_channels": [
+      59.576,
+      146.163,
+      156.404
+    ],
+    "port_channels": [
+      66.903,
+      153.393,
+      164.418
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 16,
+    "palette_name": "Red & Blue",
+    "device_brightness": 129.171,
+    "port_brightness": 129.994,
+    "ratio": 1.006,
+    "device_channels": [
+      117.979,
+      39.08,
+      91.097
+    ],
+    "port_channels": [
+      118.817,
+      39.859,
+      91.513
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.05,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 17,
+    "palette_name": "Yellowout",
+    "device_brightness": 167.209,
+    "port_brightness": 167.137,
+    "ratio": 1.0,
+    "device_channels": [
+      167.209,
+      118.198,
+      3.79
+    ],
+    "port_channels": [
+      167.137,
+      118.077,
+      3.744
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.051,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 18,
+    "palette_name": "Analogous",
+    "device_brightness": 240.598,
+    "port_brightness": 235.852,
+    "ratio": 0.98,
+    "device_channels": [
+      137.775,
+      0.0,
+      180.708
+    ],
+    "port_channels": [
+      145.585,
+      0.0,
+      175.154
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.071,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 19,
+    "palette_name": "Splash",
+    "device_brightness": 220.976,
+    "port_brightness": 220.932,
+    "ratio": 1.0,
+    "device_channels": [
+      207.983,
+      60.024,
+      181.775
+    ],
+    "port_channels": [
+      210.302,
+      64.954,
+      178.276
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.052,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 20,
+    "palette_name": "Pastel",
+    "device_brightness": 227.044,
+    "port_brightness": 229.808,
+    "ratio": 1.012,
+    "device_channels": [
+      193.107,
+      206.068,
+      144.7
+    ],
+    "port_channels": [
+      199.326,
+      208.945,
+      143.477
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.05,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 21,
+    "palette_name": "Sunset 2",
+    "device_brightness": 145.955,
+    "port_brightness": 149.526,
+    "ratio": 1.024,
+    "device_channels": [
+      117.299,
+      112.064,
+      95.275
+    ],
+    "port_channels": [
+      121.538,
+      116.881,
+      97.63
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.025,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 22,
+    "palette_name": "Beach",
+    "device_brightness": 218.463,
+    "port_brightness": 218.26,
+    "ratio": 0.999,
+    "device_channels": [
+      108.635,
+      201.063,
+      206.221
+    ],
+    "port_channels": [
+      104.051,
+      202.421,
+      206.823
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.033,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 23,
+    "palette_name": "Vintage",
+    "device_brightness": 78.377,
+    "port_brightness": 84.496,
+    "ratio": 1.078,
+    "device_channels": [
+      78.377,
+      34.897,
+      29.02
+    ],
+    "port_channels": [
+      84.496,
+      37.97,
+      30.23
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.024,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 24,
+    "palette_name": "Departure",
+    "device_brightness": 147.588,
+    "port_brightness": 157.717,
+    "ratio": 1.069,
+    "device_channels": [
+      79.835,
+      132.472,
+      42.803
+    ],
+    "port_channels": [
+      85.382,
+      143.15,
+      49.979
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.019,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 25,
+    "palette_name": "Landscape",
+    "device_brightness": 168.549,
+    "port_brightness": 177.427,
+    "ratio": 1.053,
+    "device_channels": [
+      79.876,
+      134.257,
+      115.988
+    ],
+    "port_channels": [
+      92.701,
+      146.805,
+      117.507
+    ],
+    "device_lit": 0.9075,
+    "port_lit": 0.919,
+    "hue_distance": 0.074,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 26,
+    "palette_name": "Beech",
+    "device_brightness": 103.191,
+    "port_brightness": 107.833,
+    "ratio": 1.045,
+    "device_channels": [
+      63.324,
+      97.201,
+      42.476
+    ],
+    "port_channels": [
+      66.336,
+      101.679,
+      46.236
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.015,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 27,
+    "palette_name": "Sherbet",
+    "device_brightness": 255.0,
+    "port_brightness": 255.0,
+    "ratio": 1.0,
+    "device_channels": [
+      216.975,
+      180.017,
+      123.528
+    ],
+    "port_channels": [
+      218.154,
+      178.044,
+      123.213
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.014,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 28,
+    "palette_name": "Hult",
+    "device_brightness": 221.806,
+    "port_brightness": 222.473,
+    "ratio": 1.003,
+    "device_channels": [
+      138.615,
+      170.56,
+      219.14
+    ],
+    "port_channels": [
+      139.619,
+      167.927,
+      220.126
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.039,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 29,
+    "palette_name": "Hult 64",
+    "device_brightness": 156.59,
+    "port_brightness": 156.638,
+    "ratio": 1.0,
+    "device_channels": [
+      41.803,
+      156.59,
+      113.964
+    ],
+    "port_channels": [
+      48.683,
+      156.638,
+      107.211
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.06,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 30,
+    "palette_name": "Drywet",
+    "device_brightness": 192.599,
+    "port_brightness": 194.076,
+    "ratio": 1.008,
+    "device_channels": [
+      83.762,
+      124.878,
+      145.476
+    ],
+    "port_channels": [
+      83.969,
+      127.87,
+      146.547
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.023,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 31,
+    "palette_name": "Jul",
+    "device_brightness": 160.754,
+    "port_brightness": 158.55,
+    "ratio": 0.986,
+    "device_channels": [
+      146.981,
+      66.75,
+      42.926
+    ],
+    "port_channels": [
+      141.166,
+      76.789,
+      48.331
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.082,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 32,
+    "palette_name": "Grintage",
+    "device_brightness": 124.79,
+    "port_brightness": 124.629,
+    "ratio": 0.999,
+    "device_channels": [
+      122.507,
+      100.768,
+      31.757
+    ],
+    "port_channels": [
+      123.06,
+      97.667,
+      30.631
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.075,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 33,
+    "palette_name": "Rewhi",
+    "device_brightness": 183.603,
+    "port_brightness": 184.955,
+    "ratio": 1.007,
+    "device_channels": [
+      178.046,
+      123.754,
+      145.707
+    ],
+    "port_channels": [
+      179.625,
+      123.219,
+      143.668
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.02,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 34,
+    "palette_name": "Tertiary",
+    "device_brightness": 208.864,
+    "port_brightness": 206.165,
+    "ratio": 0.987,
+    "device_channels": [
+      111.467,
+      110.14,
+      87.995
+    ],
+    "port_channels": [
+      111.468,
+      123.02,
+      77.775
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.092,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 35,
+    "palette_name": "Fire",
+    "device_brightness": 171.417,
+    "port_brightness": 169.145,
+    "ratio": 0.987,
+    "device_channels": [
+      171.417,
+      105.265,
+      34.859
+    ],
+    "port_channels": [
+      169.145,
+      90.841,
+      27.035
+    ],
+    "device_lit": 0.9178,
+    "port_lit": 0.919,
+    "hue_distance": 0.079,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 36,
+    "palette_name": "Icefire",
+    "device_brightness": 186.974,
+    "port_brightness": 184.33,
+    "ratio": 0.986,
+    "device_channels": [
+      73.388,
+      133.719,
+      186.974
+    ],
+    "port_channels": [
+      64.445,
+      126.788,
+      184.33
+    ],
+    "device_lit": 0.9279,
+    "port_lit": 0.919,
+    "hue_distance": 0.038,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 37,
+    "palette_name": "Cyane",
+    "device_brightness": 193.443,
+    "port_brightness": 193.485,
+    "ratio": 1.0,
+    "device_channels": [
+      135.725,
+      177.936,
+      143.553
+    ],
+    "port_channels": [
+      138.704,
+      176.957,
+      143.764
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.031,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 38,
+    "palette_name": "Light Pink",
+    "device_brightness": 178.096,
+    "port_brightness": 185.37,
+    "ratio": 1.041,
+    "device_channels": [
+      154.071,
+      113.047,
+      176.392
+    ],
+    "port_channels": [
+      158.817,
+      124.054,
+      183.963
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.08,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 39,
+    "palette_name": "Autumn",
+    "device_brightness": 143.819,
+    "port_brightness": 146.849,
+    "ratio": 1.021,
+    "device_channels": [
+      143.124,
+      76.718,
+      31.101
+    ],
+    "port_channels": [
+      146.098,
+      83.063,
+      33.855
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.046,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 40,
+    "palette_name": "Magenta",
+    "device_brightness": 198.055,
+    "port_brightness": 197.119,
+    "ratio": 0.995,
+    "device_channels": [
+      131.371,
+      53.897,
+      198.055
+    ],
+    "port_channels": [
+      131.093,
+      47.325,
+      197.119
+    ],
+    "device_lit": 0.9415,
+    "port_lit": 0.9199,
+    "hue_distance": 0.011,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 41,
+    "palette_name": "Magred",
+    "device_brightness": 175.967,
+    "port_brightness": 184.33,
+    "ratio": 1.048,
+    "device_channels": [
+      174.836,
+      0.0,
+      94.556
+    ],
+    "port_channels": [
+      183.311,
+      0.0,
+      104.484
+    ],
+    "device_lit": 0.9164,
+    "port_lit": 0.919,
+    "hue_distance": 0.029,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 42,
+    "palette_name": "Yelmag",
+    "device_brightness": 193.004,
+    "port_brightness": 196.534,
+    "ratio": 1.018,
+    "device_channels": [
+      193.004,
+      57.997,
+      72.007
+    ],
+    "port_channels": [
+      196.534,
+      47.325,
+      82.134
+    ],
+    "device_lit": 0.9235,
+    "port_lit": 0.9199,
+    "hue_distance": 0.08,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 43,
+    "palette_name": "Yelblu",
+    "device_brightness": 255.0,
+    "port_brightness": 255.0,
+    "ratio": 1.0,
+    "device_channels": [
+      95.142,
+      193.226,
+      152.953
+    ],
+    "port_channels": [
+      72.774,
+      186.175,
+      175.154
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.105,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 44,
+    "palette_name": "Orange & Teal",
+    "device_brightness": 192.044,
+    "port_brightness": 185.632,
+    "ratio": 0.967,
+    "device_channels": [
+      136.445,
+      107.89,
+      42.436
+    ],
+    "port_channels": [
+      128.812,
+      110.158,
+      45.135
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.044,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 45,
+    "palette_name": "Tiamat",
+    "device_brightness": 142.2,
+    "port_brightness": 148.741,
+    "ratio": 1.046,
+    "device_channels": [
+      60.99,
+      108.286,
+      125.22
+    ],
+    "port_channels": [
+      62.03,
+      109.83,
+      129.448
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.065,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 46,
+    "palette_name": "April Night",
+    "device_brightness": 88.084,
+    "port_brightness": 90.434,
+    "ratio": 1.027,
+    "device_channels": [
+      45.355,
+      41.377,
+      55.154
+    ],
+    "port_channels": [
+      52.419,
+      40.434,
+      51.389
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.072,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 47,
+    "palette_name": "Orangery",
+    "device_brightness": 226.393,
+    "port_brightness": 223.742,
+    "ratio": 0.988,
+    "device_channels": [
+      226.393,
+      63.828,
+      9.526
+    ],
+    "port_channels": [
+      223.742,
+      62.993,
+      9.431
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 48,
+    "palette_name": "C9",
+    "device_brightness": 137.604,
+    "port_brightness": 128.968,
+    "ratio": 0.937,
+    "device_channels": [
+      104.637,
+      29.308,
+      19.312
+    ],
+    "port_channels": [
+      89.907,
+      33.63,
+      23.258
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.08,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 49,
+    "palette_name": "Sakura",
+    "device_brightness": 228.297,
+    "port_brightness": 231.616,
+    "ratio": 1.015,
+    "device_channels": [
+      228.297,
+      45.72,
+      47.435
+    ],
+    "port_channels": [
+      231.616,
+      48.99,
+      53.364
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.081,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 50,
+    "palette_name": "Aurora",
+    "device_brightness": 127.133,
+    "port_brightness": 142.314,
+    "ratio": 1.119,
+    "device_channels": [
+      0.06,
+      119.721,
+      28.305
+    ],
+    "port_channels": [
+      0.046,
+      136.406,
+      25.936
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.08,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 51,
+    "palette_name": "Atlantica",
+    "device_brightness": 172.848,
+    "port_brightness": 172.703,
+    "ratio": 0.999,
+    "device_channels": [
+      17.602,
+      123.701,
+      122.622
+    ],
+    "port_channels": [
+      17.411,
+      135.698,
+      112.18
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.102,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 52,
+    "palette_name": "C9 2",
+    "device_brightness": 150.279,
+    "port_brightness": 155.981,
+    "ratio": 1.038,
+    "device_channels": [
+      99.473,
+      77.594,
+      16.033
+    ],
+    "port_channels": [
+      111.356,
+      71.174,
+      17.089
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.075,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 53,
+    "palette_name": "C9 New",
+    "device_brightness": 174.936,
+    "port_brightness": 174.859,
+    "ratio": 1.0,
+    "device_channels": [
+      120.332,
+      44.523,
+      35.276
+    ],
+    "port_channels": [
+      122.539,
+      49.266,
+      29.922
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.049,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 54,
+    "palette_name": "Temperature",
+    "device_brightness": 212.532,
+    "port_brightness": 216.809,
+    "ratio": 1.02,
+    "device_channels": [
+      136.252,
+      132.552,
+      102.004
+    ],
+    "port_channels": [
+      144.498,
+      140.982,
+      98.352
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.072,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 55,
+    "palette_name": "Aurora 2",
+    "device_brightness": 203.984,
+    "port_brightness": 202.676,
+    "ratio": 0.994,
+    "device_channels": [
+      116.994,
+      155.626,
+      87.613
+    ],
+    "port_channels": [
+      117.242,
+      155.648,
+      89.025
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.067,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 56,
+    "palette_name": "Retro Clown",
+    "device_brightness": 219.972,
+    "port_brightness": 218.598,
+    "ratio": 0.994,
+    "device_channels": [
+      209.213,
+      96.06,
+      113.13
+    ],
+    "port_channels": [
+      209.764,
+      94.206,
+      112.036
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.053,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 57,
+    "palette_name": "Candy",
+    "device_brightness": 172.139,
+    "port_brightness": 169.215,
+    "ratio": 0.983,
+    "device_channels": [
+      130.966,
+      79.114,
+      102.072
+    ],
+    "port_channels": [
+      128.781,
+      73.011,
+      107.929
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.059,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 58,
+    "palette_name": "Toxy Reaf",
+    "device_brightness": 203.296,
+    "port_brightness": 199.217,
+    "ratio": 0.98,
+    "device_channels": [
+      71.649,
+      137.529,
+      169.984
+    ],
+    "port_channels": [
+      75.147,
+      132.495,
+      172.204
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.094,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 59,
+    "palette_name": "Fairy Reaf",
+    "device_brightness": 219.314,
+    "port_brightness": 219.772,
+    "ratio": 1.002,
+    "device_channels": [
+      153.696,
+      149.937,
+      210.469
+    ],
+    "port_channels": [
+      141.831,
+      159.415,
+      211.231
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.069,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 60,
+    "palette_name": "Semi Blue",
+    "device_brightness": 93.653,
+    "port_brightness": 95.873,
+    "ratio": 1.024,
+    "device_channels": [
+      38.294,
+      28.231,
+      93.653
+    ],
+    "port_channels": [
+      38.848,
+      29.252,
+      95.873
+    ],
+    "device_lit": 0.9227,
+    "port_lit": 0.919,
+    "hue_distance": 0.019,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 61,
+    "palette_name": "Pink Candy",
+    "device_brightness": 228.304,
+    "port_brightness": 226.509,
+    "ratio": 0.992,
+    "device_channels": [
+      180.316,
+      106.711,
+      219.951
+    ],
+    "port_channels": [
+      181.444,
+      103.12,
+      217.654
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.018,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 62,
+    "palette_name": "Red Reaf",
+    "device_brightness": 174.898,
+    "port_brightness": 181.996,
+    "ratio": 1.041,
+    "device_channels": [
+      134.351,
+      72.574,
+      97.898
+    ],
+    "port_channels": [
+      140.767,
+      76.515,
+      102.976
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.035,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 63,
+    "palette_name": "Aqua Flash",
+    "device_brightness": 149.467,
+    "port_brightness": 155.634,
+    "ratio": 1.041,
+    "device_channels": [
+      106.416,
+      148.582,
+      113.105
+    ],
+    "port_channels": [
+      113.887,
+      154.777,
+      113.6
+    ],
+    "device_lit": 0.8821,
+    "port_lit": 0.886,
+    "hue_distance": 0.049,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 64,
+    "palette_name": "Yelblu Hot",
+    "device_brightness": 157.617,
+    "port_brightness": 153.484,
+    "ratio": 0.974,
+    "device_channels": [
+      146.752,
+      82.537,
+      56.389
+    ],
+    "port_channels": [
+      143.134,
+      76.236,
+      56.915
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.043,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 65,
+    "palette_name": "Lite Light",
+    "device_brightness": 30.1,
+    "port_brightness": 29.848,
+    "ratio": 0.992,
+    "device_channels": [
+      28.104,
+      14.793,
+      30.1
+    ],
+    "port_channels": [
+      27.884,
+      13.82,
+      29.848
+    ],
+    "device_lit": 0.7438,
+    "port_lit": 0.7551,
+    "hue_distance": 0.015,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 66,
+    "palette_name": "Red Flash",
+    "device_brightness": 117.236,
+    "port_brightness": 124.395,
+    "ratio": 1.061,
+    "device_channels": [
+      117.236,
+      24.762,
+      17.06
+    ],
+    "port_channels": [
+      124.395,
+      28.127,
+      19.479
+    ],
+    "device_lit": 0.8417,
+    "port_lit": 0.8679,
+    "hue_distance": 0.009,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 67,
+    "palette_name": "Blink Red",
+    "device_brightness": 122.773,
+    "port_brightness": 137.309,
+    "ratio": 1.118,
+    "device_channels": [
+      95.415,
+      42.876,
+      108.397
+    ],
+    "port_channels": [
+      107.667,
+      47.655,
+      119.039
+    ],
+    "device_lit": 0.9098,
+    "port_lit": 0.9199,
+    "hue_distance": 0.033,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 68,
+    "palette_name": "Red Shift",
+    "device_brightness": 140.169,
+    "port_brightness": 152.287,
+    "ratio": 1.086,
+    "device_channels": [
+      140.169,
+      48.365,
+      52.39
+    ],
+    "port_channels": [
+      152.287,
+      52.745,
+      52.06
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.068,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 69,
+    "palette_name": "Red Tide",
+    "device_brightness": 224.301,
+    "port_brightness": 223.422,
+    "ratio": 0.996,
+    "device_channels": [
+      224.301,
+      111.574,
+      39.295
+    ],
+    "port_channels": [
+      223.422,
+      114.173,
+      41.882
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 70,
+    "palette_name": "Candy2",
+    "device_brightness": 119.683,
+    "port_brightness": 128.875,
+    "ratio": 1.077,
+    "device_channels": [
+      114.53,
+      95.947,
+      67.694
+    ],
+    "port_channels": [
+      124.195,
+      101.358,
+      65.806
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.045,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Noise 1",
+    "palette": 71,
+    "palette_name": "Traffic Light",
+    "device_brightness": 176.859,
+    "port_brightness": 198.176,
+    "ratio": 1.121,
+    "device_channels": [
+      107.21,
+      125.413,
+      0.0
+    ],
+    "port_channels": [
+      129.64,
+      144.552,
+      0.0
+    ],
+    "device_lit": 0.9011,
+    "port_lit": 0.9199,
+    "hue_distance": 0.105,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 0,
+    "palette_name": "Default",
+    "device_brightness": 0.484,
+    "port_brightness": 0.613,
+    "ratio": null,
+    "device_channels": [
+      0.472,
+      0.236,
+      0.109
+    ],
+    "port_channels": [
+      0.351,
+      0.437,
+      0.611
+    ],
+    "device_lit": 0.0035,
+    "port_lit": 0.006,
+    "hue_distance": 0.957,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 1,
+    "palette_name": "* Random Cycle",
+    "device_brightness": 0.001,
+    "port_brightness": 0.529,
+    "ratio": null,
+    "device_channels": [
+      0.001,
+      0.001,
+      0.001
+    ],
+    "port_channels": [
+      0.529,
+      0.209,
+      0.201
+    ],
+    "device_lit": 0.0,
+    "port_lit": 0.0058,
+    "hue_distance": 0.498,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 2,
+    "palette_name": "* Color 1",
+    "device_brightness": 0.535,
+    "port_brightness": 0.71,
+    "ratio": 1.327,
+    "device_channels": [
+      0.535,
+      0.373,
+      0.102
+    ],
+    "port_channels": [
+      0.71,
+      0.55,
+      0.281
+    ],
+    "device_lit": 0.005,
+    "port_lit": 0.006,
+    "hue_distance": 0.032,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 3,
+    "palette_name": "* Colors 1&2",
+    "device_brightness": 0.019,
+    "port_brightness": 0.155,
+    "ratio": null,
+    "device_channels": [
+      0.019,
+      0.019,
+      0.017
+    ],
+    "port_channels": [
+      0.155,
+      0.103,
+      0.018
+    ],
+    "device_lit": 0.0005,
+    "port_lit": 0.0026,
+    "hue_distance": 0.338,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 4,
+    "palette_name": "* Color Gradient",
+    "device_brightness": 0.181,
+    "port_brightness": 0.325,
+    "ratio": null,
+    "device_channels": [
+      0.181,
+      0.114,
+      0.006
+    ],
+    "port_channels": [
+      0.325,
+      0.261,
+      0.166
+    ],
+    "device_lit": 0.0022,
+    "port_lit": 0.005,
+    "hue_distance": 0.032,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 5,
+    "palette_name": "* Colors Only",
+    "device_brightness": 0.387,
+    "port_brightness": 0.013,
+    "ratio": null,
+    "device_channels": [
+      0.387,
+      0.275,
+      0.086
+    ],
+    "port_channels": [
+      0.013,
+      0.012,
+      0.011
+    ],
+    "device_lit": 0.0034,
+    "port_lit": 0.0003,
+    "hue_distance": 0.251,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 6,
+    "palette_name": "Party",
+    "device_brightness": 0.0,
+    "port_brightness": 0.616,
+    "ratio": null,
+    "device_channels": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "port_channels": [
+      0.616,
+      0.355,
+      0.35
+    ],
+    "device_lit": 0.0,
+    "port_lit": 0.006,
+    "hue_distance": 1.0,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 7,
+    "palette_name": "Cloud",
+    "device_brightness": 0.611,
+    "port_brightness": 0.615,
+    "ratio": 1.007,
+    "device_channels": [
+      0.111,
+      0.112,
+      0.611
+    ],
+    "port_channels": [
+      0.328,
+      0.392,
+      0.615
+    ],
+    "device_lit": 0.0066,
+    "port_lit": 0.006,
+    "hue_distance": 0.696,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 8,
+    "palette_name": "Lava",
+    "device_brightness": 0.531,
+    "port_brightness": 0.614,
+    "ratio": 1.156,
+    "device_channels": [
+      0.531,
+      0.04,
+      0.028
+    ],
+    "port_channels": [
+      0.614,
+      0.42,
+      0.387
+    ],
+    "device_lit": 0.0061,
+    "port_lit": 0.0058,
+    "hue_distance": 0.478,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 9,
+    "palette_name": "Ocean",
+    "device_brightness": 0.23,
+    "port_brightness": 0.661,
+    "ratio": null,
+    "device_channels": [
+      0.035,
+      0.063,
+      0.23
+    ],
+    "port_channels": [
+      0.273,
+      0.455,
+      0.625
+    ],
+    "device_lit": 0.0021,
+    "port_lit": 0.0059,
+    "hue_distance": 0.646,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 10,
+    "palette_name": "Forest",
+    "device_brightness": 0.475,
+    "port_brightness": 0.637,
+    "ratio": null,
+    "device_channels": [
+      0.223,
+      0.475,
+      0.209
+    ],
+    "port_channels": [
+      0.372,
+      0.637,
+      0.426
+    ],
+    "device_lit": 0.0047,
+    "port_lit": 0.0058,
+    "hue_distance": 0.213,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 11,
+    "palette_name": "Rainbow",
+    "device_brightness": 0.519,
+    "port_brightness": 0.613,
+    "ratio": 1.181,
+    "device_channels": [
+      0.275,
+      0.392,
+      0.319
+    ],
+    "port_channels": [
+      0.351,
+      0.437,
+      0.611
+    ],
+    "device_lit": 0.0047,
+    "port_lit": 0.006,
+    "hue_distance": 0.538,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 12,
+    "palette_name": "Rainbow Bands",
+    "device_brightness": 0.592,
+    "port_brightness": 0.417,
+    "ratio": 0.704,
+    "device_channels": [
+      0.524,
+      0.332,
+      0.291
+    ],
+    "port_channels": [
+      0.304,
+      0.296,
+      0.404
+    ],
+    "device_lit": 0.0049,
+    "port_lit": 0.0056,
+    "hue_distance": 0.893,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 13,
+    "palette_name": "Sunset",
+    "device_brightness": 0.879,
+    "port_brightness": 0.557,
+    "ratio": 0.634,
+    "device_channels": [
+      0.867,
+      0.556,
+      0.163
+    ],
+    "port_channels": [
+      0.473,
+      0.218,
+      0.556
+    ],
+    "device_lit": 0.0073,
+    "port_lit": 0.0059,
+    "hue_distance": 0.886,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 14,
+    "palette_name": "Rivendell",
+    "device_brightness": 0.403,
+    "port_brightness": 0.469,
+    "ratio": null,
+    "device_channels": [
+      0.301,
+      0.403,
+      0.278
+    ],
+    "port_channels": [
+      0.419,
+      0.469,
+      0.332
+    ],
+    "device_lit": 0.0058,
+    "port_lit": 0.0058,
+    "hue_distance": 0.548,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 15,
+    "palette_name": "Breeze",
+    "device_brightness": 0.279,
+    "port_brightness": 0.646,
+    "ratio": null,
+    "device_channels": [
+      0.057,
+      0.264,
+      0.279
+    ],
+    "port_channels": [
+      0.426,
+      0.597,
+      0.646
+    ],
+    "device_lit": 0.003,
+    "port_lit": 0.0059,
+    "hue_distance": 0.002,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 16,
+    "palette_name": "Red & Blue",
+    "device_brightness": 0.761,
+    "port_brightness": 0.456,
+    "ratio": 0.599,
+    "device_channels": [
+      0.719,
+      0.232,
+      0.482
+    ],
+    "port_channels": [
+      0.449,
+      0.248,
+      0.381
+    ],
+    "device_lit": 0.0102,
+    "port_lit": 0.0058,
+    "hue_distance": 0.124,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 17,
+    "palette_name": "Yellowout",
+    "device_brightness": 0.491,
+    "port_brightness": 0.477,
+    "ratio": null,
+    "device_channels": [
+      0.491,
+      0.397,
+      0.15
+    ],
+    "port_channels": [
+      0.477,
+      0.363,
+      0.171
+    ],
+    "device_lit": 0.0055,
+    "port_lit": 0.0058,
+    "hue_distance": 0.031,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 18,
+    "palette_name": "Analogous",
+    "device_brightness": 0.038,
+    "port_brightness": 0.606,
+    "ratio": null,
+    "device_channels": [
+      0.033,
+      0.03,
+      0.038
+    ],
+    "port_channels": [
+      0.549,
+      0.237,
+      0.566
+    ],
+    "device_lit": 0.0006,
+    "port_lit": 0.0059,
+    "hue_distance": 0.249,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 19,
+    "palette_name": "Splash",
+    "device_brightness": 0.795,
+    "port_brightness": 0.646,
+    "ratio": 0.813,
+    "device_channels": [
+      0.792,
+      0.167,
+      0.499
+    ],
+    "port_channels": [
+      0.646,
+      0.323,
+      0.496
+    ],
+    "device_lit": 0.0059,
+    "port_lit": 0.006,
+    "hue_distance": 0.441,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 20,
+    "palette_name": "Pastel",
+    "device_brightness": 0.802,
+    "port_brightness": 0.707,
+    "ratio": 0.882,
+    "device_channels": [
+      0.734,
+      0.786,
+      0.469
+    ],
+    "port_channels": [
+      0.706,
+      0.629,
+      0.401
+    ],
+    "device_lit": 0.0063,
+    "port_lit": 0.006,
+    "hue_distance": 0.597,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 21,
+    "palette_name": "Sunset 2",
+    "device_brightness": 0.505,
+    "port_brightness": 0.496,
+    "ratio": 0.982,
+    "device_channels": [
+      0.376,
+      0.437,
+      0.465
+    ],
+    "port_channels": [
+      0.441,
+      0.487,
+      0.411
+    ],
+    "device_lit": 0.0047,
+    "port_lit": 0.0057,
+    "hue_distance": 0.356,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 22,
+    "palette_name": "Beach",
+    "device_brightness": 1.737,
+    "port_brightness": 0.63,
+    "ratio": 0.363,
+    "device_channels": [
+      1.009,
+      1.703,
+      1.679
+    ],
+    "port_channels": [
+      0.242,
+      0.595,
+      0.629
+    ],
+    "device_lit": 0.0141,
+    "port_lit": 0.006,
+    "hue_distance": 0.451,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 23,
+    "palette_name": "Vintage",
+    "device_brightness": 0.576,
+    "port_brightness": 0.275,
+    "ratio": 0.477,
+    "device_channels": [
+      0.576,
+      0.5,
+      0.156
+    ],
+    "port_channels": [
+      0.275,
+      0.094,
+      0.13
+    ],
+    "device_lit": 0.0057,
+    "port_lit": 0.0051,
+    "hue_distance": 0.945,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 24,
+    "palette_name": "Departure",
+    "device_brightness": 0.888,
+    "port_brightness": 0.619,
+    "ratio": 0.697,
+    "device_channels": [
+      0.755,
+      0.831,
+      0.506
+    ],
+    "port_channels": [
+      0.435,
+      0.619,
+      0.435
+    ],
+    "device_lit": 0.0073,
+    "port_lit": 0.0058,
+    "hue_distance": 0.738,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 25,
+    "palette_name": "Landscape",
+    "device_brightness": 0.096,
+    "port_brightness": 0.673,
+    "ratio": null,
+    "device_channels": [
+      0.04,
+      0.096,
+      0.028
+    ],
+    "port_channels": [
+      0.471,
+      0.605,
+      0.537
+    ],
+    "device_lit": 0.0009,
+    "port_lit": 0.0059,
+    "hue_distance": 0.908,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 26,
+    "palette_name": "Beech",
+    "device_brightness": 0.65,
+    "port_brightness": 0.372,
+    "ratio": 0.572,
+    "device_channels": [
+      0.535,
+      0.595,
+      0.278
+    ],
+    "port_channels": [
+      0.205,
+      0.372,
+      0.255
+    ],
+    "device_lit": 0.0064,
+    "port_lit": 0.0055,
+    "hue_distance": 0.69,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 27,
+    "palette_name": "Sherbet",
+    "device_brightness": 0.231,
+    "port_brightness": 0.698,
+    "ratio": null,
+    "device_channels": [
+      0.2,
+      0.225,
+      0.124
+    ],
+    "port_channels": [
+      0.595,
+      0.65,
+      0.496
+    ],
+    "device_lit": 0.0019,
+    "port_lit": 0.006,
+    "hue_distance": 0.605,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 28,
+    "palette_name": "Hult",
+    "device_brightness": 0.557,
+    "port_brightness": 0.613,
+    "ratio": 1.101,
+    "device_channels": [
+      0.553,
+      0.424,
+      0.557
+    ],
+    "port_channels": [
+      0.339,
+      0.481,
+      0.613
+    ],
+    "device_lit": 0.0045,
+    "port_lit": 0.006,
+    "hue_distance": 0.914,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 29,
+    "palette_name": "Hult 64",
+    "device_brightness": 0.2,
+    "port_brightness": 0.527,
+    "ratio": null,
+    "device_channels": [
+      0.18,
+      0.2,
+      0.008
+    ],
+    "port_channels": [
+      0.404,
+      0.527,
+      0.301
+    ],
+    "device_lit": 0.0031,
+    "port_lit": 0.0059,
+    "hue_distance": 0.655,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 30,
+    "palette_name": "Drywet",
+    "device_brightness": 0.097,
+    "port_brightness": 0.628,
+    "ratio": null,
+    "device_channels": [
+      0.007,
+      0.052,
+      0.097
+    ],
+    "port_channels": [
+      0.243,
+      0.468,
+      0.627
+    ],
+    "device_lit": 0.0009,
+    "port_lit": 0.0059,
+    "hue_distance": 0.485,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 31,
+    "palette_name": "Jul",
+    "device_brightness": 1.562,
+    "port_brightness": 0.511,
+    "ratio": 0.327,
+    "device_channels": [
+      1.48,
+      1.211,
+      0.71
+    ],
+    "port_channels": [
+      0.454,
+      0.467,
+      0.294
+    ],
+    "device_lit": 0.0152,
+    "port_lit": 0.0059,
+    "hue_distance": 0.233,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 32,
+    "palette_name": "Grintage",
+    "device_brightness": 0.299,
+    "port_brightness": 0.557,
+    "ratio": null,
+    "device_channels": [
+      0.299,
+      0.224,
+      0.133
+    ],
+    "port_channels": [
+      0.557,
+      0.521,
+      0.251
+    ],
+    "device_lit": 0.0033,
+    "port_lit": 0.0058,
+    "hue_distance": 0.119,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 33,
+    "palette_name": "Rewhi",
+    "device_brightness": 0.336,
+    "port_brightness": 0.542,
+    "ratio": null,
+    "device_channels": [
+      0.335,
+      0.206,
+      0.227
+    ],
+    "port_channels": [
+      0.541,
+      0.308,
+      0.385
+    ],
+    "device_lit": 0.0031,
+    "port_lit": 0.006,
+    "hue_distance": 0.269,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 34,
+    "palette_name": "Tertiary",
+    "device_brightness": 0.44,
+    "port_brightness": 0.576,
+    "ratio": null,
+    "device_channels": [
+      0.196,
+      0.44,
+      0.068
+    ],
+    "port_channels": [
+      0.449,
+      0.559,
+      0.209
+    ],
+    "device_lit": 0.0029,
+    "port_lit": 0.006,
+    "hue_distance": 0.708,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 35,
+    "palette_name": "Fire",
+    "device_brightness": 0.426,
+    "port_brightness": 0.672,
+    "ratio": null,
+    "device_channels": [
+      0.426,
+      0.303,
+      0.176
+    ],
+    "port_channels": [
+      0.672,
+      0.443,
+      0.274
+    ],
+    "device_lit": 0.0047,
+    "port_lit": 0.0059,
+    "hue_distance": 0.39,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 36,
+    "palette_name": "Icefire",
+    "device_brightness": 0.607,
+    "port_brightness": 0.705,
+    "ratio": 1.161,
+    "device_channels": [
+      0.139,
+      0.37,
+      0.607
+    ],
+    "port_channels": [
+      0.284,
+      0.527,
+      0.705
+    ],
+    "device_lit": 0.004,
+    "port_lit": 0.0059,
+    "hue_distance": 0.187,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 37,
+    "palette_name": "Cyane",
+    "device_brightness": 0.336,
+    "port_brightness": 0.596,
+    "ratio": null,
+    "device_channels": [
+      0.25,
+      0.327,
+      0.273
+    ],
+    "port_channels": [
+      0.533,
+      0.52,
+      0.532
+    ],
+    "device_lit": 0.0041,
+    "port_lit": 0.006,
+    "hue_distance": 0.754,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 38,
+    "palette_name": "Light Pink",
+    "device_brightness": 0.112,
+    "port_brightness": 0.643,
+    "ratio": null,
+    "device_channels": [
+      0.098,
+      0.064,
+      0.112
+    ],
+    "port_channels": [
+      0.587,
+      0.509,
+      0.643
+    ],
+    "device_lit": 0.0011,
+    "port_lit": 0.0059,
+    "hue_distance": 0.245,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 39,
+    "palette_name": "Autumn",
+    "device_brightness": 0.0,
+    "port_brightness": 0.574,
+    "ratio": null,
+    "device_channels": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "port_channels": [
+      0.574,
+      0.561,
+      0.327
+    ],
+    "device_lit": 0.0,
+    "port_lit": 0.0059,
+    "hue_distance": 1.0,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 40,
+    "palette_name": "Magenta",
+    "device_brightness": 0.981,
+    "port_brightness": 0.706,
+    "ratio": 0.72,
+    "device_channels": [
+      0.959,
+      0.543,
+      0.981
+    ],
+    "port_channels": [
+      0.613,
+      0.277,
+      0.706
+    ],
+    "device_lit": 0.0081,
+    "port_lit": 0.0059,
+    "hue_distance": 0.273,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 41,
+    "palette_name": "Magred",
+    "device_brightness": 0.017,
+    "port_brightness": 0.705,
+    "ratio": null,
+    "device_channels": [
+      0.017,
+      0.016,
+      0.016
+    ],
+    "port_channels": [
+      0.705,
+      0.276,
+      0.576
+    ],
+    "device_lit": 0.0003,
+    "port_lit": 0.0059,
+    "hue_distance": 0.444,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 42,
+    "palette_name": "Yelmag",
+    "device_brightness": 0.218,
+    "port_brightness": 0.706,
+    "ratio": null,
+    "device_channels": [
+      0.218,
+      0.016,
+      0.148
+    ],
+    "port_channels": [
+      0.706,
+      0.277,
+      0.546
+    ],
+    "device_lit": 0.0018,
+    "port_lit": 0.0059,
+    "hue_distance": 0.079,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 43,
+    "palette_name": "Yelblu",
+    "device_brightness": 0.461,
+    "port_brightness": 0.709,
+    "ratio": null,
+    "device_channels": [
+      0.118,
+      0.323,
+      0.405
+    ],
+    "port_channels": [
+      0.296,
+      0.709,
+      0.504
+    ],
+    "device_lit": 0.0038,
+    "port_lit": 0.0059,
+    "hue_distance": 0.758,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 44,
+    "palette_name": "Orange & Teal",
+    "device_brightness": 0.586,
+    "port_brightness": 0.626,
+    "ratio": 1.068,
+    "device_channels": [
+      0.524,
+      0.38,
+      0.232
+    ],
+    "port_channels": [
+      0.625,
+      0.441,
+      0.306
+    ],
+    "device_lit": 0.005,
+    "port_lit": 0.0058,
+    "hue_distance": 0.258,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 45,
+    "palette_name": "Tiamat",
+    "device_brightness": 0.332,
+    "port_brightness": 0.672,
+    "ratio": null,
+    "device_channels": [
+      0.17,
+      0.247,
+      0.317
+    ],
+    "port_channels": [
+      0.481,
+      0.499,
+      0.63
+    ],
+    "device_lit": 0.0039,
+    "port_lit": 0.0058,
+    "hue_distance": 0.312,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 46,
+    "palette_name": "April Night",
+    "device_brightness": 0.37,
+    "port_brightness": 0.19,
+    "ratio": null,
+    "device_channels": [
+      0.095,
+      0.37,
+      0.108
+    ],
+    "port_channels": [
+      0.06,
+      0.072,
+      0.19
+    ],
+    "device_lit": 0.0051,
+    "port_lit": 0.0046,
+    "hue_distance": 0.989,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 47,
+    "palette_name": "Orangery",
+    "device_brightness": 0.906,
+    "port_brightness": 0.602,
+    "ratio": 0.664,
+    "device_channels": [
+      0.906,
+      0.556,
+      0.363
+    ],
+    "port_channels": [
+      0.602,
+      0.298,
+      0.207
+    ],
+    "device_lit": 0.0073,
+    "port_lit": 0.006,
+    "hue_distance": 0.014,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 48,
+    "palette_name": "C9",
+    "device_brightness": 0.225,
+    "port_brightness": 0.312,
+    "ratio": null,
+    "device_channels": [
+      0.225,
+      0.107,
+      0.076
+    ],
+    "port_channels": [
+      0.173,
+      0.311,
+      0.116
+    ],
+    "device_lit": 0.002,
+    "port_lit": 0.0054,
+    "hue_distance": 0.883,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 49,
+    "palette_name": "Sakura",
+    "device_brightness": 0.224,
+    "port_brightness": 0.687,
+    "ratio": null,
+    "device_channels": [
+      0.224,
+      0.091,
+      0.107
+    ],
+    "port_channels": [
+      0.687,
+      0.31,
+      0.363
+    ],
+    "device_lit": 0.0017,
+    "port_lit": 0.006,
+    "hue_distance": 0.376,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 50,
+    "palette_name": "Aurora",
+    "device_brightness": 0.228,
+    "port_brightness": 0.555,
+    "ratio": null,
+    "device_channels": [
+      0.013,
+      0.226,
+      0.053
+    ],
+    "port_channels": [
+      0.175,
+      0.555,
+      0.18
+    ],
+    "device_lit": 0.002,
+    "port_lit": 0.0056,
+    "hue_distance": 0.216,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 51,
+    "palette_name": "Atlantica",
+    "device_brightness": 0.244,
+    "port_brightness": 0.507,
+    "ratio": null,
+    "device_channels": [
+      0.058,
+      0.242,
+      0.216
+    ],
+    "port_channels": [
+      0.219,
+      0.506,
+      0.375
+    ],
+    "device_lit": 0.0039,
+    "port_lit": 0.0059,
+    "hue_distance": 0.552,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 52,
+    "palette_name": "C9 2",
+    "device_brightness": 0.049,
+    "port_brightness": 0.623,
+    "ratio": null,
+    "device_channels": [
+      0.037,
+      0.045,
+      0.032
+    ],
+    "port_channels": [
+      0.623,
+      0.265,
+      0.22
+    ],
+    "device_lit": 0.0007,
+    "port_lit": 0.0059,
+    "hue_distance": 0.104,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 53,
+    "palette_name": "C9 New",
+    "device_brightness": 0.005,
+    "port_brightness": 0.391,
+    "ratio": null,
+    "device_channels": [
+      0.004,
+      0.005,
+      0.004
+    ],
+    "port_channels": [
+      0.222,
+      0.39,
+      0.156
+    ],
+    "device_lit": 0.0001,
+    "port_lit": 0.0057,
+    "hue_distance": 0.405,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 54,
+    "palette_name": "Temperature",
+    "device_brightness": 0.997,
+    "port_brightness": 0.689,
+    "ratio": 0.691,
+    "device_channels": [
+      0.543,
+      0.705,
+      0.711
+    ],
+    "port_channels": [
+      0.688,
+      0.566,
+      0.278
+    ],
+    "device_lit": 0.0101,
+    "port_lit": 0.0059,
+    "hue_distance": 0.535,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 55,
+    "palette_name": "Aurora 2",
+    "device_brightness": 0.321,
+    "port_brightness": 0.611,
+    "ratio": null,
+    "device_channels": [
+      0.173,
+      0.309,
+      0.083
+    ],
+    "port_channels": [
+      0.47,
+      0.495,
+      0.472
+    ],
+    "device_lit": 0.0028,
+    "port_lit": 0.0059,
+    "hue_distance": 0.791,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 56,
+    "palette_name": "Retro Clown",
+    "device_brightness": 0.0,
+    "port_brightness": 0.599,
+    "ratio": null,
+    "device_channels": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "port_channels": [
+      0.599,
+      0.292,
+      0.423
+    ],
+    "device_lit": 0.0,
+    "port_lit": 0.006,
+    "hue_distance": 1.0,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 57,
+    "palette_name": "Candy",
+    "device_brightness": 0.0,
+    "port_brightness": 0.486,
+    "ratio": null,
+    "device_channels": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "port_channels": [
+      0.365,
+      0.195,
+      0.485
+    ],
+    "device_lit": 0.0,
+    "port_lit": 0.0056,
+    "hue_distance": 1.0,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 58,
+    "palette_name": "Toxy Reaf",
+    "device_brightness": 1.295,
+    "port_brightness": 0.579,
+    "ratio": 0.447,
+    "device_channels": [
+      0.658,
+      0.7,
+      1.24
+    ],
+    "port_channels": [
+      0.367,
+      0.363,
+      0.579
+    ],
+    "device_lit": 0.0126,
+    "port_lit": 0.006,
+    "hue_distance": 0.276,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 59,
+    "palette_name": "Fairy Reaf",
+    "device_brightness": 0.342,
+    "port_brightness": 0.653,
+    "ratio": null,
+    "device_channels": [
+      0.287,
+      0.341,
+      0.316
+    ],
+    "port_channels": [
+      0.286,
+      0.638,
+      0.641
+    ],
+    "device_lit": 0.002,
+    "port_lit": 0.006,
+    "hue_distance": 0.438,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 60,
+    "palette_name": "Semi Blue",
+    "device_brightness": 0.411,
+    "port_brightness": 0.433,
+    "ratio": null,
+    "device_channels": [
+      0.298,
+      0.158,
+      0.411
+    ],
+    "port_channels": [
+      0.212,
+      0.199,
+      0.433
+    ],
+    "device_lit": 0.0072,
+    "port_lit": 0.0056,
+    "hue_distance": 0.319,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 61,
+    "palette_name": "Pink Candy",
+    "device_brightness": 0.402,
+    "port_brightness": 0.595,
+    "ratio": null,
+    "device_channels": [
+      0.402,
+      0.263,
+      0.368
+    ],
+    "port_channels": [
+      0.561,
+      0.416,
+      0.585
+    ],
+    "device_lit": 0.0027,
+    "port_lit": 0.006,
+    "hue_distance": 0.723,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 62,
+    "palette_name": "Red Reaf",
+    "device_brightness": 0.654,
+    "port_brightness": 0.657,
+    "ratio": 1.005,
+    "device_channels": [
+      0.443,
+      0.418,
+      0.571
+    ],
+    "port_channels": [
+      0.655,
+      0.386,
+      0.423
+    ],
+    "device_lit": 0.0064,
+    "port_lit": 0.0059,
+    "hue_distance": 0.744,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 63,
+    "palette_name": "Aqua Flash",
+    "device_brightness": 1.086,
+    "port_brightness": 0.68,
+    "ratio": 0.626,
+    "device_channels": [
+      1.04,
+      1.086,
+      0.354
+    ],
+    "port_channels": [
+      0.525,
+      0.677,
+      0.508
+    ],
+    "device_lit": 0.007,
+    "port_lit": 0.0058,
+    "hue_distance": 0.571,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 64,
+    "palette_name": "Yelblu Hot",
+    "device_brightness": 0.608,
+    "port_brightness": 0.595,
+    "ratio": 0.979,
+    "device_channels": [
+      0.599,
+      0.394,
+      0.38
+    ],
+    "port_channels": [
+      0.595,
+      0.356,
+      0.27
+    ],
+    "device_lit": 0.0048,
+    "port_lit": 0.0058,
+    "hue_distance": 0.436,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 65,
+    "palette_name": "Lite Light",
+    "device_brightness": 0.11,
+    "port_brightness": 0.161,
+    "ratio": null,
+    "device_channels": [
+      0.1,
+      0.053,
+      0.11
+    ],
+    "port_channels": [
+      0.147,
+      0.052,
+      0.161
+    ],
+    "device_lit": 0.0032,
+    "port_lit": 0.0033,
+    "hue_distance": 0.069,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 66,
+    "palette_name": "Red Flash",
+    "device_brightness": 0.627,
+    "port_brightness": 0.558,
+    "ratio": 0.89,
+    "device_channels": [
+      0.627,
+      0.09,
+      0.072
+    ],
+    "port_channels": [
+      0.558,
+      0.428,
+      0.348
+    ],
+    "device_lit": 0.0091,
+    "port_lit": 0.0056,
+    "hue_distance": 0.277,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 67,
+    "palette_name": "Blink Red",
+    "device_brightness": 0.673,
+    "port_brightness": 0.658,
+    "ratio": 0.978,
+    "device_channels": [
+      0.588,
+      0.348,
+      0.636
+    ],
+    "port_channels": [
+      0.552,
+      0.389,
+      0.632
+    ],
+    "device_lit": 0.0096,
+    "port_lit": 0.0058,
+    "hue_distance": 0.181,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 68,
+    "palette_name": "Red Shift",
+    "device_brightness": 0.035,
+    "port_brightness": 0.659,
+    "ratio": null,
+    "device_channels": [
+      0.035,
+      0.022,
+      0.02
+    ],
+    "port_channels": [
+      0.659,
+      0.456,
+      0.3
+    ],
+    "device_lit": 0.0007,
+    "port_lit": 0.0058,
+    "hue_distance": 0.738,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 69,
+    "palette_name": "Red Tide",
+    "device_brightness": 0.184,
+    "port_brightness": 0.69,
+    "ratio": null,
+    "device_channels": [
+      0.184,
+      0.106,
+      0.047
+    ],
+    "port_channels": [
+      0.69,
+      0.615,
+      0.371
+    ],
+    "device_lit": 0.0013,
+    "port_lit": 0.006,
+    "hue_distance": 0.73,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 70,
+    "palette_name": "Candy2",
+    "device_brightness": 0.209,
+    "port_brightness": 0.49,
+    "ratio": null,
+    "device_channels": [
+      0.208,
+      0.168,
+      0.097
+    ],
+    "port_channels": [
+      0.462,
+      0.453,
+      0.352
+    ],
+    "device_lit": 0.0016,
+    "port_lit": 0.0056,
+    "hue_distance": 0.27,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "PS Fireworks",
+    "palette": 71,
+    "palette_name": "Traffic Light",
+    "device_brightness": 0.0,
+    "port_brightness": 0.7,
+    "ratio": null,
+    "device_channels": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "port_channels": [
+      0.632,
+      0.669,
+      0.281
+    ],
+    "device_lit": 0.0,
+    "port_lit": 0.0059,
+    "hue_distance": 1.0,
+    "hue_scorable": false,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 0,
+    "palette_name": "Default",
+    "device_brightness": 195.404,
+    "port_brightness": 195.546,
+    "ratio": 1.001,
+    "device_channels": [
+      106.419,
+      85.397,
+      74.428
+    ],
+    "port_channels": [
+      108.675,
+      85.195,
+      72.42
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.013,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 1,
+    "palette_name": "* Random Cycle",
+    "device_brightness": 141.971,
+    "port_brightness": 123.528,
+    "ratio": 0.87,
+    "device_channels": [
+      61.191,
+      11.593,
+      141.347
+    ],
+    "port_channels": [
+      123.16,
+      21.956,
+      31.895
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.856,
+    "hue_scorable": true,
+    "flags": [
+      "hue"
+    ]
+  },
+  {
+    "effect": "Palette",
+    "palette": 2,
+    "palette_name": "* Color 1",
+    "device_brightness": 255.0,
+    "port_brightness": 255.0,
+    "ratio": 1.0,
+    "device_channels": [
+      255.0,
+      160.0,
+      0.0
+    ],
+    "port_channels": [
+      255.0,
+      160.0,
+      0.0
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 3,
+    "palette_name": "* Colors 1&2",
+    "device_brightness": 126.43,
+    "port_brightness": 129.01,
+    "ratio": 1.02,
+    "device_channels": [
+      126.43,
+      79.441,
+      0.0
+    ],
+    "port_channels": [
+      129.01,
+      81.055,
+      0.0
+    ],
+    "device_lit": 0.6752,
+    "port_lit": 0.6745,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 4,
+    "palette_name": "* Color Gradient",
+    "device_brightness": 63.316,
+    "port_brightness": 63.761,
+    "ratio": 1.007,
+    "device_channels": [
+      63.316,
+      39.529,
+      0.0
+    ],
+    "port_channels": [
+      63.761,
+      39.815,
+      0.0
+    ],
+    "device_lit": 0.4829,
+    "port_lit": 0.4777,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 5,
+    "palette_name": "* Colors Only",
+    "device_brightness": 126.597,
+    "port_brightness": 129.847,
+    "ratio": 1.026,
+    "device_channels": [
+      126.597,
+      79.47,
+      0.0
+    ],
+    "port_channels": [
+      129.847,
+      81.509,
+      0.0
+    ],
+    "device_lit": 0.555,
+    "port_lit": 0.5677,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 6,
+    "palette_name": "Party",
+    "device_brightness": 221.828,
+    "port_brightness": 221.696,
+    "ratio": 0.999,
+    "device_channels": [
+      193.131,
+      57.3,
+      106.736
+    ],
+    "port_channels": [
+      192.348,
+      57.273,
+      107.813
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.008,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 7,
+    "palette_name": "Cloud",
+    "device_brightness": 189.735,
+    "port_brightness": 189.661,
+    "ratio": 1.0,
+    "device_channels": [
+      62.283,
+      80.9,
+      189.735
+    ],
+    "port_channels": [
+      62.944,
+      81.432,
+      189.661
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.002,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 8,
+    "palette_name": "Lava",
+    "device_brightness": 155.756,
+    "port_brightness": 155.023,
+    "ratio": 0.995,
+    "device_channels": [
+      155.756,
+      37.08,
+      16.178
+    ],
+    "port_channels": [
+      155.023,
+      36.804,
+      16.187
+    ],
+    "device_lit": 0.9748,
+    "port_lit": 0.9762,
+    "hue_distance": 0.001,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 9,
+    "palette_name": "Ocean",
+    "device_brightness": 171.937,
+    "port_brightness": 171.506,
+    "ratio": 0.997,
+    "device_channels": [
+      37.343,
+      100.909,
+      164.873
+    ],
+    "port_channels": [
+      37.172,
+      100.815,
+      164.355
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.011,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 10,
+    "palette_name": "Forest",
+    "device_brightness": 157.74,
+    "port_brightness": 157.288,
+    "ratio": 0.997,
+    "device_channels": [
+      60.944,
+      157.74,
+      50.856
+    ],
+    "port_channels": [
+      60.724,
+      157.288,
+      50.062
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.004,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 11,
+    "palette_name": "Rainbow",
+    "device_brightness": 224.831,
+    "port_brightness": 224.814,
+    "ratio": 1.0,
+    "device_channels": [
+      136.413,
+      109.526,
+      102.258
+    ],
+    "port_channels": [
+      139.062,
+      109.68,
+      99.874
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.015,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 12,
+    "palette_name": "Rainbow Bands",
+    "device_brightness": 114.015,
+    "port_brightness": 113.789,
+    "ratio": 0.998,
+    "device_channels": [
+      65.093,
+      52.356,
+      48.136
+    ],
+    "port_channels": [
+      66.651,
+      52.097,
+      47.141
+    ],
+    "device_lit": 0.9716,
+    "port_lit": 0.9677,
+    "hue_distance": 0.018,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 13,
+    "palette_name": "Sunset",
+    "device_brightness": 196.948,
+    "port_brightness": 197.812,
+    "ratio": 1.004,
+    "device_channels": [
+      155.169,
+      44.266,
+      109.668
+    ],
+    "port_channels": [
+      155.569,
+      45.866,
+      107.826
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.019,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 14,
+    "palette_name": "Rivendell",
+    "device_brightness": 121.999,
+    "port_brightness": 121.896,
+    "ratio": 0.999,
+    "device_channels": [
+      97.045,
+      121.999,
+      86.168
+    ],
+    "port_channels": [
+      96.825,
+      121.896,
+      86.132
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 15,
+    "palette_name": "Breeze",
+    "device_brightness": 171.993,
+    "port_brightness": 170.024,
+    "ratio": 0.989,
+    "device_channels": [
+      72.162,
+      160.407,
+      171.993
+    ],
+    "port_channels": [
+      70.003,
+      158.646,
+      170.024
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 16,
+    "palette_name": "Red & Blue",
+    "device_brightness": 136.065,
+    "port_brightness": 136.158,
+    "ratio": 1.001,
+    "device_channels": [
+      126.65,
+      39.658,
+      88.427
+    ],
+    "port_channels": [
+      126.592,
+      39.528,
+      88.324
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 17,
+    "palette_name": "Yellowout",
+    "device_brightness": 169.185,
+    "port_brightness": 169.275,
+    "ratio": 1.001,
+    "device_channels": [
+      169.185,
+      120.812,
+      3.839
+    ],
+    "port_channels": [
+      169.275,
+      120.924,
+      3.847
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.004,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 18,
+    "palette_name": "Analogous",
+    "device_brightness": 231.677,
+    "port_brightness": 232.387,
+    "ratio": 1.003,
+    "device_channels": [
+      141.753,
+      0.0,
+      187.986
+    ],
+    "port_channels": [
+      140.904,
+      0.0,
+      188.172
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.016,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 19,
+    "palette_name": "Splash",
+    "device_brightness": 219.082,
+    "port_brightness": 218.832,
+    "ratio": 0.999,
+    "device_channels": [
+      212.581,
+      65.037,
+      170.898
+    ],
+    "port_channels": [
+      212.185,
+      63.945,
+      171.287
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.016,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 20,
+    "palette_name": "Pastel",
+    "device_brightness": 229.082,
+    "port_brightness": 228.466,
+    "ratio": 0.997,
+    "device_channels": [
+      202.543,
+      210.921,
+      143.936
+    ],
+    "port_channels": [
+      201.119,
+      211.155,
+      144.366
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.015,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 21,
+    "palette_name": "Sunset 2",
+    "device_brightness": 148.006,
+    "port_brightness": 147.27,
+    "ratio": 0.995,
+    "device_channels": [
+      128.26,
+      123.108,
+      95.52
+    ],
+    "port_channels": [
+      127.255,
+      121.914,
+      94.877
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 22,
+    "palette_name": "Beach",
+    "device_brightness": 218.091,
+    "port_brightness": 218.5,
+    "ratio": 1.002,
+    "device_channels": [
+      106.236,
+      205.9,
+      204.814
+    ],
+    "port_channels": [
+      107.721,
+      206.057,
+      205.119
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 23,
+    "palette_name": "Vintage",
+    "device_brightness": 93.567,
+    "port_brightness": 94.182,
+    "ratio": 1.007,
+    "device_channels": [
+      93.55,
+      42.873,
+      31.588
+    ],
+    "port_channels": [
+      94.158,
+      44.03,
+      31.808
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.008,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 24,
+    "palette_name": "Departure",
+    "device_brightness": 167.746,
+    "port_brightness": 165.909,
+    "ratio": 0.989,
+    "device_channels": [
+      101.749,
+      151.443,
+      61.414
+    ],
+    "port_channels": [
+      100.464,
+      149.214,
+      59.121
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.011,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 25,
+    "palette_name": "Landscape",
+    "device_brightness": 183.07,
+    "port_brightness": 181.825,
+    "ratio": 0.993,
+    "device_channels": [
+      100.173,
+      158.725,
+      108.8
+    ],
+    "port_channels": [
+      98.383,
+      157.339,
+      107.77
+    ],
+    "device_lit": 0.9844,
+    "port_lit": 0.9841,
+    "hue_distance": 0.012,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 26,
+    "palette_name": "Beech",
+    "device_brightness": 122.611,
+    "port_brightness": 122.385,
+    "ratio": 0.998,
+    "device_channels": [
+      80.08,
+      114.113,
+      53.463
+    ],
+    "port_channels": [
+      80.296,
+      113.776,
+      52.822
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.006,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 27,
+    "palette_name": "Sherbet",
+    "device_brightness": 253.043,
+    "port_brightness": 253.066,
+    "ratio": 1.0,
+    "device_channels": [
+      226.455,
+      171.011,
+      128.856
+    ],
+    "port_channels": [
+      225.934,
+      170.201,
+      127.668
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.004,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 28,
+    "palette_name": "Hult",
+    "device_brightness": 225.53,
+    "port_brightness": 225.478,
+    "ratio": 1.0,
+    "device_channels": [
+      149.282,
+      162.378,
+      224.113
+    ],
+    "port_channels": [
+      150.127,
+      162.473,
+      224.023
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.012,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 29,
+    "palette_name": "Hult 64",
+    "device_brightness": 157.353,
+    "port_brightness": 157.231,
+    "ratio": 0.999,
+    "device_channels": [
+      55.388,
+      157.353,
+      101.175
+    ],
+    "port_channels": [
+      53.575,
+      157.231,
+      102.752
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.012,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 30,
+    "palette_name": "Drywet",
+    "device_brightness": 203.978,
+    "port_brightness": 203.283,
+    "ratio": 0.997,
+    "device_channels": [
+      91.883,
+      145.251,
+      153.475
+    ],
+    "port_channels": [
+      94.42,
+      145.682,
+      150.997
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.015,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 31,
+    "palette_name": "Jul",
+    "device_brightness": 150.006,
+    "port_brightness": 149.671,
+    "ratio": 0.998,
+    "device_channels": [
+      128.381,
+      87.223,
+      54.742
+    ],
+    "port_channels": [
+      128.524,
+      85.598,
+      54.1
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.014,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 32,
+    "palette_name": "Grintage",
+    "device_brightness": 128.629,
+    "port_brightness": 126.896,
+    "ratio": 0.987,
+    "device_channels": [
+      127.757,
+      96.936,
+      30.296
+    ],
+    "port_channels": [
+      126.012,
+      94.937,
+      29.653
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.012,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 33,
+    "palette_name": "Rewhi",
+    "device_brightness": 188.735,
+    "port_brightness": 188.896,
+    "ratio": 1.001,
+    "device_channels": [
+      185.219,
+      124.256,
+      138.886
+    ],
+    "port_channels": [
+      185.368,
+      125.001,
+      139.389
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.009,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 34,
+    "palette_name": "Tertiary",
+    "device_brightness": 195.791,
+    "port_brightness": 195.457,
+    "ratio": 0.998,
+    "device_channels": [
+      103.74,
+      139.451,
+      70.461
+    ],
+    "port_channels": [
+      103.78,
+      137.73,
+      71.727
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.016,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 35,
+    "palette_name": "Fire",
+    "device_brightness": 169.226,
+    "port_brightness": 168.589,
+    "ratio": 0.996,
+    "device_channels": [
+      169.226,
+      77.806,
+      22.74
+    ],
+    "port_channels": [
+      168.589,
+      77.75,
+      22.648
+    ],
+    "device_lit": 0.9842,
+    "port_lit": 0.9841,
+    "hue_distance": 0.006,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 36,
+    "palette_name": "Icefire",
+    "device_brightness": 188.261,
+    "port_brightness": 186.993,
+    "ratio": 0.993,
+    "device_channels": [
+      52.078,
+      120.614,
+      188.261
+    ],
+    "port_channels": [
+      52.681,
+      120.388,
+      186.993
+    ],
+    "device_lit": 0.984,
+    "port_lit": 0.9841,
+    "hue_distance": 0.004,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 37,
+    "palette_name": "Cyane",
+    "device_brightness": 192.574,
+    "port_brightness": 192.26,
+    "ratio": 0.998,
+    "device_channels": [
+      146.994,
+      175.935,
+      142.053
+    ],
+    "port_channels": [
+      145.62,
+      176.372,
+      141.84
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.013,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 38,
+    "palette_name": "Light Pink",
+    "device_brightness": 188.249,
+    "port_brightness": 187.472,
+    "ratio": 0.996,
+    "device_channels": [
+      159.367,
+      130.357,
+      187.537
+    ],
+    "port_channels": [
+      158.54,
+      129.199,
+      186.753
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 39,
+    "palette_name": "Autumn",
+    "device_brightness": 154.218,
+    "port_brightness": 153.302,
+    "ratio": 0.994,
+    "device_channels": [
+      153.306,
+      92.365,
+      38.213
+    ],
+    "port_channels": [
+      152.463,
+      90.187,
+      37.074
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.015,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 40,
+    "palette_name": "Magenta",
+    "device_brightness": 205.015,
+    "port_brightness": 203.963,
+    "ratio": 0.995,
+    "device_channels": [
+      121.4,
+      35.78,
+      205.015
+    ],
+    "port_channels": [
+      119.636,
+      36.702,
+      203.963
+    ],
+    "device_lit": 0.9873,
+    "port_lit": 0.988,
+    "hue_distance": 0.009,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 41,
+    "palette_name": "Magred",
+    "device_brightness": 187.172,
+    "port_brightness": 186.993,
+    "ratio": 0.999,
+    "device_channels": [
+      185.824,
+      0.0,
+      121.907
+    ],
+    "port_channels": [
+      185.657,
+      0.0,
+      120.225
+    ],
+    "device_lit": 0.984,
+    "port_lit": 0.9841,
+    "hue_distance": 0.014,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 42,
+    "palette_name": "Yelmag",
+    "device_brightness": 204.944,
+    "port_brightness": 203.209,
+    "ratio": 0.992,
+    "device_channels": [
+      204.944,
+      35.726,
+      84.866
+    ],
+    "port_channels": [
+      203.209,
+      36.702,
+      81.815
+    ],
+    "device_lit": 0.9879,
+    "port_lit": 0.988,
+    "hue_distance": 0.017,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 43,
+    "palette_name": "Yelblu",
+    "device_brightness": 250.994,
+    "port_brightness": 250.908,
+    "ratio": 1.0,
+    "device_channels": [
+      60.009,
+      191.096,
+      187.995
+    ],
+    "port_channels": [
+      59.998,
+      189.492,
+      188.172
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.013,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 44,
+    "palette_name": "Orange & Teal",
+    "device_brightness": 175.96,
+    "port_brightness": 175.994,
+    "ratio": 1.0,
+    "device_channels": [
+      119.166,
+      113.031,
+      48.55
+    ],
+    "port_channels": [
+      118.313,
+      113.295,
+      48.861
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 45,
+    "palette_name": "Tiamat",
+    "device_brightness": 146.438,
+    "port_brightness": 144.596,
+    "ratio": 0.987,
+    "device_channels": [
+      62.511,
+      102.728,
+      128.497
+    ],
+    "port_channels": [
+      59.675,
+      103.544,
+      126.316
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.015,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 46,
+    "palette_name": "April Night",
+    "device_brightness": 89.217,
+    "port_brightness": 89.659,
+    "ratio": 1.005,
+    "device_channels": [
+      48.858,
+      42.586,
+      48.465
+    ],
+    "port_channels": [
+      49.111,
+      43.038,
+      48.628
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.006,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 47,
+    "palette_name": "Orangery",
+    "device_brightness": 220.103,
+    "port_brightness": 219.964,
+    "ratio": 0.999,
+    "device_channels": [
+      220.103,
+      59.585,
+      8.361
+    ],
+    "port_channels": [
+      219.964,
+      59.343,
+      8.37
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.0,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 48,
+    "palette_name": "C9",
+    "device_brightness": 129.379,
+    "port_brightness": 129.87,
+    "ratio": 1.004,
+    "device_channels": [
+      95.782,
+      37.471,
+      17.415
+    ],
+    "port_channels": [
+      96.825,
+      36.503,
+      17.791
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.011,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 49,
+    "palette_name": "Sakura",
+    "device_brightness": 234.22,
+    "port_brightness": 234.268,
+    "ratio": 1.0,
+    "device_channels": [
+      234.22,
+      52.357,
+      55.902
+    ],
+    "port_channels": [
+      234.268,
+      52.233,
+      55.282
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.011,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 50,
+    "palette_name": "Aurora",
+    "device_brightness": 159.854,
+    "port_brightness": 158.301,
+    "ratio": 0.99,
+    "device_channels": [
+      0.067,
+      155.81,
+      24.009
+    ],
+    "port_channels": [
+      0.068,
+      154.211,
+      24.161
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.004,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 51,
+    "palette_name": "Atlantica",
+    "device_brightness": 177.442,
+    "port_brightness": 178.488,
+    "ratio": 1.006,
+    "device_channels": [
+      17.191,
+      138.821,
+      118.631
+    ],
+    "port_channels": [
+      17.36,
+      139.22,
+      119.251
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.013,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 52,
+    "palette_name": "C9 2",
+    "device_brightness": 158.117,
+    "port_brightness": 156.314,
+    "ratio": 0.989,
+    "device_channels": [
+      112.794,
+      64.496,
+      22.491
+    ],
+    "port_channels": [
+      109.775,
+      65.438,
+      23.039
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.017,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 53,
+    "palette_name": "C9 New",
+    "device_brightness": 175.932,
+    "port_brightness": 176.346,
+    "ratio": 1.002,
+    "device_channels": [
+      131.632,
+      52.433,
+      22.347
+    ],
+    "port_channels": [
+      132.335,
+      51.684,
+      22.796
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.009,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 54,
+    "palette_name": "Temperature",
+    "device_brightness": 219.03,
+    "port_brightness": 218.239,
+    "ratio": 0.996,
+    "device_channels": [
+      145.417,
+      156.647,
+      103.684
+    ],
+    "port_channels": [
+      142.81,
+      155.092,
+      105.704
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.019,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 55,
+    "palette_name": "Aurora 2",
+    "device_brightness": 202.052,
+    "port_brightness": 203.025,
+    "ratio": 1.005,
+    "device_channels": [
+      112.96,
+      165.289,
+      81.552
+    ],
+    "port_channels": [
+      114.405,
+      165.129,
+      80.924
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.018,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 56,
+    "palette_name": "Retro Clown",
+    "device_brightness": 217.794,
+    "port_brightness": 217.736,
+    "ratio": 1.0,
+    "device_channels": [
+      213.232,
+      93.812,
+      104.469
+    ],
+    "port_channels": [
+      212.918,
+      94.149,
+      105.13
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.016,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 57,
+    "palette_name": "Candy",
+    "device_brightness": 165.602,
+    "port_brightness": 166.087,
+    "ratio": 1.003,
+    "device_channels": [
+      132.733,
+      69.159,
+      110.983
+    ],
+    "port_channels": [
+      133.428,
+      70.356,
+      110.028
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.018,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 58,
+    "palette_name": "Toxy Reaf",
+    "device_brightness": 192.251,
+    "port_brightness": 192.408,
+    "ratio": 1.001,
+    "device_channels": [
+      72.299,
+      136.531,
+      170.407
+    ],
+    "port_channels": [
+      72.217,
+      136.65,
+      170.355
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.012,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 59,
+    "palette_name": "Fairy Reaf",
+    "device_brightness": 216.464,
+    "port_brightness": 216.292,
+    "ratio": 0.999,
+    "device_channels": [
+      127.746,
+      158.694,
+      210.255
+    ],
+    "port_channels": [
+      130.03,
+      156.93,
+      210.011
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.014,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 60,
+    "palette_name": "Semi Blue",
+    "device_brightness": 108.196,
+    "port_brightness": 107.457,
+    "ratio": 0.993,
+    "device_channels": [
+      42.036,
+      32.584,
+      108.196
+    ],
+    "port_channels": [
+      41.906,
+      32.199,
+      107.457
+    ],
+    "device_lit": 0.9722,
+    "port_lit": 0.9722,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 61,
+    "palette_name": "Pink Candy",
+    "device_brightness": 226.842,
+    "port_brightness": 226.47,
+    "ratio": 0.998,
+    "device_channels": [
+      173.423,
+      86.28,
+      216.27
+    ],
+    "port_channels": [
+      171.972,
+      86.757,
+      216.554
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.019,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 62,
+    "palette_name": "Red Reaf",
+    "device_brightness": 190.52,
+    "port_brightness": 189.935,
+    "ratio": 0.997,
+    "device_channels": [
+      146.897,
+      88.601,
+      117.946
+    ],
+    "port_channels": [
+      145.143,
+      88.903,
+      118.477
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.018,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 63,
+    "palette_name": "Aqua Flash",
+    "device_brightness": 177.968,
+    "port_brightness": 176.938,
+    "ratio": 0.994,
+    "device_channels": [
+      131.725,
+      176.992,
+      127.883
+    ],
+    "port_channels": [
+      129.8,
+      175.943,
+      128.405
+    ],
+    "device_lit": 0.9211,
+    "port_lit": 0.9202,
+    "hue_distance": 0.014,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 64,
+    "palette_name": "Yelblu Hot",
+    "device_brightness": 148.509,
+    "port_brightness": 147.997,
+    "ratio": 0.997,
+    "device_channels": [
+      136.949,
+      63.006,
+      61.913
+    ],
+    "port_channels": [
+      135.948,
+      63.223,
+      62.63
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.019,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 65,
+    "palette_name": "Lite Light",
+    "device_brightness": 35.589,
+    "port_brightness": 35.305,
+    "ratio": 0.992,
+    "device_channels": [
+      33.284,
+      17.283,
+      35.589
+    ],
+    "port_channels": [
+      33.014,
+      17.375,
+      35.305
+    ],
+    "device_lit": 0.845,
+    "port_lit": 0.8403,
+    "hue_distance": 0.003,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 66,
+    "palette_name": "Red Flash",
+    "device_brightness": 145.034,
+    "port_brightness": 142.278,
+    "ratio": 0.981,
+    "device_channels": [
+      145.034,
+      33.745,
+      23.404
+    ],
+    "port_channels": [
+      142.278,
+      31.585,
+      21.855
+    ],
+    "device_lit": 0.914,
+    "port_lit": 0.912,
+    "hue_distance": 0.007,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 67,
+    "palette_name": "Blink Red",
+    "device_brightness": 143.322,
+    "port_brightness": 141.283,
+    "ratio": 0.986,
+    "device_channels": [
+      116.326,
+      50.172,
+      121.209
+    ],
+    "port_channels": [
+      114.219,
+      48.874,
+      119.114
+    ],
+    "device_lit": 0.9838,
+    "port_lit": 0.9841,
+    "hue_distance": 0.009,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 68,
+    "palette_name": "Red Shift",
+    "device_brightness": 160.734,
+    "port_brightness": 159.455,
+    "ratio": 0.992,
+    "device_channels": [
+      160.734,
+      57.537,
+      53.208
+    ],
+    "port_channels": [
+      159.455,
+      55.925,
+      53.282
+    ],
+    "device_lit": 0.9936,
+    "port_lit": 0.992,
+    "hue_distance": 0.01,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 69,
+    "palette_name": "Red Tide",
+    "device_brightness": 223.714,
+    "port_brightness": 224.117,
+    "ratio": 1.002,
+    "device_channels": [
+      223.714,
+      122.179,
+      46.357
+    ],
+    "port_channels": [
+      224.117,
+      121.905,
+      46.052
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.005,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 70,
+    "palette_name": "Candy2",
+    "device_brightness": 136.002,
+    "port_brightness": 135.563,
+    "ratio": 0.997,
+    "device_channels": [
+      130.938,
+      104.801,
+      63.301
+    ],
+    "port_channels": [
+      130.534,
+      104.477,
+      63.392
+    ],
+    "device_lit": 1.0,
+    "port_lit": 1.0,
+    "hue_distance": 0.006,
+    "hue_scorable": true,
+    "flags": []
+  },
+  {
+    "effect": "Palette",
+    "palette": 71,
+    "palette_name": "Traffic Light",
+    "device_brightness": 206.898,
+    "port_brightness": 205.967,
+    "ratio": 0.996,
+    "device_channels": [
+      119.144,
+      166.863,
+      0.0
+    ],
+    "port_channels": [
+      117.784,
+      165.112,
+      0.0
+    ],
+    "device_lit": 0.9879,
+    "port_lit": 0.988,
+    "hue_distance": 0.014,
+    "hue_scorable": true,
+    "flags": []
+  }
+]

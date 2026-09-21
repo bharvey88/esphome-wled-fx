@@ -59,6 +59,7 @@ from .effect_index import (
     PALETTE_KEY,
     SLIDER_KEYS,
     SLIDER_MAXIMUM,
+    Control,
     available_effects,
     controls_by_key,
     effect_macro,
@@ -486,8 +487,6 @@ def _control_entities(
     if display and "color1" not in available:
         # Colour 1 is the panel's master brightness and its on/off switch, so a
         # display gets one whatever the effect does with the colour slot.
-        from .effect_index import Control
-
         available["color1"] = Control(
             "color1", "color", MASTER_COLOR_NAME, False, None
         )

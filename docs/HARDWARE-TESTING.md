@@ -207,7 +207,21 @@ the same rule the component itself applies, and **Strip** is the other side of
 it, which is what `strip-test.yaml` starts on. Switch to `All` whenever you
 want the mapped ones; the **Effect group** sensor marks them
 `(strip effect, mapped)` so it is clear which is which, and **Profile run**
-always covers all 223 whatever group you were on. On `strip-test.yaml`, a real one
+always covers all 223 whatever group you were on.
+
+The **Effect** dropdown follows the same rule. On the three matrix builds it
+lists those same 64 and nothing else, so scrolling it cannot land you on a
+crawling strip effect without meaning to; the other 167 are on a second select
+called **Strip effect (mapped)**, under Config, which says in its name what
+picking one will look like. While one of those is running, **Effect** holds its
+last value rather than showing an option it does not have, and **Effect name**
+is always what the engine is actually running.
+
+If you saw a strip effect on the panel with the group reading `Panel`, that is
+what it was: the **Panel** group has never contained one. Either the dropdown
+was used, or the firmware predates the group. A host test now pins the group at
+exactly 64 effects with `Gradient` and `Fireworks Starburst` outside it
+(`tools/sim/effect_test.cpp`, "what each output shape offers"). On `strip-test.yaml`, a real one
 dimensional strip, `All` is 167 and the `2D` and `Particle 2D` groups are
 empty: picking one logs
 
@@ -228,12 +242,14 @@ and leaves the current effect on screen. That is the rule working, not a fault.
 | Pin controls | Off by default. See [Controls](#controls). |
 | Unpin controls | Puts Speed, Intensity, Custom and Check back on the effect's own defaults, including anything the YAML pinned. |
 | Profile run | One unattended timed pass over every effect. See [Profile run](#profile-run). |
-| Effect / Palette | The component's own selects, all 223 and all 72. They follow the engine, so they track the tour as it moves. |
+| Effect | The component's own effect select. On the three matrix builds it lists the same 64 the **Panel** group walks, so a 1D effect cannot be picked here by accident; on `strip-test.yaml` it lists all 167 a strip can run. It follows the engine, so it tracks the tour as it moves, and it holds its last value while a mapped strip effect is running. |
+| Strip effect (mapped) | Matrix builds only, under Config. The 167 effects a strip can run, drawn here through WLED's 1D to 2D mapping. This is the deliberate way to reach `Gradient` or `Fireworks Starburst` on a panel. |
+| Palette | The component's palette select, all 72. |
 | Speed, Intensity, Custom 1 to 3 | The component's numbers. |
 | Check 1 to 3 | The component's switches. |
 | Color 1, Color 2, Color 3 | The three WLED colour slots, one colour picker each. |
 | Effect controls / Effect colours | Text sensors naming what the controls above do in the running effect. |
-| Panel brightness | hub75 brightness, panel builds only. On the strip builds this is the light entity's own slider. |
+| Panel brightness | hub75 brightness, panel builds only, starting at **220**. That is where the reference WLED device sits, not the driver's own default of 128: a side by side at 128 against 220 measures the duty cycle and tells you nothing about the engine. This is the one to dim with, because it shortens the drive time rather than scaling an 8 bit frame. On the strip builds it is the light entity's own slider. |
 | Effect name / Effect group | Text sensors mirroring the current effect. The group reads `(strip effect, mapped)` after the group name when a 1D effect is being shown on a panel. |
 | Effect render time / Frame output time | Microseconds per frame. See [Profile run](#profile-run). |
 

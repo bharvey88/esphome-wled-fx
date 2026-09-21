@@ -724,6 +724,194 @@ upstream puts there.
 
 ---
 
+## 11. Performance: what the frame budget is actually spent on
+
+Everything here was measured on an Apollo M-1, an ESP32-S3 at 240 MHz with 8 MB
+of octal PSRAM driving a 64x64 HUB75 panel, against a WLED 16.0.1 device on the
+same panel. The frame gate targets WLED's own 23 ms.
+
+At v0.4.1 the port held 40 fps or better on 58 of its 223 effects, median
+34.6 fps. WLED on the same panel holds it on 199 of 216, median 43.0. That gap
+is across the board rather than a few heavy effects, so it was structural, and
+four things turned out to be behind it.
+
+### The frame gate can only fire on a main loop tick
+
+ESPHome runs its component phase at most every `loop_interval_`, 16 ms by
+default (`esphome/core/application.h`). A 23 ms deadline against a 16 ms tick is
+meant to alternate one tick and two for an average of 23 ms, and on a cheap
+effect it does: Solid measured 43.1 fps.
+
+It stops working as soon as a rendered tick runs long. ESPHome times the next
+tick from the start of the last one, so a tick that took 19 ms is followed by
+the next one 16 ms after it started, three of those milliseconds already spent,
+and the tick after that is a further 16 ms away. A 23 ms deadline falls in that
+gap and the frame arrives at 35 ms instead of 23. An effect whose own work is
+13 ms therefore renders at 29 ms, which is the 34.6 fps median almost exactly.
+
+`loop_interval:` on the display front end asks for a shorter tick. `auto`, the
+default, is a third of the frame period floored at 4 ms, and it only ever
+lowers the interval, never raises it, so nothing else in the firmware loses
+responsiveness it already had. The frame gate still accumulates its deadline, so
+a shorter tick cannot make anything render faster than it was asked to; it only
+stops it rendering slower. `loop_interval: never` leaves ESPHome alone.
+
+This is the one change in v0.5.0 that touches the whole device rather than this
+component, and it is the first one to turn off if anything else in a firmware
+starts behaving oddly.
+
+### -Os against WLED's -O2
+
+ESPHome compiles a firmware with -Os on both frameworks. WLED's `platformio.ini`
+has no `-O` flag either, so most of WLED is also -Os, but its two hottest
+functions are not: `Segment::setPixelColor` and `Segment::getPixelColor` carry
+`WLED_O2_ATTR`, which is `__attribute__((optimize("O2")))` (`wled00/const.h`),
+and both 2D accessors are `IRAM_ATTR`.
+
+The same idea, applied to whole translation units, is `wf_optimize.h`: a single
+`#pragma GCC optimize("O2")` behind `WLED_FX_OPTIMIZE_SPEED`, included first by
+every wled_fx source file. There is no other way for an external component to
+change the flags of its own files, because ESPHome copies every component into
+one `src/` tree and compiles it with one set of flags, so `build_flags` and
+`build_src_flags` would change the whole firmware.
+
+Every source file rather than only the hot ones, deliberately: the engine's
+inline helpers live in headers, each source file emits its own copy and the
+linker keeps one of them. Half at -Os and half at -O2 would make which copy
+survives depend on link order.
+
+`optimize: speed` is the default. `optimize: size` turns it off; README.md has
+the flash cost per configuration.
+
+### Asking the canvas its own size once a pixel
+
+This was the largest single cost and the least visible.
+
+`Segment::set_pixel_color(n, c)` called `is_active()`, `length()`, `is_2d()`,
+`width()` and `height()`, then `set_pixel_color_xy()`, which called
+`is_active()`, `width()` and `height()` again before the raw setter called
+`width()` once more. Every one of those reached through `canvas_` as a null test
+and two loads, and both setters were out of line in `wf_segment.cpp` where
+nothing could hoist them. That is a dozen redundant loads behind two calls, for
+one store, 4096 times a frame.
+
+WLED does not do this. `Segment::_vWidth`, `_vHeight` and `_vLength` are static
+members refreshed once per segment per frame in `beginDraw()` (`wled00/FX.h`),
+so `SEGLEN` is a single load and not a recomputation. The port now caches the
+same figures on the Segment, filled by `set_canvas()`, which is the only moment
+they can change: the canvas is allocated once at setup and never resized under a
+running effect. `length()` keeps its live switch on `map1d2d`, because that is a
+public field an effect may read, and only the geometry underneath it is cached.
+`set_pixel_color_xy()` and `get_pixel_color_xy()` moved into the header, where
+at three member loads, a compare and a store they are smaller than the call that
+used to reach them.
+
+Host benchmark over all 223 effects at 64x64, v0.4.1 against v0.5.0, both at
+-Os: 94.0 us a frame down to 68.5. With `optimize: speed` as well, 54.8 us, a
+total of 1.71 times. Fire 2012, which WLED runs at the cap and this port needed
+16 ms of render for, is 2.51 times faster.
+
+### The canvas in PSRAM
+
+ESPHome's default `RAMAllocator` prefers PSRAM, so the 16 KB canvas, the 12 KB
+frame buffer and everything else went to external RAM. Every effect reads and
+writes the canvas several times a frame in scattered order, and none of that is
+the long sequential burst PSRAM is good at.
+
+WLED puts its own segment buffer in PSRAM too, and its comment there says the
+cost is under 2 percent. That comment is about a buffer written once per pixel
+per frame by the effect, not one read back five times per pixel by a blur, so it
+does not settle the question here. `canvas_memory:` makes it answerable on
+hardware rather than in an argument. `auto`, the default, takes internal RAM
+when the allocation leaves 48 KB of internal heap and a 16 KB largest block
+behind, and falls back to PSRAM when it does not. `dump_config` prints where
+each buffer landed.
+
+### What the output path costs
+
+The frame push is a flat 6.8 ms on the M-1, the same for all 223 effects, which
+is 30 percent of the budget before any effect code runs. Reading the whole path
+turned up three things.
+
+**The flip does not wait.** esp-hub75's `GdmaDma::flip_buffer()` splices one
+descriptor `next` pointer and swaps two indices. There is no semaphore, no
+vsync and no EOF callback anywhere in the driver, and the panel refreshes itself
+from a circular GDMA chain at about 76 Hz whether or not anything pushes a
+frame. So the 6.8 ms is work, and the `render_max` spikes in the profile are not
+a missed refresh.
+
+Worth knowing while it is being said: "double buffered" here means the
+descriptor chain is never torn, not that the CPU stops writing a buffer the
+panel is reading. The swap is immediate on the CPU side but the DMA only follows
+the spliced pointer when it finishes the current chain, up to 13 ms later.
+
+**Most of that work is not ours, and WLED pays it too.** The driver stores a
+frame as eight bit planes of pre-serialised 16 bit HUB75 control words, so one
+pixel is eight read-modify-writes on words 128 bytes apart: 32768 of them for a
+64x64 frame. There is no batch path for arbitrary content and there could not
+easily be one, because each destination word interleaves the two panel halves
+plus fixed address and latch bits. WLED's HUB75 bus does the same thing through
+`drawPixelRGB888` at the same 8 bit depth on an S3, and on top of it keeps three
+full-frame copies per frame where this port keeps one.
+
+**What was ours.** The frame buffer was PSRAM-first like everything else, so the
+conversion loop wrote 12 KB to external RAM and the driver read it straight back
+from there; it now asks for internal RAM. And the loop had two versions with a
+per-channel multiply and shift in the dimmed one; the master brightness is now
+folded into the gamma table, so there is one loop and three lookups whatever the
+brightness is, for exactly the same bytes.
+
+Not done: skipping the push when the frame is unchanged needs a 16 KB comparison
+to find out, which costs about what it saves, and almost no effect produces two
+identical frames anyway.
+
+### Rendering on the second core
+
+Out of scope for v0.5.0, and worth writing down now that the output path is
+understood well enough to size it.
+
+The shape would be: core 1 renders frame N into one canvas while core 0 converts
+and pushes frame N-1 from another, with two canvases and a handoff between them.
+The upper bound on what that buys is the smaller of the two halves, so with
+render at 6 ms and output at 5 ms it removes about 5 ms from a frame, and on the
+effects already at the cap it removes nothing; it is worth the most exactly
+where render and output are closest, which after v0.5.0 is the middle of the
+distribution rather than the slow tail. Pacifica at 47 ms of render would still
+be Pacifica.
+
+What it would take: a second canvas, so 32 KB rather than 16 KB, which is more
+than the internal RAM budget above allows and would put one of them back in
+PSRAM and hand some of the gain straight back. A task pinned to core 1 with a
+two-slot handoff and no allocation on either side of it. An answer for the
+effect scratch block, a single buffer the running effect owns that the renderer
+would then be touching from another core. And an answer for the audio analysis,
+which already runs as its own task and which the audio effects read without a
+lock, on the assumption that the reader is the main loop.
+
+The honest order is: re-profile on hardware after v0.5.0, see how much of the
+distribution is still short of the cap and by how much, and only then decide
+whether 16 KB of RAM and a cross-core handoff are worth those milliseconds.
+
+### Measuring it yourself
+
+`tools/sim/bench.cpp` is the host benchmark and the golden-frame check in one
+binary, because they want the same run.
+
+    powershell -File tools\wsl\wfx.ps1 bench --repeats 3
+    powershell -File tools\wsl\wfx.ps1 optbench
+    powershell -File tools\wsl\wfx.ps1 golden
+
+`bench` prints microseconds a frame for every effect, slowest first. `optbench`
+builds the engine twice, at -Os and at -O2, and runs both, which is the
+measurement behind the `optimize:` option. `golden` compares a hash of every
+pixel of every frame of all 223 effects against `tools/sim/golden.txt`, and the
+sweep runs it too. An optimisation that moves a pixel fails there, which is what
+makes "faster" safe to claim; a commit that deliberately corrects an effect
+regenerates the file with `bench --write tools/sim/golden.txt` and says so.
+
+On the device, the "Profile run" button in the hardware test harness walks every
+effect and logs one line each. docs/HARDWARE-TESTING.md has the commands.
+
 ## Deviations from PLAN.md
 
 Recorded here as PLAN.md asks. Everything else in the P1 scope was built as

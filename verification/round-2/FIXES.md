@@ -347,12 +347,15 @@ runs. The report says, in the capture facts, when either side has only one.
 | this tool, two fresh port runs of this build | 2 |
 | this tool, the device's two runs against each other | 24 |
 
-The 24 is the instrument measuring itself with one run a side and no
-`SLOW_EFFECTS` window on the reference: Sweep and Wipe at 10.4 and 7.6 times
-the coverage floor, four "one side moves and the other is still", and nine
-random-colour hue flags. It is the number that says how much of the remaining
-noise is the capture path rather than the port, and it is why the warning about
-single runs is in the report.
+The 24 is the instrument measuring itself with one run a side, which is the
+worst case the tool can be used in: nothing can be pooled, so no per-effect
+spread suppresses anything, and neither run had the `SLOW_EFFECTS` window.
+Thirteen of its flags are coverage, nine are brightness, seven are hue and
+one is the frozen boolean, and the two worst are Sweep and Wipe at 10.4 and
+7.6 times the coverage floor, which are exactly the effects that outrun a six
+second window. It is the number that says how much of the remaining noise is
+the capture path rather than the port, and it is why the report warns about a
+side with a single run.
 
 The two flags against this build are **Color Clouds**, which is deviation 28
 and upstream's uninitialised white channel arriving through the live view, and

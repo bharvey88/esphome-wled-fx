@@ -249,6 +249,11 @@ void WledFxDisplay::loop() {
       memset(this->frame_, 0, static_cast<size_t>(this->width_) * this->height_ * 3);
       this->push_frame_();
       this->blanked_ = true;
+      /* Say so. Colour 1 is the master and it restores its last state from
+       * flash, so a panel that came up dark because that light was left off
+       * looks exactly like a panel that is broken. One line each time it goes
+       * dark is cheap and it is the first thing anybody needs to know. */
+      ESP_LOGI(TAG, "Output off, panel blanked. The colour 1 light is the master switch.");
     }
     return;
   }

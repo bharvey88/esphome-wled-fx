@@ -238,6 +238,44 @@ def test_restore_value_reaches_the_entities(tmp_path):
     assert "restore_mode: RESTORE_DEFAULT_ON" in output
 
 
+def test_web_server_sorting_reaches_the_entities(tmp_path):
+    # Forwarded to the entity's own schema rather than redeclared here, so the
+    # fields are whatever the installed ESPHome supports and it is ESPHome that
+    # says so when one is wrong.
+    ok, output = run_config(
+        tmp_path,
+        DISPLAY,
+        """
+        wifi:
+          ap:
+            ssid: wled-fx-test
+
+        web_server:
+          port: 80
+          version: 3
+          sorting_groups:
+            - id: fx_group
+              name: WLED FX
+              sorting_weight: 1
+
+        wled_fx:
+          id: fx
+          display_id: matrix
+          effect: Matrix
+          controls:
+            web_server:
+              sorting_group_id: fx_group
+            speed:
+              web_server:
+                sorting_weight: 10
+                sorting_group_id: fx_group
+        """,
+    )
+    assert ok, output
+    assert "sorting_weight: 10.0" in output
+    assert output.count("sorting_group_id: fx_group") == 6
+
+
 # --- what it refuses ----------------------------------------------------------
 
 

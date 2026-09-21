@@ -373,8 +373,16 @@ _ENTRY_SCHEMA = cv.Schema(
             MEMORY_POLICIES, lower=True
         ),
         # A time period pins it, `never` leaves ESPHome's own value alone, and
-        # `auto`, the default, derives it from update_interval.
-        cv.Optional(CONF_LOOP_INTERVAL, default="auto"): cv.Any(
+        # `auto`, which is what leaving it out means, derives it from
+        # update_interval.
+        #
+        # No `default=`, deliberately. A key with a default is present in every
+        # validated entry, including the bare `wled_fx:` stub a light-only
+        # configuration writes, and _validate_entry() rejects display-only keys
+        # on a stub. With a default here, that rejection fires on a key the user
+        # never wrote and takes `optimize:` down with it, because the message
+        # names whichever display-only key it reached first.
+        cv.Optional(CONF_LOOP_INTERVAL): cv.Any(
             cv.one_of("auto", "never", lower=True),
             cv.positive_time_period_milliseconds,
         ),

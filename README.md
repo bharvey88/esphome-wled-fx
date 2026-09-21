@@ -881,6 +881,13 @@ This is the one setting here that changes something outside this component.
 `loop_interval: never` leaves ESPHome's own value alone, and it is the first
 thing to try if anything else in a firmware starts behaving oddly.
 
+It is a display front end option and the light effect has no equivalent, which
+is deliberate rather than an omission: the quantisation only bites when a
+rendered tick overruns 16 ms on its own, and that takes a canvas of thousands of
+pixels. A 60 LED strip, or a 16x16 matrix on the light path, renders in
+microseconds and the alternating pattern the frame gate was designed around
+works exactly as intended.
+
 ### Measuring it
 
 The two per-effect sensors are always compiled in:

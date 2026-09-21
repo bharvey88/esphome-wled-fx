@@ -961,7 +961,7 @@ def _check_named_controls(full_config, entries, allow_list):
         if config.get(CONF_ID) is not None and config[CONF_ID].id
     }
     for domain in ("number", "switch", "select", "light"):
-        for index, item in enumerate(full_config.get(domain, []) or []):
+        for item in full_config.get(domain, []) or []:
             if not isinstance(item, dict) or item.get(CONF_PLATFORM) != DOMAIN:
                 continue
             target = item.get(CONF_WLED_FX_ID)
@@ -975,7 +975,6 @@ def _check_named_controls(full_config, entries, allow_list):
                 "controls for a single pinned effect, or "
                 f"{_GENERIC_CONTROLS_LINE}. Remove this '{domain}' entry, or "
                 f"remove '{CONF_CONTROLS}'.",
-                path=[domain, index],
             )
 
     names = sorted({config[CONF_EFFECT] for config in pinned})
@@ -991,7 +990,6 @@ def _check_named_controls(full_config, entries, allow_list):
                 f"Either cut the allow-list down to {_and_list(names)}, which "
                 "is what leaving it out does on its own, or drop "
                 f"'{CONF_CONTROLS}' and use {_GENERIC_CONTROLS_LINE}.",
-                path=[DOMAIN, 0, CONF_EFFECTS],
             )
     elif len(pinned) == len(front_ends):
         # Every output in the build is pinned, so nothing can ever select

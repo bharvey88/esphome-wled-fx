@@ -227,6 +227,16 @@ the control names, and the `wled_fx` text sensor publishes them. Get them right.
 * A numeric palette group is a pinned palette, and the selector is hidden, so it
   is not published as a control either.
 
+These three groups are also what `controls:` builds entities out of. A
+configuration that pins one effect asks for one named entity per control that
+effect uses, and `effect_controls()` in `components/wled_fx/effect_index.py`
+reads the string for it at config time, exactly as `effect_labels()` does at
+runtime. `tests/test_effect_controls.py` covers the reading and
+`tools/check_effect_names.py` checks it against `--list-meta` and `--list`, so
+an effect whose metadata says something the two parsers disagree about fails
+CI. A new effect needs nothing extra: get the string right and the entities
+follow.
+
 `custom3` is five bits, 0 to 31, everywhere: in the YAML schema, in the number
 platform, in the `wled_fx.set_custom3` action and in `Engine::set_custom3()`,
 which clamps. Effects divide it down on that assumption, so a c3 default above

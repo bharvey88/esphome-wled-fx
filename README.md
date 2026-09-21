@@ -26,6 +26,9 @@ records why.
   and `sensor` platforms plus actions
 * Per-effect control labels, read out of the WLED metadata, so a generic
   "Custom 1" slider says what it does in the effect that is running
+* Named controls for a configuration that pins one effect: one entity per
+  control that effect uses, called what WLED calls it, and nothing called
+  Custom 1
 * Per-effect frame timings, so the effects that are slow on a given board can
   be found without reflashing
 * A host simulator that renders every effect to a PNG contact sheet
@@ -54,7 +57,8 @@ records why.
   YAML, or set it from an `on_boot` automation. The `switch` platform does take
   ESPHome's `restore_mode`, defaulting to `DISABLED` because the engine owns the
   checkmark; set it to something else and the switch drives the engine at boot
-  instead.
+  instead. [Named controls](#named-controls-for-one-pinned-effect) take
+  `restore_value: true` for the same thing on a slider and on the palette.
 * **Panels wider than 180 pixels hit upstream's own arithmetic.** A handful of
   2D effects hold a coordinate or a scale factor in 8 or 16 bits, which is
   upstream's code unchanged and is fine to the 256x64 this has been tested at,
@@ -463,6 +467,7 @@ on the light effect instead.
 | `custom3` | 0 to 31 | effect default | |
 | `check1`, `check2`, `check3` | bool | effect default | |
 | `text` | string | empty | read by Scrolling Text |
+| `controls` | bool or mapping | off | build a named entity for every control the pinned `effect:` uses, instead of the generic eight. Needs exactly one `effect:`; see [Named controls for one pinned effect](#named-controls-for-one-pinned-effect) |
 
 Every control key here, and on the light effect below, is **pinned**: naming
 `speed:` in YAML keeps that value when the effect changes, and leaving it out
@@ -498,6 +503,7 @@ effects:
       use_light_color: true # the light's own colour becomes segment colour 1
       include_1d_effects: true  # only on a matrix, see below
       update_interval: 23ms
+      controls: true        # named controls for this pinned effect
       # plus every control key from the table above
 ```
 
@@ -782,6 +788,135 @@ Actions: `wled_fx.set_effect`, `wled_fx.next_effect`, `wled_fx.set_palette`,
     green: 170
     blue: 0
 ```
+
+### Named controls for one pinned effect
+
+The eight generic entities above are as good as it gets for a build that
+switches between effects: an ESPHome entity's name is fixed when the firmware
+is built, and WLED renames and hides its controls per effect. A configuration
+that runs **one** effect and never changes it can have the other trade instead.
+
+```yaml
+wled_fx:
+  id: fx
+  display_id: matrix
+  effect: Matrix
+  controls: true
+```
+
+That builds, at compile time, one entity per control Matrix actually uses,
+named what WLED names it:
+
+| Entity | What it is |
+|---|---|
+| `number` Effect speed | Matrix leaves the speed slider at WLED's own name |
+| `number` Spawning rate | intensity |
+| `number` Trail | custom1 |
+| `switch` Custom color | check1 |
+| `light` Spawn | colour 1, and the panel's master brightness and on/off |
+| `light` Trail | colour 2 |
+
+There is no effect select, no palette select because Matrix does not use a
+palette, no Custom 2, and no "Effect controls" text sensor explaining what
+Custom 1 means today, because the answer is fixed.
+
+On the light front end it goes on the effect, which is the thing that owns the
+engine there:
+
+```yaml
+light:
+  - platform: esp32_rmt_led_strip
+    # ...
+    effects:
+      - wled_fx:
+          id: strip_fx
+          name: Fire
+          effect: Fire 2012
+          controls: true
+```
+
+Colour 1 is the light's own colour while `use_light_color` is true, which is
+the default, so no second entity is made for it. On a display, colour 1 always
+gets a light even when the effect uses no colour slot, because there it also
+carries the master brightness and the on/off for the whole panel; it is called
+"Panel" in that case.
+
+Everything about what exists and what it is called comes from the effect's
+verbatim WLED metadata string, read out of the C++ registration tables at
+config time. There is no table of effect parameters on the Python side.
+
+#### Customising
+
+`controls:` also takes a mapping. Every key is optional.
+
+| Option | Notes |
+|---|---|
+| `name_prefix` | put in front of every name, so "Fall speed" becomes "Rain Fall speed" |
+| `icon`, `entity_category` | applied to every entity |
+| `web_server` | applied to every entity, which is how they share a sorting group; the entity's own schema validates it, so the fields are whatever the installed ESPHome supports |
+| `restore_value` | keep the value across a reboot instead of taking the effect's default again. Sliders and the palette store it; a checkmark becomes a switch whose `restore_mode` comes up on the effect's own default. Colour slots already restore, being lights, and naming it on one is an error |
+| `speed:`, `intensity:`, `custom1:` … `check3:`, `palette:`, `color1:` … `color3:` | the same four keys again plus `name`, for one control. `false` leaves that control out entirely |
+
+```yaml
+wled_fx:
+  id: fx
+  display_id: matrix
+  effect: PS Fire
+  controls:
+    name_prefix: Fire
+    speed:
+      restore_value: true
+      icon: mdi:speedometer
+    check2: false        # Cylinder, which a flat panel never wants
+    color1:
+      name: Panel
+```
+
+A control is addressed by its slot, `custom1` and `check2`, rather than by the
+name WLED gives it, because two controls of one effect can share a name: Matrix
+has both a slider and a colour slot called Trail. Naming a slot the effect does
+not use is an error that lists every slot it does, with WLED's name beside
+each, so the spelling is one failed build away rather than something to look
+up. The **entity** names never say Custom 1 or Check 1.
+
+#### What it will not do
+
+`controls:` is for one pinned effect, and the three ways of asking for
+something else are errors rather than something that half works:
+
+* **No `effect:`.** There is nothing to name the entities after.
+* **A generic `number`, `switch`, `select` or `light` platform pointing at the
+  same controller.** That is two entities over one control, one of them called
+  Custom 1.
+* **An `effects:` allow-list naming anything but the pinned effect.** The named
+  entities would be the wrong ones for whatever else got selected.
+
+A build that switches between effects keeps the generic entities and the
+`controls` text sensor, which is what that text sensor is for.
+
+#### What it costs
+
+Pinning also decides what gets compiled: with no `effects:` list of its own, a
+build whose every output is pinned carries that one effect and nothing else.
+Measured on `examples/m1-matrix-named.yaml` against the same configuration with
+the generic entity set and every effect a 64x64 panel offers, both ESP32-S3
+esp-idf builds:
+
+| Build | Flash | RAM |
+|---|---:|---:|
+| Pinned to Matrix, named controls | 828,759 | 110,163 |
+| Pinned to Matrix, generic entities | 836,771 | 110,947 |
+| All 64 matrix effects, generic entities | 898,459 | 111,043 |
+
+So the six named entities are **8,012 bytes** of flash and **784 bytes** of
+RAM less than the seventeen generic ones they replace, and compiling Matrix
+alone instead of the 64 a panel offers is another **61,688 bytes**: **69,700
+bytes**, about 68 KB, between the two ends. The canvas is sized from the panel
+rather than from the effect list, so the 96 bytes of RAM between the last two
+rows is the registry tables and nothing else.
+
+`docs/NAMED-CONTROLS-REVIEW.md` has the full entity list for each of the three
+examples and the exact error messages.
 
 ## Host simulator
 

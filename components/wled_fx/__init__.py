@@ -84,6 +84,7 @@ CONF_TASK_IN_PSRAM = "task_in_psram"
 CONF_OPTIMIZE = "optimize"
 CONF_CANVAS_MEMORY = "canvas_memory"
 CONF_LOOP_INTERVAL = "loop_interval"
+CONF_OUTPUT_FORMAT = "output_format"
 
 # update_interval: never is stored as uint32_t max.
 UPDATE_INTERVAL_NEVER = 4294967295
@@ -155,6 +156,14 @@ MEMORY_POLICIES = {
     "auto": MemoryPolicy.AUTO,
     "internal": MemoryPolicy.INTERNAL,
     "psram": MemoryPolicy.PSRAM,
+}
+
+# The pixel format the display front end hands draw_pixels_at(). See
+# _output_format_for() for when the default is not rgb888.
+OutputFormat = wled_fx_ns.enum("OutputFormat", is_class=True)
+OUTPUT_FORMATS = {
+    "rgb888": OutputFormat.RGB888,
+    "rgb565": OutputFormat.RGB565,
 }
 
 SLIDERS = {
@@ -386,6 +395,10 @@ _ENTRY_SCHEMA = cv.Schema(
             cv.one_of("auto", "never", lower=True),
             cv.positive_time_period_milliseconds,
         ),
+        # No default, for the same reason as loop_interval, and because the
+        # default depends on the rest of the configuration: see
+        # _output_format_for().
+        cv.Optional(CONF_OUTPUT_FORMAT): cv.enum(OUTPUT_FORMATS, lower=True),
         **CONTROL_SCHEMA,
     }
 ).extend(cv.COMPONENT_SCHEMA)
@@ -425,6 +438,7 @@ def _validate_entry(config):
         CONF_INCLUDE_1D_EFFECTS,
         CONF_UPDATE_INTERVAL,
         CONF_LOOP_INTERVAL,
+        CONF_OUTPUT_FORMAT,
         # Neither CONF_OPTIMIZE nor CONF_CANVAS_MEMORY: both are one setting for
         # the whole build, and a bare `wled_fx:` entry beside a light effect is
         # exactly where somebody would put them.
@@ -449,6 +463,9 @@ _ALLOW_LIST_KEY = "wled_fx_allow_list"
 _SELECTION_DONE_KEY = "wled_fx_selection_emitted"
 _OPTIMIZE_KEY = "wled_fx_optimize"
 _MEMORY_KEY = "wled_fx_canvas_memory"
+# Entry id -> "rgb888" or "rgb565", decided in _final_validate() where the
+# display's platform and the rest of the configuration are in view.
+_OUTPUT_FORMAT_KEY = "wled_fx_output_format"
 
 
 def _all_entries(full_config):
@@ -613,7 +630,36 @@ def _final_validate(config):
                 path=[CONF_DISPLAY_ID],
             )
         _warn_on_double_gamma(entry, display_config)
+        CORE.data.setdefault(_OUTPUT_FORMAT_KEY, {})[str(entry[CONF_ID])] = (
+            _output_format_for(entry, display_config, full_config)
+        )
     return config
+
+
+def _output_format_for(entry, display_config, full_config) -> str:
+    """The pixel format push_frame_() hands this display.
+
+    Packed 24 bit RGB everywhere, with one exception: ESPHome's hub75 driver in
+    a build that also has LVGL. Its draw_pixels_at() is compiled for LVGL's
+    colour depth, which ESPHome pins at 16 bits, and a 24 bit frame is refused
+    with "Unsupported LV_COLOR_DEPTH: 16" on every frame
+    (esphome/components/hub75/hub75.cpp). RGB565 is what LVGL's own flush hands
+    that driver, so it is the default there, and asking for rgb888 is an error
+    rather than a dark panel and a flooded log.
+    """
+    lvgl_hub75 = display_config.get(CONF_PLATFORM) == "hub75" and "lvgl" in full_config
+    wanted = entry.get(CONF_OUTPUT_FORMAT)
+    if wanted is None:
+        return "rgb565" if lvgl_hub75 else "rgb888"
+    if lvgl_hub75 and str(wanted) == "rgb888":
+        raise cv.Invalid(
+            "ESPHome's hub75 driver only takes RGB565 frames in a build that has "
+            "LVGL: it is compiled for LVGL's 16 bit colour and rejects a 24 bit "
+            "frame with 'Unsupported LV_COLOR_DEPTH' on every frame. Remove "
+            f"'{CONF_OUTPUT_FORMAT}' or set it to rgb565.",
+            path=[CONF_OUTPUT_FORMAT],
+        )
+    return str(wanted)
 
 
 def _warn_on_double_gamma(entry, display_config):
@@ -861,6 +907,8 @@ async def to_code(config):
             var.set_dimensions(entry.get(CONF_WIDTH, 0), entry.get(CONF_HEIGHT, 0))
         )
         cg.add(var.set_gamma(entry.get(CONF_GAMMA_CORRECT, DEFAULT_OUTPUT_GAMMA)))
+        output_format = CORE.data.get(_OUTPUT_FORMAT_KEY, {}).get(str(entry[CONF_ID]), "rgb888")
+        cg.add(var.set_output_format(OUTPUT_FORMATS[output_format]))
         # A display is a matrix, so this front end is always a 2D output.
         cg.add(var.set_layout_2d(True))
         cg.add(

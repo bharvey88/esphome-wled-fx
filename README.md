@@ -438,6 +438,15 @@ select:
 
 Full configurations are in `examples/`.
 
+**With LVGL in the same firmware.** ESPHome's hub75 driver is compiled for
+LVGL's colour depth, which ESPHome pins at 16 bits, and its `draw_pixels_at()`
+then refuses a 24 bit frame with `Unsupported LV_COLOR_DEPTH: 16` on every
+frame. wled_fx sees LVGL in the configuration and hands that display RGB565
+instead, the format LVGL's own flush uses; `output_format` makes the choice
+explicit. Both would otherwise draw into the same panel, so pause LVGL while an
+effect runs (`lvgl.pause`) and resume it with a full redraw afterwards. Checked
+on a 128x64 HUB75 panel, ESPHome 2026.8.2.
+
 ## Configuration
 
 ### `wled_fx:`
@@ -466,6 +475,7 @@ on the light effect instead.
 | `optimize` | `speed`, `size` | `speed` | compile this component's own sources at -O2 rather than ESPHome's -Os. One setting for the whole build, so every entry has to agree. See [Performance](#performance) |
 | `canvas_memory` | `auto`, `internal`, `psram` | `auto` | where the canvas and the small per-frame buffers go. One setting for the whole build. See [Performance](#performance) |
 | `loop_interval` | time, `auto`, `never` | `auto` | the main loop interval to ask ESPHome for, so the frame deadline is not rounded up to the next tick. `auto` is a third of `update_interval`, floored at 4 ms, and never longer than what the firmware already has. See [Performance](#performance) |
+| `output_format` | `rgb888`, `rgb565` | picked | the pixel format handed to the display. `rgb888` is WLED's own 24 bit output. A build with LVGL and a hub75 display gets `rgb565`, because ESPHome's hub75 driver refuses anything else there; see [Quick start, HUB75 matrix](#quick-start-hub75-matrix) |
 
 Every control key here, and on the light effect below, is **pinned**: naming
 `speed:` in YAML keeps that value when the effect changes, and leaving it out

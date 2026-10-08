@@ -427,7 +427,7 @@ wled_fx:
   id: fx
   display_id: matrix
   update_interval: 23ms
-  effect: Fire 2012
+  effect: PS Fire
 
 select:
   - platform: wled_fx
@@ -442,10 +442,17 @@ Full configurations are in `examples/`.
 LVGL's colour depth, which ESPHome pins at 16 bits, and its `draw_pixels_at()`
 then refuses a 24 bit frame with `Unsupported LV_COLOR_DEPTH: 16` on every
 frame. wled_fx sees LVGL in the configuration and hands that display RGB565
-instead, the format LVGL's own flush uses; `output_format` makes the choice
-explicit. Both would otherwise draw into the same panel, so pause LVGL while an
-effect runs (`lvgl.pause`) and resume it with a full redraw afterwards. Checked
-on a 128x64 HUB75 panel, ESPHome 2026.8.2.
+instead, as native little-endian words with the call saying so; esp-hub75
+reads each word in the order the call declares, so this holds whatever
+`byte_order` LVGL itself is given. `output_format` makes the choice explicit.
+Two more things follow from LVGL being there. hub75's own validation requires
+`double_buffer: false` in an LVGL build, so every wled_fx frame goes straight
+into the buffer the panel is scanning and `update()` no longer flips: expect
+some tearing on fast effects. And both would draw into the same panel, so
+pause LVGL while an effect runs (`lvgl.pause`) and resume it afterwards
+(`lvgl.resume` redraws the screen by itself). RGB565 also costs the dark end
+of the picture; see [Gamma and what the panel emits](#gamma-and-what-the-panel-emits).
+Checked on a 128x64 HUB75 panel, ESPHome 2026.8.2.
 
 ## Configuration
 
@@ -475,7 +482,7 @@ on the light effect instead.
 | `optimize` | `speed`, `size` | `speed` | compile this component's own sources at -O2 rather than ESPHome's -Os. One setting for the whole build, so every entry has to agree. See [Performance](#performance) |
 | `canvas_memory` | `auto`, `internal`, `psram` | `auto` | where the canvas and the small per-frame buffers go. One setting for the whole build. See [Performance](#performance) |
 | `loop_interval` | time, `auto`, `never` | `auto` | the main loop interval to ask ESPHome for, so the frame deadline is not rounded up to the next tick. `auto` is a third of `update_interval`, floored at 4 ms, and never longer than what the firmware already has. See [Performance](#performance) |
-| `output_format` | `rgb888`, `rgb565` | picked | the pixel format handed to the display. `rgb888` is WLED's own 24 bit output. A build with LVGL and a hub75 display gets `rgb565`, because ESPHome's hub75 driver refuses anything else there; see [Quick start, HUB75 matrix](#quick-start-hub75-matrix) |
+| `output_format` | `rgb888`, `rgb565` | `rgb888`; `rgb565` with LVGL and hub75 | the pixel format handed to the display. `rgb888` is WLED's own 24 bit output. A build with LVGL and a hub75 display gets `rgb565`, because ESPHome's hub75 driver refuses anything else there; see [Quick start, HUB75 matrix](#quick-start-hub75-matrix) |
 
 Every control key here, and on the light effect below, is **pinned**: naming
 `speed:` in YAML keeps that value when the effect changes, and leaving it out
@@ -542,6 +549,15 @@ a panel far darker than a WLED one. The four shipped matrix configurations set
 that does not gets a warning at validation naming both curves. The other way
 round, `gamma_correct: 1.0` on `wled_fx` with the driver left on CIE1931, is a
 reasonable look and is not WLED's.
+
+**A hub75 panel in an LVGL build** gets RGB565 (see the quick start), and the
+quantisation happens after this stage: red and blue keep five bits, green six.
+With gamma 2.2 that folds every canvas value below 53 (38 for green) into
+black, where the 24 bit path still sends 1 to 7 and the panel shows faint
+embers; slow fades and the particle fire lose their tails. For that build the
+other ordering is the better one: `gamma_correct: 1.0` on `wled_fx` and the
+driver's CIE1931 left on, so the 32 levels are spent on linear values and the
+curve runs on the widened 8 bit value inside the driver.
 
 **A light.** ESPHome owns the output stage of a light, its `gamma_correct`
 defaults to 2.8, and it corrects *after* its own brightness scaling where WLED

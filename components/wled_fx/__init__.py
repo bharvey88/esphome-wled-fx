@@ -643,9 +643,9 @@ def _output_format_for(index, entry, display_config, full_config) -> str:
     a build that also has LVGL. Its draw_pixels_at() is compiled for LVGL's
     colour depth, which ESPHome pins at 16 bits, and a 24 bit frame is refused
     with "Unsupported LV_COLOR_DEPTH: 16" on every frame
-    (esphome/components/hub75/hub75.cpp). RGB565 is what LVGL's own flush hands
-    that driver, so it is the default there, and asking for rgb888 is an error
-    rather than a dark panel and a flooded log.
+    (esphome/components/hub75/hub75.cpp). RGB565 is the one format that driver
+    takes in such a build, so it is the default there, and asking for rgb888
+    is an error rather than a dark panel and a flooded log.
     """
     lvgl_hub75 = display_config.get(CONF_PLATFORM) == "hub75" and "lvgl" in full_config
     wanted = entry.get(CONF_OUTPUT_FORMAT)

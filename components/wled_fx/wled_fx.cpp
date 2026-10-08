@@ -348,8 +348,9 @@ void WledFxDisplay::push_frame_() {
    * display the comparison harness uses.
    *
    * RGB565 is the other way round: the frame holds native uint16_t words,
-   * little-endian, so big_endian is false. That is what LVGL's own flush hands
-   * the hub75 driver and what Display::draw_pixels_at() reads for 565. */
+   * little-endian, so big_endian is false. esp-hub75 and
+   * Display::draw_pixels_at() both read the word in the order the call
+   * declares, whatever byte order LVGL itself was configured with. */
   if (this->output_format_ == OutputFormat::RGB565) {
     this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_ORDER_RGB,
                                    display::COLOR_BITNESS_565, false);
@@ -358,7 +359,10 @@ void WledFxDisplay::push_frame_() {
                                    display::COLOR_BITNESS_888, true);
   }
   /* Pushes the frame out. On hub75 with double buffering this is the flip, and
-   * the flip does not wait: esp-hub75's GdmaDma::flip_buffer() splices one
+   * the flip does not wait. An LVGL build has no double buffer (hub75 insists
+   * on double_buffer: false there), so the frame above landed in the buffer
+   * the panel is scanning and this call does nothing. Where there is a flip,
+   * it does not wait: esp-hub75's GdmaDma::flip_buffer() splices one
    * descriptor `next` pointer and swaps two indices. The panel refreshes itself
    * from a circular GDMA chain at about 76 Hz whatever this component does, so
    * nothing here is ever blocked on a panel refresh and the frame rate is set

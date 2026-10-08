@@ -152,8 +152,13 @@ jobs:
         with:
           python-version: "3.13"
 
+      # Pinned to the last dev commit before the apply-action codegen landed
+      # (2026-09-23 on): since then the generated apply functions for action
+      # lambdas sit above the `includes:` headers in main.cpp, so the
+      # wfxsnap:: calls in port.yaml fail to compile. Move the pin forward once
+      # dev emits the includes first again.
       - name: Install ESPHome from dev, for the snapshot component
-        run: pip install "esphome @ git+https://github.com/esphome/esphome@dev" numpy pillow
+        run: pip install "esphome @ git+https://github.com/esphome/esphome@7a27d5dde1a3b2a126e65118a37b1ee12adf41eb" numpy pillow
 
       - name: Capture eight effects through the display front end
         run: |

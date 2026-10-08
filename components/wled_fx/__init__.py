@@ -601,7 +601,7 @@ def _final_validate(config):
             CORE.data[_MEMORY_KEY] = entry[CONF_CANVAS_MEMORY]
             break
 
-    for entry in config:
+    for index, entry in enumerate(config):
         if (audio_config := entry.get(CONF_AUDIO)) is not None:
             # Checks the microphone really offers the channel that was asked for.
             microphone.final_validate_microphone_source_schema("wled_fx")(
@@ -621,22 +621,22 @@ def _final_validate(config):
             raise cv.Invalid(
                 "A display driven by wled_fx must have 'update_interval: never'. "
                 "wled_fx owns the frame clock and calls the display itself.",
-                path=[CONF_DISPLAY_ID],
+                path=[index, CONF_DISPLAY_ID],
             )
         if display_config.get(CONF_AUTO_CLEAR_ENABLED):
             raise cv.Invalid(
                 "A display driven by wled_fx must have 'auto_clear_enabled: false'. "
                 "The engine paints every pixel every frame.",
-                path=[CONF_DISPLAY_ID],
+                path=[index, CONF_DISPLAY_ID],
             )
         _warn_on_double_gamma(entry, display_config)
         CORE.data.setdefault(_OUTPUT_FORMAT_KEY, {})[str(entry[CONF_ID])] = (
-            _output_format_for(entry, display_config, full_config)
+            _output_format_for(index, entry, display_config, full_config)
         )
     return config
 
 
-def _output_format_for(entry, display_config, full_config) -> str:
+def _output_format_for(index, entry, display_config, full_config) -> str:
     """The pixel format push_frame_() hands this display.
 
     Packed 24 bit RGB everywhere, with one exception: ESPHome's hub75 driver in
@@ -657,7 +657,7 @@ def _output_format_for(entry, display_config, full_config) -> str:
             "LVGL: it is compiled for LVGL's 16 bit colour and rejects a 24 bit "
             "frame with 'Unsupported LV_COLOR_DEPTH' on every frame. Remove "
             f"'{CONF_OUTPUT_FORMAT}' or set it to rgb565.",
-            path=[CONF_OUTPUT_FORMAT],
+            path=[index, CONF_OUTPUT_FORMAT],
         )
     return str(wanted)
 

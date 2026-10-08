@@ -182,6 +182,13 @@ class WledFxController {
 };
 
 #ifdef USE_DISPLAY
+/* What push_frame_() hands the display. Packed 24 bit RGB is what WLED's output
+ * stage produces and what Display::draw_pixels_at() takes on every display.
+ * The hub75 driver in a build that also has LVGL is the exception: it is
+ * compiled for LVGL's 16 bit colour and refuses a 24 bit frame outright, so
+ * that build must get RGB565. Codegen picks the default from the configuration. */
+enum class OutputFormat : uint8_t { RGB888, RGB565 };
+
 /* Display front end. Owns the frame clock, renders into the canvas and pushes the
  * whole frame with a single draw_pixels_at() call.
  *
@@ -198,6 +205,7 @@ class WledFxDisplay : public Component, public WledFxController {
     this->height_ = height;
   }
   void set_gamma(float gamma) { this->gamma_ = gamma; }
+  void set_output_format(OutputFormat format) { this->output_format_ = format; }
 
   /* How often ESPHome should run its component phase at all, in milliseconds,
    * or 0 to leave it alone. See apply_loop_interval_() for what this is for. */
@@ -253,10 +261,17 @@ class WledFxDisplay : public Component, public WledFxController {
    * turns it off. */
   void apply_loop_interval_();
 
+  // Bytes in one frame: three a pixel for RGB888, two for RGB565.
+  size_t frame_bytes_() const {
+    return static_cast<size_t>(this->width_) * this->height_ * (this->output_format_ == OutputFormat::RGB565 ? 2 : 3);
+  }
+
   display::Display *display_{nullptr};
+  // The finished frame in output_format_, packed with no stride.
   uint8_t *frame_{nullptr};
   int width_{0};
   int height_{0};
+  OutputFormat output_format_{OutputFormat::RGB888};
   /* WLED's show() stage, on by default there and on by default here. See the
    * `gamma_correct` option in README.md: a display that applies a curve of its
    * own wants this at 1.0 instead, and the hub75 driver is exactly that case

@@ -226,12 +226,11 @@ void WledFxDisplay::setup() {
     return;
   }
 
-  /* Packed 24 bit RGB, which is what draw_pixels_at() takes and what the hub75
-   * driver reads straight through. It is written once and read once per frame,
-   * both sequentially, so it wants internal RAM less badly than the canvas
-   * does; it asks second and takes whatever is left. */
-  this->frame_ = static_cast<uint8_t *>(
-      platform_alloc_fast(static_cast<size_t>(this->width_) * this->height_ * 3, &this->frame_internal_));
+  /* Packed pixels in the output format, which draw_pixels_at() takes and the
+   * hub75 driver reads straight through. It is written once and read once per
+   * frame, both sequentially, so it wants internal RAM less badly than the
+   * canvas does; it asks second and takes whatever is left. */
+  this->frame_ = static_cast<uint8_t *>(platform_alloc_fast(this->frame_bytes_(), &this->frame_internal_));
   if (this->frame_ == nullptr) {
     ESP_LOGE(TAG, "Frame buffer allocation failed");
     this->mark_failed();
@@ -278,7 +277,7 @@ void WledFxDisplay::loop() {
      * so an off panel costs nothing, and the effect picks up where the clock is
      * when it comes back, which is what WLED's power button does. */
     if (!this->blanked_) {
-      memset(this->frame_, 0, static_cast<size_t>(this->width_) * this->height_ * 3);
+      memset(this->frame_, 0, this->frame_bytes_());
       this->push_frame_();
       this->blanked_ = true;
       /* Say so. Colour 1 is the master and it restores its last state from
@@ -308,12 +307,24 @@ void WledFxDisplay::loop() {
   const size_t pixels = canvas.size();
   const uint32_t *in = canvas.pixels();
   const uint8_t *const lut = this->output_lut_;
-  uint8_t *out = this->frame_;
-  for (size_t i = 0; i < pixels; i++) {
-    const uint32_t c = in[i];
-    *out++ = lut[(c >> 16) & 0xFF];
-    *out++ = lut[(c >> 8) & 0xFF];
-    *out++ = lut[c & 0xFF];
+  if (this->output_format_ == OutputFormat::RGB565) {
+    // Native uint16_t words, so the bytes land little-endian on every ESP32.
+    uint16_t *out = reinterpret_cast<uint16_t *>(this->frame_);
+    for (size_t i = 0; i < pixels; i++) {
+      const uint32_t c = in[i];
+      const uint16_t r = lut[(c >> 16) & 0xFF];
+      const uint16_t g = lut[(c >> 8) & 0xFF];
+      const uint16_t b = lut[c & 0xFF];
+      out[i] = static_cast<uint16_t>(((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3));
+    }
+  } else {
+    uint8_t *out = this->frame_;
+    for (size_t i = 0; i < pixels; i++) {
+      const uint32_t c = in[i];
+      *out++ = lut[(c >> 16) & 0xFF];
+      *out++ = lut[(c >> 8) & 0xFF];
+      *out++ = lut[c & 0xFF];
+    }
   }
 
   this->push_frame_();
@@ -334,11 +345,24 @@ void WledFxDisplay::push_frame_() {
    * first byte as the LEAST significant one and hands red and blue to each
    * other. So this rendered correctly on the one panel it had been tried on
    * and swapped on every SPI display, every DisplayBuffer and the snapshot
-   * display the comparison harness uses. */
-  this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_ORDER_RGB,
-                                 display::COLOR_BITNESS_888, true);
+   * display the comparison harness uses.
+   *
+   * RGB565 is the other way round: the frame holds native uint16_t words,
+   * little-endian, so big_endian is false. esp-hub75 and
+   * Display::draw_pixels_at() both read the word in the order the call
+   * declares, whatever byte order LVGL itself was configured with. */
+  if (this->output_format_ == OutputFormat::RGB565) {
+    this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_ORDER_RGB,
+                                   display::COLOR_BITNESS_565, false);
+  } else {
+    this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_ORDER_RGB,
+                                   display::COLOR_BITNESS_888, true);
+  }
   /* Pushes the frame out. On hub75 with double buffering this is the flip, and
-   * the flip does not wait: esp-hub75's GdmaDma::flip_buffer() splices one
+   * the flip does not wait. An LVGL build has no double buffer (hub75 insists
+   * on double_buffer: false there), so the frame above landed in the buffer
+   * the panel is scanning and this call does nothing. Where there is a flip,
+   * it does not wait: esp-hub75's GdmaDma::flip_buffer() splices one
    * descriptor `next` pointer and swaps two indices. The panel refreshes itself
    * from a circular GDMA chain at about 76 Hz whatever this component does, so
    * nothing here is ever blocked on a panel refresh and the frame rate is set
@@ -353,6 +377,7 @@ void WledFxDisplay::dump_config() {
                 "  Canvas: %dx%d\n"
                 "  Frame interval: %" PRIu32 " ms\n"
                 "  Output gamma: %.2f\n"
+                "  Output format: %s\n"
                 "  Main loop interval: %" PRIu32 " ms\n"
                 "  Optimised for: %s\n"
                 "  Memory policy: %s (canvas in %s RAM, frame buffer in %s RAM)\n"
@@ -361,7 +386,8 @@ void WledFxDisplay::dump_config() {
                 "  Effects compiled in: %u\n"
                 "  Effect: %s\n"
                 "  Palette: %s",
-                this->width_, this->height_, this->frame_interval(), this->gamma_, App.get_loop_interval(),
+                this->width_, this->height_, this->frame_interval(), this->gamma_,
+                this->output_format_ == OutputFormat::RGB565 ? "RGB565" : "RGB888", App.get_loop_interval(),
 #ifdef WLED_FX_OPTIMIZE_SPEED
                 "speed",
 #else

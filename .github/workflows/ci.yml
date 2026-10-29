@@ -228,6 +228,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
+        id: python
         with:
           python-version: "3.13"
 
@@ -244,8 +245,12 @@ jobs:
             ~/.platformio
             ~/.espressif
             examples/.esphome
-          key: esphome-${{ matrix.config }}-${{ hashFiles('examples/*.yaml') }}
-          restore-keys: esphome-${{ matrix.config }}-
+          # The restored build tree names the runner's Python by its exact
+          # version (the ninja CMake recorded lives in its bin folder), so a
+          # cache from an older patch release fails CMake with "no such file".
+          # Keyed on the exact version, a new Python starts a fresh build.
+          key: esphome-${{ matrix.config }}-py${{ steps.python.outputs.python-version }}-${{ hashFiles('examples/*.yaml') }}
+          restore-keys: esphome-${{ matrix.config }}-py${{ steps.python.outputs.python-version }}-
 
       - name: Compile
         run: esphome compile examples/${{ matrix.config }}

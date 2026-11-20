@@ -1392,3 +1392,13 @@ specified.
     not what a device somebody has turned up is running at: the reference
     device sits at 220, so it emits about 1.7 times the light for the same
     frame. Dim with the panel brightness, not with Colour 1.
+
+37. **Rain's speed divides by the rows on a matrix, not by every pixel.**
+    Upstream steps the rain when `SEGENV.step > SPEED_FORMULA_L`, which is
+    `5 + 50 * (255 - speed) / SEGLEN` milliseconds, and in 2D `SEGLEN` is
+    width times height. On a 64 by 32 panel that is 11 ms at speed 0, under
+    one 23 ms frame, so the drops fall a row every frame and the Speed slider
+    does nothing. Here 2D divides by the height, the rows a drop falls
+    through: 403 ms a row at speed 0, 203 ms at 128 and a row every frame at
+    255 on 32 rows, which is about what upstream gives a 30 pixel strip. 1D is
+    unchanged.

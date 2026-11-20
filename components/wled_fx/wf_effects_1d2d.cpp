@@ -104,7 +104,10 @@ void mode_rain(Segment &seg) {
   const unsigned width = seg.width();
   const unsigned height = seg.height();
   seg.step += FRAMETIME;
-  if (seg.call && seg.step > speed_formula_l(seg, seg_len)) {
+  // Upstream divides by SEGLEN, every pixel of a matrix, which leaves the step
+  // shorter than a frame at any speed; a drop falls a row per step, so this
+  // divides by the rows (PORTING.md deviation 37).
+  if (seg.call && seg.step > speed_formula_l(seg, seg.is_2d() ? height : seg_len)) {
     seg.step = 1;
     if (seg.is_2d()) {
       // uint32_t ctemp[width];

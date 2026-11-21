@@ -10,6 +10,8 @@
 #include "esphome/core/application.h"
 #include "esphome/core/hal.h"
 #include "esphome/core/log.h"
+#include "esphome/core/macros.h"
+#include "esphome/core/version.h"
 
 namespace esphome {
 namespace wled_fx {
@@ -350,7 +352,18 @@ void WledFxDisplay::push_frame_() {
    * RGB565 is the other way round: the frame holds native uint16_t words,
    * little-endian, so big_endian is false. esp-hub75 and
    * Display::draw_pixels_at() both read the word in the order the call
-   * declares, whatever byte order LVGL itself was configured with. */
+   * declares, whatever byte order LVGL itself was configured with.
+   *
+   * ESPHome 2026.11.0 made pixels always RGB and deprecated the form that
+   * takes a ColorOrder; 2027.5.0 removes it. Before 2026.11.0 that form is the
+   * only one there is. */
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 11, 0)
+  if (this->output_format_ == OutputFormat::RGB565) {
+    this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_BITNESS_565, false);
+  } else {
+    this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_BITNESS_888, true);
+  }
+#else
   if (this->output_format_ == OutputFormat::RGB565) {
     this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_ORDER_RGB,
                                    display::COLOR_BITNESS_565, false);
@@ -358,6 +371,7 @@ void WledFxDisplay::push_frame_() {
     this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_ORDER_RGB,
                                    display::COLOR_BITNESS_888, true);
   }
+#endif
   /* Pushes the frame out. On hub75 with double buffering this is the flip, and
    * the flip does not wait. An LVGL build has no double buffer (hub75 insists
    * on double_buffer: false there), so the frame above landed in the buffer

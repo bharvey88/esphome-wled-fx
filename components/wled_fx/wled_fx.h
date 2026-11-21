@@ -183,7 +183,8 @@ class WledFxController {
 
 #ifdef USE_DISPLAY
 /* What push_frame_() hands the display. Packed 24 bit RGB is what WLED's output
- * stage produces and what Display::draw_pixels_at() takes on every display.
+ * stage produces and what Display::draw_pixels_at() takes on every display
+ * (bytes R, G, B before ESPHome 2026.11.0, B, G, R from it on).
  * The hub75 driver in a build that also has LVGL is the exception: it is
  * compiled for LVGL's 16 bit colour and refuses a 24 bit frame outright, so
  * that build must get RGB565. Codegen picks the default from the configuration. */

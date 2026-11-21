@@ -323,9 +323,16 @@ void WledFxDisplay::loop() {
     uint8_t *out = this->frame_;
     for (size_t i = 0; i < pixels; i++) {
       const uint32_t c = in[i];
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 11, 0)
+      // 2026.11.0 reads 24 bit pixels as B, G, R in memory; see push_frame_().
+      *out++ = lut[c & 0xFF];
+      *out++ = lut[(c >> 8) & 0xFF];
+      *out++ = lut[(c >> 16) & 0xFF];
+#else
       *out++ = lut[(c >> 16) & 0xFF];
       *out++ = lut[(c >> 8) & 0xFF];
       *out++ = lut[c & 0xFF];
+#endif
     }
   }
 
@@ -356,12 +363,15 @@ void WledFxDisplay::push_frame_() {
    *
    * ESPHome 2026.11.0 made pixels always RGB and deprecated the form that
    * takes a ColorOrder; 2027.5.0 removes it. Before 2026.11.0 that form is the
-   * only one there is. */
+   * only one there is. 2026.11.0 also fixed the 24 bit layout as LVGL's,
+   * B, G, R in memory, and ignores big_endian for it, on every display and
+   * in hub75's own copy; loop() writes the frame that way from 2026.11.0 on,
+   * and false says so. 565 is unchanged. */
 #if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 11, 0)
   if (this->output_format_ == OutputFormat::RGB565) {
     this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_BITNESS_565, false);
   } else {
-    this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_BITNESS_888, true);
+    this->display_->draw_pixels_at(0, 0, this->width_, this->height_, this->frame_, display::COLOR_BITNESS_888, false);
   }
 #else
   if (this->output_format_ == OutputFormat::RGB565) {
